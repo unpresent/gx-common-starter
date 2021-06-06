@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.gagarkin.common</groupId>
-    <artifactId>starter</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <artifactId>gxfin-common-starter</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <file.encoding>UTF-8</file.encoding>
