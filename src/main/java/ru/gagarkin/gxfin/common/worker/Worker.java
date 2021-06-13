@@ -1,29 +1,13 @@
 package ru.gagarkin.gxfin.common.worker;
 
+import org.springframework.context.Lifecycle;
+
 /**
  * Интерфейс исполнителей
  */
-public interface Worker {
+public interface Worker extends Lifecycle {
     /**
-     * Запуск исполнителя
+     * Настрйока (в мс), которая определяет сколько можно ждать штатного завершения исполнителя во время stop().
      */
-    boolean start(boolean autoRestart);
-
-    /**
-     * Попытка мягкой остновки исполнителя с ожиданием завершения
-     * @param timeoutMs - ждать не более миллисекунд
-     * @return true - остнов удался
-     */
-    boolean tryStop(int timeoutMs);
-
-    /**
-     * Останов без ожидания
-     */
-    void terminate(int timeoutMs);
-
-    /**
-     * Получение состояния:
-     * @return true - исполнителья работает
-     */
-    boolean isRunning();
+    int getWaitOnStopMS();
 }

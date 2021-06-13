@@ -17,11 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * обработчик которого должен содержать главную логику работы итераций. <br/>
  * Также зпускает контроллера-демона, который следит за работой Runner-а, если второй зависает, то демон перезапускает Runner-а.
  *
- * @see AbstractIterationExecutorEvent
+ * @see AbstractIterationExecuteEvent
  * @see Worker
  */
 @Slf4j
 public abstract class AbstractWorker implements Worker {
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Fields & Settings">
     /**
      * ApplicationContext используется для бросания событий stepExecutorEvent (используется spring-events)
      */
@@ -65,27 +67,25 @@ public abstract class AbstractWorker implements Worker {
      * Объект-команда, который является spring-event-ом. Его обработчик по сути должен содержать логику итераций
      */
     @Getter(AccessLevel.PROTECTED)
-    private final AbstractIterationExecutorEvent iterationExecutorEvent;
+    private final AbstractIterationExecuteEvent iterationExecuteEvent;
 
     /**
      * Минимальное время на итерацию. Если после выполнения итерации не требуется немедленно продолжить,
      * и время выполнения текущей итерации было менее указанного, то поток исполнителя заспает
      */
-    @Getter
-    @Setter(AccessLevel.PROTECTED)
-    private int minTimePerStepMs;
+    protected abstract int getMinTimePerIterationMs();
 
     /**
      * Момент времени, когда Runner последний раз отчитывался, что работает.
      */
     @Getter
-    private volatile long lastRunnerLifeCheckedMs;
+    private volatile long lastRunnerLifeCheckedMs = 0;
 
     /**
      * Метод, с помощью которого исполнитель отчитыватся, что еще "жив"
      *
      * @see #lastRunnerLifeCheckedMs
-     * @see #timoutRunnerLifeMs
+     * @see #getTimoutRunnerLifeMs()
      */
     protected void runnerIsLifeSet() {
         this.lastRunnerLifeCheckedMs = System.currentTimeMillis();
@@ -99,39 +99,74 @@ public abstract class AbstractWorker implements Worker {
      * @see #lastRunnerLifeCheckedMs
      * @see #autoRestart
      */
-    @Getter
-    @Setter(AccessLevel.PROTECTED)
-    private int timoutRunnerLifeMs;
+    protected abstract int getTimoutRunnerLifeMs();
 
     /**
-     * Настрйока (в мс), которая определяет сколько можно ждать штатного завершения исполнителя при перезапуске.
-     * Передается в качестве параметра в процедуру завершения.
-     * @see #terminate(int)
+     * Настрйока (в мс), которая определяет сколько можно ждать штатного завершения исполнителя во время stop().
+     *
+     * @see #internalStop()
+     * @see #internalWaitStop(int, boolean)
      */
-    @Getter
-    @Setter(AccessLevel.PROTECTED)
-    private int waitStopOnRestart;
+    @Override
+    public abstract int getWaitOnStopMS();
 
-    protected AbstractWorker(String name, AbstractIterationExecutorEvent iterationExecutorEvent) {
+    // </editor-fold>
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Init">
+    protected AbstractWorker(String name) {
         super();
         this.name = name;
-        this.iterationExecutorEvent = iterationExecutorEvent;
+        this.iterationExecuteEvent = createIterationExecuteEvent();
         this.runnerTimerTaskController = new RunnerTimerTaskController();
         this.timer = new Timer(true);
     }
 
     /**
-     * Запуск исполнителя
-     * @param autoRestart true - требуется автоперезапуск исполнителя при аварийном завершении
-     * @return true - запуск успешен
+     * Требуется переопределить в наледнике.
+     *
+     * @return объект-событие, которое будет использоваться для вызова итераций.
+     */
+    protected abstract AbstractIterationExecuteEvent createIterationExecuteEvent();
+    // </editor-fold>
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="implements Worker">
+
+    /**
+     * Запуск исполнителя.
      */
     @Override
-    public boolean start(boolean autoRestart) {
-        this.autoRestart = autoRestart;
+    public void start() {
+        this.autoRestart = true;
+        internalStart();
+    }
 
+    /**
+     * Принудительный останов после ожидания штатного завершения.
+     */
+    @Override
+    public void stop() {
+        this.autoRestart = false;
+        internalStop();
+    }
+
+    /**
+     * Текущий статус исполнителя
+     *
+     * @return true = исполнитель запущен и работает
+     */
+    @Override
+    public boolean isRunning() {
+        var runner = getRunner();
+        return runner != null && runner.currentThread != null;
+    }
+
+    // </editor-fold>
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Internal methods for implements Worker">
+    protected void internalStart() {
         if (isRunning()) {
             log.info("Runner " + getName() + " already is running!");
-            return isRunning();
+            return;
         }
 
         synchronized (this) {
@@ -147,46 +182,21 @@ public abstract class AbstractWorker implements Worker {
                     log.error(e.getStackTrace().toString());
                 }
                 if (isRunning()) {
-                    return true;
+                    return;
                 }
             }
         }
         log.error("Runner " + getName() + " not started!");
-        return false;
     }
 
-    @Override
-    public boolean tryStop(int timeoutMs) {
-        if (!isRunning()) {
-            log.info("Runner " + getName() + " already is stopped!");
-            return true;
-        }
-
-        synchronized (this) {
-            if (getRunner() != null) {
-                internalWaitStop(timeoutMs, false);
-            }
-
-            if (!isRunning()) {
-                getTimer().cancel();
-                log.info("Runner " + getName() + " is stopped success!");
-                return true;
-            } else {
-                log.info("Runner " + getName() + " is not stopped!");
-                return false;
-            }
-        }
-    }
-
-    @Override
-    public void terminate(int timeoutMs) {
+    protected void internalStop() {
         if (!isRunning()) {
             log.info("Runner " + getName() + " already is stopped!");
             return;
         }
 
         synchronized (this) {
-            internalWaitStop(timeoutMs, true);
+            internalWaitStop(getWaitOnStopMS(), true);
             if (getRunner() != null) {
                 var thread = getRunner().currentThread;
                 if (thread != null) {
@@ -203,6 +213,12 @@ public abstract class AbstractWorker implements Worker {
         }
     }
 
+    /**
+     * Ожидание штатного завершения исполнителя в течение заданного времени.
+     *
+     * @param timeoutMs     время в течение которого надо подождать штатного завершения исполнителя.
+     * @param withInterrupt треуется ли прервать выполнение исполнителя, если он не завершился за отведенное время.
+     */
     private void internalWaitStop(int timeoutMs, boolean withInterrupt) {
         var runner = getRunner();
         if (runner == null) {
@@ -233,27 +249,31 @@ public abstract class AbstractWorker implements Worker {
         }
     }
 
+    /**
+     * Запуск исполнителя
+     */
     protected void createAndStartRunner() {
+        this.iterationExecuteEvent.setImmediateRunNextIteration(false);
+        this.iterationExecuteEvent.setStopExecution(false);
         runnerIsLifeSet();
         this.runner = new Runner();
         new Thread(runner).start();
     }
 
+    /**
+     * Запуск контроллера за зависаниями исполнителя
+     */
     protected void startRunnerTimerTaskController() {
         this.timer.cancel();
-        this.timer.scheduleAtFixedRate(this.runnerTimerTaskController, timoutRunnerLifeMs, timoutRunnerLifeMs / 10);
+        var timeout = getTimoutRunnerLifeMs();
+        this.timer.scheduleAtFixedRate(this.runnerTimerTaskController, timeout, timeout / 10);
     }
+    // </editor-fold>
+    // -----------------------------------------------------------------------------------------------------------------
 
     /**
-     * Текущий статус исполнителя
-     * @return true = исполнитель запущен и работает
+     * Исполнитель. run() работает в своем потоке.
      */
-    @Override
-    public boolean isRunning() {
-        var runner = getRunner();
-        return runner != null && runner.currentThread != null;
-    }
-
     protected class Runner implements Runnable {
         private final AtomicBoolean isStopping = new AtomicBoolean(false);
 
@@ -268,13 +288,26 @@ public abstract class AbstractWorker implements Worker {
             this.currentThread = Thread.currentThread();
             try {
                 while (!this.isStopping.get()) {
+                    iterationExecuteEvent.reset();
                     var stepStarted = System.currentTimeMillis();
+
                     doStep();
+                    if (iterationExecuteEvent.isNeedRestart() || iterationExecuteEvent.isStopExecution()) {
+                        break;
+                    }
+
                     doIdleIfNeed(stepStarted);
                 }
             } finally {
                 this.currentThread = null;
                 setRunner(null);
+
+                if (iterationExecuteEvent.isStopExecution()) {
+                    setAutoRestart(false);
+                }
+                if (iterationExecuteEvent.isNeedRestart()) {
+                    createAndStartRunner();
+                }
             }
         }
 
@@ -284,9 +317,10 @@ public abstract class AbstractWorker implements Worker {
          * @return true - требуется продолжать обработку. false - требуется остановить обработку.
          */
         protected void doStep() {
+            iterationExecuteEvent.setImmediateRunNextIteration(false);
             runnerIsLifeSet();
-            getContext().publishEvent(iterationExecutorEvent);
-            if (iterationExecutorEvent.isStopExecution()) {
+            getContext().publishEvent(iterationExecuteEvent);
+            if (iterationExecuteEvent.isStopExecution()) {
                 this.isStopping.set(true);
             }
         }
@@ -295,17 +329,18 @@ public abstract class AbstractWorker implements Worker {
          * Выполняет необходимый простой, если время выполнения текущей итерации было меньше порогового.
          *
          * @param stepStarted - время начала выполнения текущей итерации
-         * @see #minTimePerStepMs
+         * @see #getMinTimePerIterationMs()
          */
         protected void doIdleIfNeed(long stepStarted) {
-            if (iterationExecutorEvent.isImmediateRunNextIteration()
-                    || iterationExecutorEvent.isStopExecution()
+            if (iterationExecuteEvent.isImmediateRunNextIteration()
+                    || iterationExecuteEvent.isNeedRestart()
+                    || iterationExecuteEvent.isStopExecution()
                     || this.isStopping.get()) {
                 return;
             }
 
             long sleepTime;
-            if ((sleepTime = System.currentTimeMillis() - stepStarted) > minTimePerStepMs) {
+            if ((sleepTime = System.currentTimeMillis() - stepStarted) > getMinTimePerIterationMs()) {
                 try {
                     runnerIsLifeSet();
                     Thread.sleep(sleepTime);
@@ -319,21 +354,25 @@ public abstract class AbstractWorker implements Worker {
 
     /**
      * Наблюдатель, который завершает (и при необходимости запускает) исполнителя, если тот "завис"
-     * @see #timoutRunnerLifeMs
+     *
+     * @see #getTimoutRunnerLifeMs()
      * @see #lastRunnerLifeCheckedMs
      * @see #autoRestart
      */
     protected class RunnerTimerTaskController extends TimerTask {
         @Override
         public void run() {
-            if (!isRunning()) {
-                return;
-            }
             var current = System.currentTimeMillis();
-            if (current - getLastRunnerLifeCheckedMs() > getTimoutRunnerLifeMs()) {
-                terminate(getWaitStopOnRestart());
-                if (isAutoRestart()) {
-                    start(true);
+            if (iterationExecuteEvent.isNeedRestart()
+                    || iterationExecuteEvent.isStopExecution()
+                    || current - getLastRunnerLifeCheckedMs() > getTimoutRunnerLifeMs()) {
+                if (isRunning()) {
+                    internalStop();
+                }
+                if (!isRunning()
+                        && isAutoRestart()
+                        && !iterationExecuteEvent.isStopExecution()) {
+                    internalStart();
                 }
             }
         }

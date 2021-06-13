@@ -26,7 +26,6 @@ public class UpdatableAnnotationBeanPostProcessor implements BeanPostProcessor, 
 
     private final Map<String, Pair<Object, Updatable>> beansMap = new HashMap<>();
 
-    @Autowired
     private ConfigurableListableBeanFactory beanFactory;
 
     @Autowired

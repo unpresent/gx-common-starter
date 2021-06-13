@@ -1,7 +1,4 @@
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\worker\AbstractWorker.java
-D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\worker\WorkerAnnotationBeanPostProcessor.java
-D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\annotations\WorkerStepExecutor.java
-D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\worker\AbstractIterationExecutorEvent.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\beansreflection\DefaultBeanMemberInfo.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\beansreflection\BeanMemberInfo.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\updatable\UpdatableDefaultBeanMethodInfo.java
@@ -10,9 +7,9 @@ D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\co
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\updatable\UpdatableMemberInfoExtractor.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\updatable\UpdatableAnnotationBeanPostProcessor.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\updatable\UpdatablePropertyValue.java
+D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\worker\AbstractIterationExecuteEvent.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\config\CommonAutoConfiguration.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\beansreflection\DefaultBeanFieldInfo.java
-D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\annotations\WorkerBean.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\updatable\UpdatablePropertyInfo.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\annotations\Updatable.java
 D:\Work\GxFn\common.java\gxfin-common-starter\src\main\java\ru\gagarkin\gxfin\common\updatable\DefaultUpdatableRegistry.java
