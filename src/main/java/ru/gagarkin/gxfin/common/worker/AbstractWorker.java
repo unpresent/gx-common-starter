@@ -118,7 +118,6 @@ public abstract class AbstractWorker implements Worker {
         this.name = name;
         this.iterationExecuteEvent = createIterationExecuteEvent();
         this.runnerTimerTaskController = new RunnerTimerTaskController();
-        this.timer = new Timer(true);
     }
 
     /**
@@ -136,8 +135,13 @@ public abstract class AbstractWorker implements Worker {
      */
     @Override
     public void start() {
-        this.autoRestart = true;
-        internalStart();
+        log.info("Starting start()");
+        try {
+            this.autoRestart = true;
+            internalStart();
+        } finally {
+            log.info("Finished start()");
+        }
     }
 
     /**
@@ -145,8 +149,13 @@ public abstract class AbstractWorker implements Worker {
      */
     @Override
     public void stop() {
-        this.autoRestart = false;
-        internalStop();
+        log.info("Starting stop()");
+        try {
+            this.autoRestart = false;
+            internalStop();
+        } finally {
+            log.info("Finished stop()");
+        }
     }
 
     /**
@@ -182,6 +191,7 @@ public abstract class AbstractWorker implements Worker {
                     log.error(e.getStackTrace().toString());
                 }
                 if (isRunning()) {
+                    log.info("Runner " + getName() + " started success.");
                     return;
                 }
             }
@@ -190,6 +200,7 @@ public abstract class AbstractWorker implements Worker {
     }
 
     protected void internalStop() {
+        log.info("Starting internalStop()");
         if (!isRunning()) {
             log.info("Runner " + getName() + " already is stopped!");
             return;
@@ -197,20 +208,8 @@ public abstract class AbstractWorker implements Worker {
 
         synchronized (this) {
             internalWaitStop(getWaitOnStopMS(), true);
-            if (getRunner() != null) {
-                var thread = getRunner().currentThread;
-                if (thread != null) {
-                    thread.interrupt();
-                }
-            }
-
-            if (!isRunning()) {
-                getTimer().cancel();
-                log.info("Runner " + getName() + " is stopped success!");
-            } else {
-                log.info("Runner " + getName() + " is not stopped!");
-            }
         }
+        log.info("Finished internalStop()");
     }
 
     /**
@@ -225,27 +224,38 @@ public abstract class AbstractWorker implements Worker {
             return;
         }
         runner.isStopping.set(true);
-        while (getRunner() != null) {
-            try {
-                Thread.sleep(timeoutMs / 10);
-            } catch (InterruptedException e) {
-                log.error(e.getMessage());
-                log.error(e.getStackTrace().toString());
+        var startWait = System.currentTimeMillis();
+        try {
+            while (getRunner() != null && System.currentTimeMillis() - startWait < timeoutMs) {
+                // Ждем не более timeoutMs
+                try {
+                    Thread.sleep(timeoutMs / 10);
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage());
+                    log.error(e.getStackTrace().toString());
+                }
             }
-        }
 
-        if (withInterrupt && getRunner() != null) {
-            var thread = getRunner().currentThread;
-            if (thread != null) {
-                thread.interrupt();
+            if (withInterrupt && getRunner() != null) {
+                // Прерываем
+                runner = getRunner();
+                var thread = runner.currentThread;
+                runner.currentThread = null;
+                setRunner(null);
+                if (thread != null) {
+                    thread.interrupt();
+                }
             }
-        }
-
-        if (!isRunning()) {
-            getTimer().cancel();
-            log.info("Runner " + getName() + " is stopped success!");
-        } else {
-            log.info("Runner " + getName() + " is not stopped!");
+        } finally {
+            if (!isRunning()) {
+                if (this.timer != null) {
+                    this.timer.cancel();
+                    this.timer = null;
+                }
+                log.info("Runner " + getName() + " is stopped success!");
+            } else {
+                log.info("Runner " + getName() + " is not stopped!");
+            }
         }
     }
 
@@ -256,16 +266,15 @@ public abstract class AbstractWorker implements Worker {
         this.iterationExecuteEvent.setImmediateRunNextIteration(false);
         this.iterationExecuteEvent.setStopExecution(false);
         runnerIsLifeSet();
-        this.runner = new Runner();
-        new Thread(runner).start();
+        new Thread((this.runner = new Runner())).start();
     }
 
     /**
      * Запуск контроллера за зависаниями исполнителя
      */
     protected void startRunnerTimerTaskController() {
-        this.timer.cancel();
         var timeout = getTimoutRunnerLifeMs();
+        this.timer = new Timer(true);
         this.timer.scheduleAtFixedRate(this.runnerTimerTaskController, timeout, timeout / 10);
     }
     // </editor-fold>
@@ -286,6 +295,7 @@ public abstract class AbstractWorker implements Worker {
         public void run() {
             this.isStopping.set(false);
             this.currentThread = Thread.currentThread();
+            log.info("Starting run()");
             try {
                 while (!this.isStopping.get()) {
                     iterationExecuteEvent.reset();
@@ -293,6 +303,7 @@ public abstract class AbstractWorker implements Worker {
 
                     doStep();
                     if (iterationExecuteEvent.isNeedRestart() || iterationExecuteEvent.isStopExecution()) {
+                        log.info("break run(): iterationExecuteEvent.isNeedRestart() == " + iterationExecuteEvent.isNeedRestart() + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution());
                         break;
                     }
 
@@ -303,9 +314,11 @@ public abstract class AbstractWorker implements Worker {
                 setRunner(null);
 
                 if (iterationExecuteEvent.isStopExecution()) {
+                    log.info("Finished run(): setAutoRestart(false)");
                     setAutoRestart(false);
                 }
                 if (iterationExecuteEvent.isNeedRestart()) {
+                    log.info("After finished run(): createAndStartRunner()");
                     createAndStartRunner();
                 }
             }
@@ -317,12 +330,15 @@ public abstract class AbstractWorker implements Worker {
          * @return true - требуется продолжать обработку. false - требуется остановить обработку.
          */
         protected void doStep() {
-            iterationExecuteEvent.setImmediateRunNextIteration(false);
+            log.debug("Starting doStep()");
             runnerIsLifeSet();
             getContext().publishEvent(iterationExecuteEvent);
             if (iterationExecuteEvent.isStopExecution()) {
                 this.isStopping.set(true);
             }
+            log.debug("Finished doStep(): iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution()
+                    + "; iterationExecuteEvent.isNeedRestart() == " + iterationExecuteEvent.isNeedRestart()
+            );
         }
 
         /**
@@ -336,13 +352,15 @@ public abstract class AbstractWorker implements Worker {
                     || iterationExecuteEvent.isNeedRestart()
                     || iterationExecuteEvent.isStopExecution()
                     || this.isStopping.get()) {
+                log.debug("doIdleIfNeed(): not sleep!");
                 return;
             }
 
             long sleepTime;
-            if ((sleepTime = System.currentTimeMillis() - stepStarted) > getMinTimePerIterationMs()) {
+            if ((sleepTime = getMinTimePerIterationMs() - (System.currentTimeMillis() - stepStarted)) > 0) {
                 try {
                     runnerIsLifeSet();
+                    log.debug("doIdleIfNeed(): sleep(" + sleepTime + ")!");
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
@@ -363,15 +381,24 @@ public abstract class AbstractWorker implements Worker {
         @Override
         public void run() {
             var current = System.currentTimeMillis();
+            log.debug("Starting TaskController.run():"
+                    + " iterationExecuteEvent.isNeedRestart() == " + iterationExecuteEvent.isNeedRestart()
+                    + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution());
             if (iterationExecuteEvent.isNeedRestart()
                     || iterationExecuteEvent.isStopExecution()
                     || current - getLastRunnerLifeCheckedMs() > getTimoutRunnerLifeMs()) {
                 if (isRunning()) {
+                    log.info("Before internalStop(); current == " + current
+                            + "; getLastRunnerLifeCheckedMs() == " + getLastRunnerLifeCheckedMs()
+                            + "; delta == " + (current - getLastRunnerLifeCheckedMs())
+                            + "; iterationExecuteEvent.isNeedRestart() == " + iterationExecuteEvent.isNeedRestart()
+                            + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution()
+                    );
                     internalStop();
                 }
-                if (!isRunning()
-                        && isAutoRestart()
+                if (isAutoRestart()
                         && !iterationExecuteEvent.isStopExecution()) {
+                    log.info("Before internalStart()");
                     internalStart();
                 }
             }
