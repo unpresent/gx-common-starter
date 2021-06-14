@@ -4,12 +4,14 @@
 
 # Target
 /target
+target
 
 # Compiled class file
 *.class
 
 # Log file
 /log
+log
 *.log
 
 # BlueJ files
