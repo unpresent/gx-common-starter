@@ -1,5 +1,7 @@
 package ru.gagarkin.gxfin.common.settings;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 
@@ -10,10 +12,13 @@ import java.util.Map;
 public class AbstractSettingsController implements SettingsController {
     public static final String ALL = "*";
 
+    @Getter(AccessLevel.PROTECTED)
     private final ApplicationContext context;
 
+    @Getter(AccessLevel.PROTECTED)
     private final Map<String, Object> settings;
 
+    @Getter(AccessLevel.PROTECTED)
     private final SettingsChangedEvent settingsChangedEvent;
 
     public AbstractSettingsController(ApplicationContext context) {
