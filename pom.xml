@@ -9,7 +9,7 @@
     <version>1.0</version>
 
     <properties>
-        <file.encoding>UTF-8</file.encoding>
+        <encoding>UTF-8</encoding>
 
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -74,7 +74,7 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
-                    <encoding>${file.encoding}</encoding>
+                    <encoding>${encoding}</encoding>
                 </configuration>
             </plugin>
             <plugin>
