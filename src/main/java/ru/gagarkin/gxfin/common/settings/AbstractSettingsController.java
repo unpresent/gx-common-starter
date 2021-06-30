@@ -4,10 +4,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Базовая реализация контроллера настроек.
+ */
 @Slf4j
 public abstract class AbstractSettingsController implements SettingsController {
     /**
@@ -17,6 +21,9 @@ public abstract class AbstractSettingsController implements SettingsController {
 
     @Getter(AccessLevel.PROTECTED)
     private final ApplicationContext context;
+
+    @Getter(AccessLevel.PROTECTED)
+    private final Environment environment;
 
     /**
      * Список насроек со значениями
@@ -33,6 +40,7 @@ public abstract class AbstractSettingsController implements SettingsController {
     public AbstractSettingsController(ApplicationContext context) {
         super();
         this.context = context;
+        this.environment = context.getEnvironment();
         this.settings = new HashMap<>();
         this.settingsChangedEvent = createSettingsChangedEvent();
     }
@@ -48,6 +56,7 @@ public abstract class AbstractSettingsController implements SettingsController {
 
     /**
      * Получение значения настройки по ее имени.
+     *
      * @param settingName имя настройки.
      * @return значение настройки.
      */
@@ -58,17 +67,26 @@ public abstract class AbstractSettingsController implements SettingsController {
 
     /**
      * Изменение значения настройки.
+     *
      * @param settingName имя настройки.
-     * @param value новое значение настройки.
+     * @param value       новое значение настройки.
      */
     @Override
     public void setSetting(String settingName, Object value) {
-        var oldValue = this.settings.get(settingName);
-        if ((oldValue == null && value != null) || (!oldValue.equals(value))) {
+        final var oldValue = this.settings.get(settingName);
+        if ((oldValue == null && value != null) || (oldValue != null && !oldValue.equals(value))) {
             log.info("setSetting({}, {})", settingName, value);
             this.settings.put(settingName, value);
             log.info("publishEvent(SettingsChangedEvent({}))", settingName);
             context.publishEvent(this.settingsChangedEvent.reset(settingName));
         }
+    }
+
+    protected void loadStringSetting(String settingName) {
+        setSetting(settingName, this.getEnvironment().getProperty(settingName));
+    }
+
+    protected void loadIntegerSetting(String settingName) {
+        setSetting(settingName, Integer.parseInt(this.getEnvironment().getProperty(settingName)));
     }
 }

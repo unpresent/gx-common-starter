@@ -129,12 +129,11 @@ public abstract class AbstractWorker implements Worker {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="implements Worker">
-
     /**
      * Запуск исполнителя.
      */
     @Override
-    public void start() {
+    public final void start() {
         log.info("Starting start()");
         try {
             this.autoRestart = true;
@@ -148,7 +147,7 @@ public abstract class AbstractWorker implements Worker {
      * Принудительный останов после ожидания штатного завершения.
      */
     @Override
-    public void stop() {
+    public final void stop() {
         log.info("Starting stop()");
         try {
             this.autoRestart = false;
@@ -165,7 +164,7 @@ public abstract class AbstractWorker implements Worker {
      */
     @Override
     public boolean isRunning() {
-        var runner = getRunner();
+        final var runner = getRunner();
         return runner != null && runner.currentThread != null;
     }
 
@@ -224,7 +223,7 @@ public abstract class AbstractWorker implements Worker {
             return;
         }
         runner.isStopping.set(true);
-        var startWait = System.currentTimeMillis();
+        final var startWait = System.currentTimeMillis();
         try {
             while (getRunner() != null && System.currentTimeMillis() - startWait < timeoutMs) {
                 // Ждем не более timeoutMs
@@ -239,7 +238,7 @@ public abstract class AbstractWorker implements Worker {
             if (withInterrupt && getRunner() != null) {
                 // Прерываем
                 runner = getRunner();
-                var thread = runner.currentThread;
+                final var thread = runner.currentThread;
                 runner.currentThread = null;
                 setRunner(null);
                 if (thread != null) {
@@ -273,7 +272,7 @@ public abstract class AbstractWorker implements Worker {
      * Запуск контроллера за зависаниями исполнителя
      */
     protected void startRunnerTimerTaskController() {
-        var timeout = getTimoutRunnerLifeMs();
+        final var timeout = getTimoutRunnerLifeMs();
         this.timer = new Timer(true);
         this.timer.scheduleAtFixedRate(this.runnerTimerTaskController, timeout, timeout / 10);
     }
@@ -299,7 +298,7 @@ public abstract class AbstractWorker implements Worker {
             try {
                 while (!this.isStopping.get()) {
                     iterationExecuteEvent.reset();
-                    var stepStarted = System.currentTimeMillis();
+                    final var stepStarted = System.currentTimeMillis();
 
                     doStep();
                     if (iterationExecuteEvent.isNeedRestart() || iterationExecuteEvent.isStopExecution()) {
@@ -380,7 +379,7 @@ public abstract class AbstractWorker implements Worker {
     protected class RunnerTimerTaskController extends TimerTask {
         @Override
         public void run() {
-            var current = System.currentTimeMillis();
+            final var current = System.currentTimeMillis();
             log.debug("Starting TaskController.run():"
                     + " iterationExecuteEvent.isNeedRestart() == " + iterationExecuteEvent.isNeedRestart()
                     + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution());
