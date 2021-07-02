@@ -15,9 +15,8 @@ import javax.persistence.*;
 @ToString
 @EqualsAndHashCode
 @Accessors(chain = true)
-public class AbstractIdentifiedDataObject<ID> extends AbstractDataObject implements IdentifiedDataObject<ID> {
+public class AbstractIdentifiedExternalDataObject<ID> extends AbstractDataObject implements IdentifiedDataObject<ID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty(required = false)
     @Column(name = "Id", nullable = false)
     private ID id;
