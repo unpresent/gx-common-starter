@@ -3,7 +3,7 @@ package ru.gxfin.common.data;
 import java.util.Collection;
 
 /**
- * Пакет DTO.
+ * Пакет объектов данных (Data Objects).
  * @param <T> тип элементов.
  */
 public interface DataPackage<T extends DataObject> {
