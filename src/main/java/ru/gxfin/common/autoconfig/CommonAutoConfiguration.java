@@ -1,4 +1,4 @@
-package ru.gxfin.common.config;
+package ru.gxfin.common.autoconfig;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
