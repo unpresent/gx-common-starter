@@ -21,4 +21,11 @@ public interface DataMemRepo<T extends DataObject> {
      * @return пакет объектов в виде DataPackage
      */
     DataPackage<T> deserializePackage(String jsonPackage) throws JsonProcessingException;
+
+    /**
+     * Получение объекта по иденификатору (ключу), который указан у класса в @JsonIdentityInfo.
+     * @param key значение ключа, по которому ищем объект.
+     * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
+     */
+    T getByKey(Object key);
 }
