@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @ToString
 public abstract class AbstractDataObjectWithGuid extends AbstractDataObject implements DataObjectWithGuid {
     @JsonProperty
