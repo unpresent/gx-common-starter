@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 /**
  * Вспомогательные утилиты для работы с BigDecimal
  */
+@SuppressWarnings("unused")
 public abstract class BigDecimalUtils {
     /**
      *

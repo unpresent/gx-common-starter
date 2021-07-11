@@ -9,6 +9,7 @@ public interface SettingsController {
      * @param settingName название настройки
      * @return значение настройки
      */
+    @SuppressWarnings("unused")
     Object getSetting(String settingName);
 
     /**

@@ -1,7 +1,6 @@
 package ru.gxfin.common.data;
 
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -49,7 +48,7 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
     /**
      * Получение объекта из пула. При его получении, он удаляется из списка свободных.
      * @return Чистый объект из пула объектов.
-     * @throws ObjectsPoolException
+     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
     @Override
     public T pollObject() throws ObjectsPoolException {
@@ -67,6 +66,7 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
      * @see PoolableObject#cleanOnReturnToPool
      * @param object Возвращаемый объект.
      */
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     @Override
     public void returnObject(T object) {
         synchronized (object) {
@@ -86,7 +86,7 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
     /**
      * Процедура создания экземпляра объекта.
      * @return Экземпляр объекта.
-     * @throws ObjectsPoolException
+     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
     protected abstract T createObject() throws ObjectsPoolException;
 }

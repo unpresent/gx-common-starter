@@ -1,5 +1,6 @@
 package ru.gxfin.common.utils;
 
+@SuppressWarnings("unused")
 public class IntegerUtils {
     /**
      *

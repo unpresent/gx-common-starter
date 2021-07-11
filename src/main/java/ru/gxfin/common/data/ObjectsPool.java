@@ -8,7 +8,7 @@ public interface ObjectsPool<T extends PoolableObject> {
     /**
      * Получение объекта из пула. При его получении, он удаляется из списка свободных.
      * @return Чистый объект типа T из пула объектов.
-     * @throws ObjectsPoolException
+     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
     T pollObject() throws ObjectsPoolException;
 

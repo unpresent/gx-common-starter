@@ -42,7 +42,7 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
     /**
      * Получение объекта из пула. При его получении, он удаляется из списка свободных.
      * @return Чистый объект из пула объектов.
-     * @throws ObjectsPoolException
+     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
     @Override
     public T pollObject() throws ObjectsPoolException {
@@ -77,7 +77,7 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
     /**
      * Процедура создания экземпляра объекта.
      * @return Экземпляр объекта.
-     * @throws ObjectsPoolException
+     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
     protected abstract T createObject() throws ObjectsPoolException;
 }

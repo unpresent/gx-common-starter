@@ -10,6 +10,7 @@ public interface DataPackage<T extends DataObject> {
     /**
      * @return Элменты пакета
      */
+    @SuppressWarnings("unused")
     Collection<T> getItems();
 
     /**
@@ -17,10 +18,12 @@ public interface DataPackage<T extends DataObject> {
      * @param index индекс элемента
      * @return элемент с индексом index
      */
+    @SuppressWarnings("unused")
     T get(int index);
 
     /**
      * @return количество элментов в пакете
      */
+    @SuppressWarnings("unused")
     int size();
 }

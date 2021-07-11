@@ -1,4 +1,4 @@
-package ru.gxfin.common.autoconfig;
+package ru.gxfin.common.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +12,7 @@ import ru.gxfin.common.updatable.UpdatableRegistry;
  * Конфигурация инфраструктурных бинов.
  *
  */
+@SuppressWarnings("SpringFacetCodeInspection")
 @Configuration
 public class CommonAutoConfiguration {
 

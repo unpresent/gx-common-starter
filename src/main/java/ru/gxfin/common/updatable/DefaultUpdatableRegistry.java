@@ -57,6 +57,7 @@ public class DefaultUpdatableRegistry implements UpdatableRegistry, EnvironmentA
 
     private Environment environment;
 
+    @SuppressWarnings("SpringJavaAutowiredMembersInspection")
     @Autowired
     private UpdatableMemberInfoExtractor infoExtractor;
 

@@ -16,6 +16,7 @@ public interface UpdatableRegistry {
      *
      * @return список свойств.
      */
+    @SuppressWarnings("unused")
     Collection<UpdatablePropertyValue> getProperties();
 
     /**
@@ -33,5 +34,6 @@ public interface UpdatableRegistry {
      *
      * @param listOfValues список обновляемых свойств и их значений.
      */
+    @SuppressWarnings("unused")
     void updateProperties(Collection<UpdatablePropertyValue> listOfValues) throws Exception;
 }

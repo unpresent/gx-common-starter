@@ -13,6 +13,7 @@ public interface DataMemRepo<T extends DataObject> {
      * @param jsonObject json-строка с объектом
      * @return объект в виде DataObject
      */
+    @SuppressWarnings("unused")
     T deserializeObject(String jsonObject) throws JsonProcessingException;
 
     /**
@@ -20,6 +21,7 @@ public interface DataMemRepo<T extends DataObject> {
      * @param jsonPackage json-строка с пакетом объектов
      * @return пакет объектов в виде DataPackage
      */
+    @SuppressWarnings("unused")
     DataPackage<T> deserializePackage(String jsonPackage) throws JsonProcessingException;
 
     /**
@@ -27,5 +29,6 @@ public interface DataMemRepo<T extends DataObject> {
      * @param key значение ключа, по которому ищем объект.
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
      */
+    @SuppressWarnings("unused")
     T getByKey(Object key);
 }

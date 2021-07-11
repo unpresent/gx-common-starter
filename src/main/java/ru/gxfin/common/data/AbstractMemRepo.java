@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -16,6 +15,7 @@ public abstract class AbstractMemRepo<E extends AbstractDataObject, P extends Da
         implements DataMemRepo<E>, ObjectsPool<E> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
+    @SuppressWarnings("rawtypes")
     @Getter(AccessLevel.PROTECTED)
     private static volatile AbstractMemRepo instance;
 
@@ -25,13 +25,15 @@ public abstract class AbstractMemRepo<E extends AbstractDataObject, P extends Da
     @Getter(AccessLevel.PROTECTED)
     private static AbstractIdResolver idResolver;
 
+    @SuppressWarnings("rawtypes")
     private final ObjectsPool objectsPool;
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     protected AbstractMemRepo(ObjectMapper objectMapper, AbstractIdResolver idResolver, boolean isConcurrent, int initSize) throws SingletonInstanceAlreadyExists, ObjectsPoolException {
         this.objectMapper = objectMapper;
-        this.idResolver = idResolver;
+        AbstractMemRepo.idResolver = idResolver;
 
         final var thisClass = this.getClass();
         synchronized (thisClass) {
@@ -53,17 +55,13 @@ public abstract class AbstractMemRepo<E extends AbstractDataObject, P extends Da
     /**
      * Создание объекта репозитория. Можно переопределить в наследнике и там создавать нормально.
      * @return Объект репозитория.
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
+     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
     protected E internalCreateObject() throws ObjectsPoolException {
         final var objectClass = getObjectClass();
         try {
             final var constructor = objectClass.getConstructor();
-            final var result = constructor.newInstance();
-            return result;
+            return constructor.newInstance();
         } catch (Exception e) {
             throw new ObjectsPoolException(e.getMessage(), e);
         }
@@ -73,6 +71,7 @@ public abstract class AbstractMemRepo<E extends AbstractDataObject, P extends Da
      * Получение объекта из пула. Если в пуле нет, то создается новый.
      * @return Объект репозитория.
      */
+    @SuppressWarnings("unchecked")
     public E pollObject() throws ObjectsPoolException {
         return (E)this.objectsPool.pollObject();
     }
@@ -81,6 +80,7 @@ public abstract class AbstractMemRepo<E extends AbstractDataObject, P extends Da
      * Возвращаем более неиспользуемый объект в пул.
      * @param object Объект репозитория.
      */
+    @SuppressWarnings("unchecked")
     public void returnObject(E object) {
         this.objectsPool.returnObject(object);
     }
@@ -144,6 +144,7 @@ public abstract class AbstractMemRepo<E extends AbstractDataObject, P extends Da
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public E getByKey(Object key) {
         return (E) idResolver.getObjects().get(key);
     }
@@ -194,6 +195,7 @@ public abstract class AbstractMemRepo<E extends AbstractDataObject, P extends Da
         // -------------------------------------------------------------------------------------------------------------
     }
 
+    @SuppressWarnings("unused")
     protected static abstract class AbstractObjectsFactory {
         public static AbstractDataObject createInstance() throws ObjectsPoolException {
             return getInstance().internalCreateObject();

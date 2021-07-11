@@ -51,10 +51,10 @@ class UpdatablePropertyInfo {
 
         this.value = value;
 
-        final List<String> beans = new ArrayList<>();
+        // final List<String> beans = new ArrayList<>();
         for (UpdatableBeanMemberInfo member : members) {
             member.setValue(value);
-            beans.add(member.getBeanName());
+            // beans.add(member.getBeanName());
         }
     }
 

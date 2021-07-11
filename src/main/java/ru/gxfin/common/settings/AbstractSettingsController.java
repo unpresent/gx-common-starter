@@ -82,11 +82,21 @@ public abstract class AbstractSettingsController implements SettingsController {
         }
     }
 
-    protected void loadStringSetting(String settingName) {
-        setSetting(settingName, this.getEnvironment().getProperty(settingName));
+    @SuppressWarnings("unused")
+    protected void loadStringSetting(String settingName) throws UnknownApplicationSettingException {
+        final var settingValue = this.getEnvironment().getProperty(settingName);
+        if (settingValue == null) {
+            throw new UnknownApplicationSettingException(settingName);
+        }
+        setSetting(settingName, settingValue);
     }
 
-    protected void loadIntegerSetting(String settingName) {
-        setSetting(settingName, Integer.parseInt(this.getEnvironment().getProperty(settingName)));
+    @SuppressWarnings("unused")
+    protected void loadIntegerSetting(String settingName) throws UnknownApplicationSettingException {
+        final var settingValue = this.getEnvironment().getProperty(settingName);
+        if (settingValue == null) {
+            throw new UnknownApplicationSettingException(settingName);
+        }
+        setSetting(settingName, Integer.parseInt(settingValue));
     }
 }

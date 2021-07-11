@@ -28,6 +28,7 @@ public class UpdatableAnnotationBeanPostProcessor implements BeanPostProcessor, 
 
     private ConfigurableListableBeanFactory beanFactory;
 
+    @SuppressWarnings("SpringJavaAutowiredMembersInspection")
     @Autowired
     private UpdatableRegistry registry;
 
