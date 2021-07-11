@@ -1,5 +1,6 @@
 package ru.gxfin.common.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,13 +18,14 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      * Элменты пакета - внутреннее хранение
      */
     @Getter(AccessLevel.PROTECTED)
+    @JsonIgnore
     private final List<T> listItems = new ArrayList<>();
 
     /**
      * @return элменты пакета.
      */
-    @JsonProperty("items")
     @Override
+    @JsonProperty(value = "items")
     public Collection<T> getItems() {
         return this.getListItems();
     }
@@ -33,6 +35,7 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      * @param index индекс элемента
      * @return элемент с индексом index
      */
+    @JsonIgnore
     public T get(int index) {
         return getListItems().get(index);
     }
@@ -41,7 +44,9 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      * @return количество элментов в пакете
      */
     @Override
+    @JsonIgnore
     public int size() {
         return getListItems().size();
     }
 }
+

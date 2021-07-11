@@ -74,5 +74,10 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
         return this.objects.size();
     }
 
+    /**
+     * Процедура создания экземпляра объекта.
+     * @return Экземпляр объекта.
+     * @throws ObjectsPoolException
+     */
     protected abstract T createObject() throws ObjectsPoolException;
 }

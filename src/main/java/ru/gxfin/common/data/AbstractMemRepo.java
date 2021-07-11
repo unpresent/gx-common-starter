@@ -85,6 +85,9 @@ public abstract class AbstractMemRepo<E extends AbstractDataObject, P extends Da
         this.objectsPool.returnObject(object);
     }
 
+    /**
+     * @return Количество свободных объектов.
+     */
     @Override
     public int freeObjectsCount() {
         return this.objectsPool.freeObjectsCount();

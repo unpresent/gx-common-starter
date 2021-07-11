@@ -75,10 +75,18 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
         }
     }
 
+    /**
+     * @return Количество свободных объектов.
+     */
     @Override
     public int freeObjectsCount() {
         return this.objects.size();
     }
 
+    /**
+     * Процедура создания экземпляра объекта.
+     * @return Экземпляр объекта.
+     * @throws ObjectsPoolException
+     */
     protected abstract T createObject() throws ObjectsPoolException;
 }
