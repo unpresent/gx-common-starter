@@ -3,6 +3,7 @@ package ru.gxfin.common.worker;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -63,11 +64,35 @@ public abstract class AbstractWorker implements Worker {
     @Getter(AccessLevel.PROTECTED)
     private volatile Timer timer;
 
+    @Getter(AccessLevel.PROTECTED)
+    private volatile RestartingController restartingController = null;
+
     /**
      * Объект-команда, который является spring-event-ом. Его обработчик по сути должен содержать логику итераций
      */
     @Getter(AccessLevel.PROTECTED)
     private final AbstractIterationExecuteEvent iterationExecuteEvent;
+
+    /**
+     * Объект-команда, который является spring-event-ом. Его обработчик по сути будет вызван перед запуском Исполнителя.
+     */
+    @Getter(AccessLevel.PROTECTED)
+    private final AbstractStartingExecuteEvent startingExecuteEvent;
+
+    /**
+     * Объект-команда, который является spring-event-ом. Его обработчик по сути будет вызван после останова Исполнителя.
+     */
+    @Getter(AccessLevel.PROTECTED)
+    private final AbstractStoppingExecuteEvent stoppingExecuteEvent;
+
+    /**
+     * Признак того, что событие об остнове Исполнителя уже вызывалось.
+     * Требуется для разового вызова.
+     * При останове исполнителя устанавливается в true.
+     * При запуске Исполнителя сбрасывается в false.
+     */
+    @Getter(AccessLevel.PROTECTED)
+    private boolean stoppingExecuteEventCalled = false;
 
     /**
      * Минимальное время на итерацию. Если после выполнения итерации не требуется немедленно продолжить,
@@ -110,6 +135,14 @@ public abstract class AbstractWorker implements Worker {
     @Override
     public abstract int getWaitOnStopMS();
 
+    /**
+     * Настрйока (в мс), которая определяет какую паузу надо выждать перед перезапуском после останова.
+     *
+     * @see RunnerTimerTaskController
+     */
+    @Override
+    public abstract int getWaitOnRestartMS();
+
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Init">
@@ -117,18 +150,31 @@ public abstract class AbstractWorker implements Worker {
         super();
         this.name = name;
         this.iterationExecuteEvent = createIterationExecuteEvent();
-        this.runnerTimerTaskController = new RunnerTimerTaskController();
+        this.startingExecuteEvent = createStartingExecuteEvent();
+        this.stoppingExecuteEvent = createStoppingExecuteEvent();
     }
 
     /**
      * Требуется переопределить в наледнике.
-     *
      * @return объект-событие, которое будет использоваться для вызова итераций.
      */
     protected abstract AbstractIterationExecuteEvent createIterationExecuteEvent();
+
+    /**
+     * Требуется переопределить в наледнике.
+     * @return объект-событие, которое будет использоваться для вызова при запуске Исполнителя.
+     */
+    protected abstract AbstractStartingExecuteEvent createStartingExecuteEvent();
+
+    /**
+     * Требуется переопределить в наледнике.
+     * @return объект-событие, которое будет использоваться для вызова при останове Исполнителя.
+     */
+    protected abstract AbstractStoppingExecuteEvent createStoppingExecuteEvent();
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="implements Worker">
+
     /**
      * Запуск исполнителя.
      */
@@ -137,7 +183,7 @@ public abstract class AbstractWorker implements Worker {
         log.info("Starting start()");
         try {
             this.autoRestart = true;
-            internalStart();
+            internalStart(false);
         } finally {
             log.info("Finished start()");
         }
@@ -171,7 +217,7 @@ public abstract class AbstractWorker implements Worker {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Internal methods for implements Worker">
-    protected void internalStart() {
+    protected void internalStart(boolean isRestart) {
         if (isRunning()) {
             log.info("Runner " + getName() + " already is running!");
             return;
@@ -180,6 +226,9 @@ public abstract class AbstractWorker implements Worker {
         synchronized (this) {
             log.info("starting Runner " + getName());
             if (getRunner() == null) {
+                if (getStartingExecuteEvent() != null) {
+                    getContext().publishEvent(getStartingExecuteEvent());
+                }
                 createAndStartRunner();
                 startRunnerTimerTaskController();
                 log.info("Runner " + getName() + " started");
@@ -190,6 +239,7 @@ public abstract class AbstractWorker implements Worker {
                     log.error(e.getStackTrace().toString());
                 }
                 if (isRunning()) {
+                    this.stoppingExecuteEventCalled = false;
                     log.info("Runner " + getName() + " started success.");
                     return;
                 }
@@ -247,13 +297,36 @@ public abstract class AbstractWorker implements Worker {
             }
         } finally {
             if (!isRunning()) {
-                if (this.timer != null) {
-                    this.timer.cancel();
-                    this.timer = null;
-                }
+                internalStopTimer();
                 log.info("Runner " + getName() + " is stopped success!");
             } else {
                 log.info("Runner " + getName() + " is not stopped!");
+            }
+            if (getStoppingExecuteEvent() != null) {
+                this.stoppingExecuteEventCalled = true;
+                getContext().publishEvent(getStoppingExecuteEvent());
+            }
+        }
+    }
+
+    /**
+     * Останов timer-а
+     */
+    protected void internalStopTimer() {
+        AbstractWorker.this.runnerTimerTaskController = null;
+        if (AbstractWorker.this.timer != null) {
+            synchronized (this) {
+                log.info("Stopping timer...");
+                final Timer timer;
+                if ((timer = AbstractWorker.this.timer) != null) {
+                    AbstractWorker.this.timer = null;
+                    timer.cancel();
+                }
+                log.info("Timer stopped.");
+                if (getStoppingExecuteEvent() != null) {
+                    this.stoppingExecuteEventCalled = true;
+                    getContext().publishEvent(getStoppingExecuteEvent());
+                }
             }
         }
     }
@@ -263,9 +336,25 @@ public abstract class AbstractWorker implements Worker {
      */
     protected void createAndStartRunner() {
         this.iterationExecuteEvent.setImmediateRunNextIteration(false);
+        this.iterationExecuteEvent.setNeedRestart(false);
         this.iterationExecuteEvent.setStopExecution(false);
         runnerIsLifeSet();
-        new Thread((this.runner = new Runner())).start();
+        new Thread((this.runner = new Runner()), this.name).start();
+    }
+
+    /**
+     * Запуск потока перезапуска.
+     */
+    protected void startRestartingController() {
+        if (getRestartingController() != null) {
+            return;
+        }
+        synchronized (this) {
+            if (getRestartingController() != null) {
+                return;
+            }
+            new Thread((this.restartingController = new RestartingController()), this.name + "-Restart").start();
+        }
     }
 
     /**
@@ -273,7 +362,8 @@ public abstract class AbstractWorker implements Worker {
      */
     protected void startRunnerTimerTaskController() {
         final var timeout = getTimoutRunnerLifeMs();
-        this.timer = new Timer(true);
+        this.runnerTimerTaskController = new RunnerTimerTaskController();
+        this.timer = new Timer(getName() + "-Timer", true);
         this.timer.scheduleAtFixedRate(this.runnerTimerTaskController, timeout, timeout / 10);
     }
     // </editor-fold>
@@ -290,17 +380,27 @@ public abstract class AbstractWorker implements Worker {
         /**
          * Метод run с основным бесконечным циклом работы исполнителя
          */
+        @SneakyThrows
         @Override
         public void run() {
             this.isStopping.set(false);
             this.currentThread = Thread.currentThread();
             log.info("Starting run()");
             try {
+                if (getRestartingController() != null) {
+                    log.info("Waiting release restartingController");
+                    while (getRestartingController() != null) {
+                        runnerIsLifeSet();
+                        Thread.sleep(getMinTimePerIterationMs());
+                    }
+                    log.info("restartingController released!");
+                }
+
                 while (!this.isStopping.get()) {
                     iterationExecuteEvent.reset();
                     final var stepStarted = System.currentTimeMillis();
 
-                    doStep();
+                    doIteration();
                     if (iterationExecuteEvent.isNeedRestart() || iterationExecuteEvent.isStopExecution()) {
                         log.info("break run(): iterationExecuteEvent.isNeedRestart() == " + iterationExecuteEvent.isNeedRestart() + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution());
                         break;
@@ -317,18 +417,17 @@ public abstract class AbstractWorker implements Worker {
                     setAutoRestart(false);
                 }
                 if (iterationExecuteEvent.isNeedRestart()) {
-                    log.info("After finished run(): createAndStartRunner()");
-                    createAndStartRunner();
+                    log.info("After finished run(): startRestartingController()");
+                    startRestartingController();
                 }
             }
         }
 
         /**
          * Выполняет одну итерацию цикла обработки.
-         *
          * @return true - требуется продолжать обработку. false - требуется остановить обработку.
          */
-        protected void doStep() {
+        protected void doIteration() {
             log.debug("Starting doStep()");
             runnerIsLifeSet();
             getContext().publishEvent(iterationExecuteEvent);
@@ -377,12 +476,14 @@ public abstract class AbstractWorker implements Worker {
      * @see #autoRestart
      */
     protected class RunnerTimerTaskController extends TimerTask {
+        @SneakyThrows
         @Override
         public void run() {
             final var current = System.currentTimeMillis();
-            log.debug("Starting TaskController.run():"
+            log.info("Starting TaskController.run():"
                     + " iterationExecuteEvent.isNeedRestart() == " + iterationExecuteEvent.isNeedRestart()
-                    + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution());
+                    + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution()
+            );
             if (iterationExecuteEvent.isNeedRestart()
                     || iterationExecuteEvent.isStopExecution()
                     || current - getLastRunnerLifeCheckedMs() > getTimoutRunnerLifeMs()) {
@@ -395,12 +496,43 @@ public abstract class AbstractWorker implements Worker {
                     );
                     internalStop();
                 }
-                if (isAutoRestart()
-                        && !iterationExecuteEvent.isStopExecution()) {
-                    log.info("Before internalStart()");
-                    internalStart();
+                if (isAutoRestart() && !iterationExecuteEvent.isStopExecution()) {
+                    startRestartingController();
                 }
             }
+        }
+    }
+
+    /**
+     * Класс, который отвечает за процедуру перезапуска.
+     */
+    protected class RestartingController implements Runnable {
+        @SneakyThrows
+        @Override
+        public void run() {
+            final var wait = getWaitOnRestartMS();
+            log.info("Restarting... Wait: {} ms", wait);
+            AbstractWorker.this.iterationExecuteEvent.setImmediateRunNextIteration(false);
+            AbstractWorker.this.iterationExecuteEvent.setNeedRestart(false);
+            AbstractWorker.this.iterationExecuteEvent.setStopExecution(false);
+
+            internalStopTimer();
+            if (isRunning()) {
+                internalStop();
+            }
+            final var waitTo = System.currentTimeMillis() + getWaitOnRestartMS();
+            synchronized (AbstractWorker.this) {
+                while (System.currentTimeMillis() < waitTo) {
+                    log.info("Restarting... waitLeft: {}", waitTo - System.currentTimeMillis());
+                    runnerIsLifeSet();
+                    Thread.sleep(getTimoutRunnerLifeMs() / 10);
+                }
+            }
+            if (!isRunning()) {
+                internalStart(true);
+            }
+            restartingController = null;
+            log.info("Restarting finished!");
         }
     }
 }
