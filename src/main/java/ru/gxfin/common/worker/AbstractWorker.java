@@ -156,18 +156,21 @@ public abstract class AbstractWorker implements Worker {
 
     /**
      * Требуется переопределить в наледнике.
+     *
      * @return объект-событие, которое будет использоваться для вызова итераций.
      */
     protected abstract AbstractIterationExecuteEvent createIterationExecuteEvent();
 
     /**
      * Требуется переопределить в наледнике.
+     *
      * @return объект-событие, которое будет использоваться для вызова при запуске Исполнителя.
      */
     protected abstract AbstractStartingExecuteEvent createStartingExecuteEvent();
 
     /**
      * Требуется переопределить в наледнике.
+     *
      * @return объект-событие, которое будет использоваться для вызова при останове Исполнителя.
      */
     protected abstract AbstractStoppingExecuteEvent createStoppingExecuteEvent();
@@ -425,6 +428,7 @@ public abstract class AbstractWorker implements Worker {
 
         /**
          * Выполняет одну итерацию цикла обработки.
+         *
          * @return true - требуется продолжать обработку. false - требуется остановить обработку.
          */
         protected void doIteration() {
@@ -480,10 +484,9 @@ public abstract class AbstractWorker implements Worker {
         @Override
         public void run() {
             final var current = System.currentTimeMillis();
-            log.info("Starting TaskController.run():"
+            log.debug("Starting TaskController.run():"
                     + " iterationExecuteEvent.isNeedRestart() == " + iterationExecuteEvent.isNeedRestart()
-                    + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution()
-            );
+                    + "; iterationExecuteEvent.isStopExecution() == " + iterationExecuteEvent.isStopExecution());
             if (iterationExecuteEvent.isNeedRestart()
                     || iterationExecuteEvent.isStopExecution()
                     || current - getLastRunnerLifeCheckedMs() > getTimoutRunnerLifeMs()) {
@@ -523,7 +526,7 @@ public abstract class AbstractWorker implements Worker {
             final var waitTo = System.currentTimeMillis() + getWaitOnRestartMS();
             synchronized (AbstractWorker.this) {
                 while (System.currentTimeMillis() < waitTo) {
-                    log.info("Restarting... waitLeft: {}", waitTo - System.currentTimeMillis());
+                    log.debug("Restarting... waitLeft: {}", waitTo - System.currentTimeMillis());
                     runnerIsLifeSet();
                     Thread.sleep(getTimoutRunnerLifeMs() / 10);
                 }
