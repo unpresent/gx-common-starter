@@ -41,7 +41,7 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
 
         this.objects = new Stack<>();
         for (int i = 0; i < initSize; i++) {
-            this.objects.add(createObject());
+            this.objects.add(createInstance());
         }
     }
 
@@ -55,7 +55,7 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
         if (!objects.isEmpty()) {
             return this.objects.pop();
         } else if (this.allowCreateObjects) {
-            return createObject();
+            return createInstance();
         }
         return null;
     }
@@ -88,5 +88,5 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
      * @return Экземпляр объекта.
      * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
-    protected abstract T createObject() throws ObjectsPoolException;
+    protected abstract T createInstance() throws ObjectsPoolException;
 }

@@ -1,13 +1,13 @@
 package data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.gxfin.common.data.AbstractMemorySimpleRepository;
+import ru.gxfin.common.data.AbstractMemoryRepository;
 import ru.gxfin.common.data.ObjectsPoolException;
 import ru.gxfin.common.data.SingletonInstanceAlreadyExists;
 
-public class TestMemorySimpleRepository extends AbstractMemorySimpleRepository<TestDataObject, TestDataPackage> {
-    public TestMemorySimpleRepository(ObjectMapper objectMapper, int initSize) throws SingletonInstanceAlreadyExists, ObjectsPoolException {
-        super(objectMapper, initSize);
+public class TestMemorySimpleRepository extends AbstractMemoryRepository<TestDataObject, TestDataPackage> {
+    public TestMemorySimpleRepository(ObjectMapper objectMapper, boolean isConcurrent, int initSize) throws SingletonInstanceAlreadyExists, ObjectsPoolException {
+        super(objectMapper, isConcurrent, initSize);
     }
 
     @Override

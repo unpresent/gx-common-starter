@@ -36,13 +36,13 @@ import java.util.function.Consumer;
  * @param <E> Тип экземпляров, которыми управляет репозиторий.
  * @param <P> Тип пакетов объектов, которыми управляет репозиторий.
  */
-public abstract class AbstractMemorySimpleRepository<E extends AbstractDataObjectWithKey, P extends DataPackage<E>>
+public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithKey, P extends DataPackage<E>>
         implements DataMemoryRepository<E>, ObjectsPool<E> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
     @SuppressWarnings("rawtypes")
     @Getter(AccessLevel.PROTECTED)
-    private static volatile AbstractMemorySimpleRepository instance;
+    private static volatile AbstractMemoryRepository instance;
 
     @Getter(AccessLevel.PROTECTED)
     private final ObjectMapper objectMapper;
@@ -57,7 +57,7 @@ public abstract class AbstractMemorySimpleRepository<E extends AbstractDataObjec
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    protected AbstractMemorySimpleRepository(ObjectMapper objectMapper, int initSize) throws SingletonInstanceAlreadyExists, ObjectsPoolException {
+    protected AbstractMemoryRepository(ObjectMapper objectMapper, boolean isConcurrent, int initSize) throws SingletonInstanceAlreadyExists, ObjectsPoolException {
         this.objectMapper = objectMapper;
 
         final var thisClass = this.getClass();
@@ -68,7 +68,11 @@ public abstract class AbstractMemorySimpleRepository<E extends AbstractDataObjec
             instance = this;
         }
 
-        this.objectsPool = new ObjectsPool(true, initSize);
+        if (isConcurrent) {
+            this.objectsPool = new ConcurrentObjectsPool(true, initSize);
+        } else {
+            this.objectsPool = new SimpleObjectsPool(true, initSize);
+        }
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
@@ -206,7 +210,7 @@ public abstract class AbstractMemorySimpleRepository<E extends AbstractDataObjec
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация ObjectIdResolver">
     protected void bindItem(ObjectIdGenerator.IdKey id, Object pojo) {
-        final var old = AbstractMemorySimpleRepository.this.objects.get(id.key);
+        final var old = AbstractMemoryRepository.this.objects.get(id.key);
         if (old != null) {
             if (Objects.equals(old, pojo)) {
                 return;
@@ -214,11 +218,11 @@ public abstract class AbstractMemorySimpleRepository<E extends AbstractDataObjec
             // TODO: Обновление объекта!
             throw new IllegalStateException("Already had POJO for id (" + id.key.getClass().getName() + ") [" + id + "]");
         }
-        AbstractMemorySimpleRepository.this.objects.put(id.key, (E)pojo);
+        AbstractMemoryRepository.this.objects.put(id.key, (E)pojo);
     }
 
     protected Object resolveId(ObjectIdGenerator.IdKey id) {
-        return AbstractMemorySimpleRepository.this.objects.get(id.key);
+        return AbstractMemoryRepository.this.objects.get(id.key);
     }
 
     protected boolean canUseFor(ObjectIdResolver resolverType) {
@@ -296,8 +300,8 @@ public abstract class AbstractMemorySimpleRepository<E extends AbstractDataObjec
      * Также в пул можно вернуть {@link #returnObject} уже более неиспользуемый объект,
      * который в этом случае почистится и станет "заготовкой".
      */
-    protected class ObjectsPool extends AbstractSimpleObjectsPool<PoolableObject> {
-        protected ObjectsPool(boolean allowCreateObjects, int initSize) throws ObjectsPoolException {
+    protected static class SimpleObjectsPool extends AbstractSimpleObjectsPool<PoolableObject> {
+        protected SimpleObjectsPool(boolean allowCreateObjects, int initSize) throws ObjectsPoolException {
             super(allowCreateObjects, initSize);
         }
 
@@ -309,7 +313,29 @@ public abstract class AbstractMemorySimpleRepository<E extends AbstractDataObjec
          */
         @Override
         protected PoolableObject createInstance() throws ObjectsPoolException {
-            return AbstractMemorySimpleRepository.this.internalCreateEmptyInstance();
+            return getInstance().internalCreateEmptyInstance();
+        }
+    }
+
+    /**
+     * Пул объектов предназначен для выдачи "заготовок" объектов по требованию {@link #pollObject()}.
+     * Также в пул можно вернуть {@link #returnObject} уже более неиспользуемый объект,
+     * который в этом случае почистится и станет "заготовкой".
+     */
+    protected static class ConcurrentObjectsPool extends AbstractConcurrentObjectsPool<PoolableObject> {
+        protected ConcurrentObjectsPool(boolean allowCreateObjects, int initSize) throws ObjectsPoolException {
+            super(allowCreateObjects, initSize);
+        }
+
+        /**
+         * Создание новой заготовки. Вызывает из {@link AbstractObjectsFactory}
+         * @return Объект-заготовка.
+         * @throws ObjectsPoolException Ошибка при создании объекта-заготовки
+         * (например, если запрещено создавать новые экземпляры)
+         */
+        @Override
+        protected PoolableObject createInstance() throws ObjectsPoolException {
+            return getInstance().internalCreateEmptyInstance();
         }
     }
 }

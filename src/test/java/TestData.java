@@ -11,7 +11,7 @@ public class TestData {
     public void TestMemRepo() {
         // Должно создаваться в Config-ах приложения
         final var objectMapper = new ObjectMapper();
-        final var testMemRepo = new TestMemorySimpleRepository(objectMapper, 4);
+        final var testMemRepo = new TestMemorySimpleRepository(objectMapper, false, 4);
 
         final var jsonString1 = "{\"id\":1,\"code\":\"A\"}";
         final var jsonString2 = "{\"id\":1,\"code\":\"A+\"}";
