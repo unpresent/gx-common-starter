@@ -3,10 +3,10 @@ package ru.gxfin.common.data;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
- * Интерфейс Memory репозитория с Data Objects
+ * Интерфейс InMemory-репозитория объектов наследников DataObjects
  * @param <T> тип Data Objects, которые обрабатывает данные репозиторий
  */
-public interface DataMemRepo<T extends DataObject> {
+public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> {
 
     /**
      * Десериализация json-а в объект

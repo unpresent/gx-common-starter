@@ -186,7 +186,7 @@ public abstract class AbstractWorker implements Worker {
         log.info("Starting start()");
         try {
             this.autoRestart = true;
-            internalStart(false);
+            internalStart();
         } finally {
             log.info("Finished start()");
         }
@@ -220,7 +220,7 @@ public abstract class AbstractWorker implements Worker {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Internal methods for implements Worker">
-    protected void internalStart(boolean isRestart) {
+    protected void internalStart() {
         if (isRunning()) {
             log.info("Runner " + getName() + " already is running!");
             return;
@@ -532,7 +532,7 @@ public abstract class AbstractWorker implements Worker {
                 }
             }
             if (!isRunning()) {
-                internalStart(true);
+                internalStart();
             }
             restartingController = null;
             log.info("Restarting finished!");

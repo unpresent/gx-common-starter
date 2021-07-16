@@ -35,7 +35,7 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
         this.allowCreateObjects = allowCreateObjects;
         this.objects = new ArrayList<>(initSize + 32);
         for (int i = 0; i < initSize; i++) {
-            this.objects.add(createObject());
+            this.objects.add(createInstance());
         }
     }
 
@@ -49,7 +49,7 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
         if (!objects.isEmpty()) {
             return this.objects.remove(this.objects.size() - 1);
         } else if (this.allowCreateObjects) {
-            return createObject();
+            return createInstance();
         }
         return null;
     }
@@ -79,5 +79,5 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
      * @return Экземпляр объекта.
      * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
-    protected abstract T createObject() throws ObjectsPoolException;
+    protected abstract T createInstance() throws ObjectsPoolException;
 }
