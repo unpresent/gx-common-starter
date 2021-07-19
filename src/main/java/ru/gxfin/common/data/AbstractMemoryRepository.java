@@ -144,7 +144,7 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
      * @return объект в виде DataObject
      */
     @Override
-    public E deserializeObject(String jsonObject) throws JsonProcessingException {
+    public E loadObject(String jsonObject) throws JsonProcessingException {
         final var objectClass = getObjectClass();
         if (objectClass != null) {
             return this.objectMapper.readValue(jsonObject, objectClass);
@@ -160,7 +160,7 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
      * @return пакет объектов в виде DataPackage
      */
     @Override
-    public DataPackage<E> deserializePackage(String jsonPackage) throws JsonProcessingException {
+    public DataPackage<E> loadPackage(String jsonPackage) throws JsonProcessingException {
         final var packageClass = getPackageClass();
         if (packageClass != null) {
             return this.objectMapper.readValue(jsonPackage, packageClass);

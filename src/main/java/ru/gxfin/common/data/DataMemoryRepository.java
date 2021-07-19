@@ -9,20 +9,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> {
 
     /**
-     * Десериализация json-а в объект
+     * Десериализация json-а в объект. При этом объект регистрируется в репозитории.
      * @param jsonObject json-строка с объектом
      * @return объект в виде DataObject
      */
     @SuppressWarnings("unused")
-    T deserializeObject(String jsonObject) throws JsonProcessingException;
+    T loadObject(String jsonObject) throws JsonProcessingException;
 
     /**
-     * Десериализация json-а в пакет объектов
+     * Десериализация json-а в пакет объектов. При этом объекты регистрируется в репозитории.
      * @param jsonPackage json-строка с пакетом объектов
      * @return пакет объектов в виде DataPackage
      */
     @SuppressWarnings("unused")
-    DataPackage<T> deserializePackage(String jsonPackage) throws JsonProcessingException;
+    DataPackage<T> loadPackage(String jsonPackage) throws JsonProcessingException;
 
     /**
      * Получение объекта по иденификатору (ключу), который указан у класса в @JsonIdentityInfo.

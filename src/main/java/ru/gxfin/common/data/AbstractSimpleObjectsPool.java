@@ -18,7 +18,7 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
      */
     @Getter
     @Setter(AccessLevel.PROTECTED)
-    private boolean allowCreateObjects;
+    private boolean allowCreateObjectsAfterInit;
 
     /**
      * Список объектов в пуле (т.е. свободных для использования).
@@ -27,12 +27,12 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
 
     /**
      * Конструктор пула объектов.
-     * @param allowCreateObjects Признак допустимости создавать новые объекты после инициализации.
+     * @param allowCreateObjectsAfterInit Признак допустимости создавать новые объекты после инициализации.
      * @param initSize Количество объектов, которое будет создано в процессе инициализации.
      * @throws ObjectsPoolException Исключение может возникнуть в результате создания объекта.
      */
-    protected AbstractSimpleObjectsPool(boolean allowCreateObjects, int initSize) throws ObjectsPoolException {
-        this.allowCreateObjects = allowCreateObjects;
+    protected AbstractSimpleObjectsPool(boolean allowCreateObjectsAfterInit, int initSize) throws ObjectsPoolException {
+        this.allowCreateObjectsAfterInit = allowCreateObjectsAfterInit;
         this.objects = new ArrayList<>(initSize + 32);
         for (int i = 0; i < initSize; i++) {
             this.objects.add(createInstance());
@@ -48,7 +48,7 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
     public T pollObject() throws ObjectsPoolException {
         if (!objects.isEmpty()) {
             return this.objects.remove(this.objects.size() - 1);
-        } else if (this.allowCreateObjects) {
+        } else if (this.allowCreateObjectsAfterInit) {
             return createInstance();
         }
         return null;

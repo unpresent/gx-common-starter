@@ -16,10 +16,10 @@ public class TestData {
         final var jsonString1 = "{\"id\":1,\"code\":\"A\"}";
         final var jsonString2 = "{\"id\":1,\"code\":\"A+\"}";
 
-        final var o1 = testMemRepo.deserializeObject(jsonString1);
+        final var o1 = testMemRepo.loadObject(jsonString1);
         System.out.println(o1);
 
-        final var o2 = testMemRepo.deserializeObject(jsonString2);
+        final var o2 = testMemRepo.loadObject(jsonString2);
         System.out.println(o2);
 
         if (o1 == o2) {
