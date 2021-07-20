@@ -59,14 +59,14 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
     /**
      * Возврат объекта в пул, когда этот объект более не нужен в использовании.
      * При его возврате будет вызван метод очистки объекта от данных.
-     * @see PoolableObject#cleanOnReturnToPool
+     * @see PoolableObject#cleanOnReleaseToPool
      * @param object Возвращаемый объект.
      */
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     @Override
-    public void returnObject(T object) {
+    public void releaseObject(T object) {
         synchronized (object) {
-            object.cleanOnReturnToPool();
+            object.cleanOnReleaseToPool();
             this.objects.push(object);
         }
     }

@@ -15,10 +15,10 @@ public interface ObjectsPool<T extends PoolableObject> {
     /**
      * Возврат объекта в пул, когда этот объект более не нужен в использовании.
      * При его возврате будет вызван метод очистки объекта от данных.
-     * @see PoolableObject#cleanOnReturnToPool
+     * @see PoolableObject#cleanOnReleaseToPool
      * @param object Возвращаемый объект.
      */
-    void returnObject(T object);
+    void releaseObject(T object);
 
     /**
      * @return Количество свободных объектов.

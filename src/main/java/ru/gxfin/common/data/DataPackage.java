@@ -11,7 +11,7 @@ public interface DataPackage<T extends DataObject> {
      * @return Элменты пакета
      */
     @SuppressWarnings("unused")
-    Collection<T> getItems();
+    Collection<T> getObjects();
 
     /**
      * Доступ к элементу пакета

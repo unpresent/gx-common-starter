@@ -31,4 +31,12 @@ public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> 
      */
     @SuppressWarnings("unused")
     T getByKey(Object key);
+
+    /**
+     * Проверка наличия объекта с указанным ключом в репозитории.
+     * @param key Ключ.
+     * @return true - объект есть, false - объекта нет.
+     */
+    @SuppressWarnings("unused")
+    boolean containsKey(Object key);
 }

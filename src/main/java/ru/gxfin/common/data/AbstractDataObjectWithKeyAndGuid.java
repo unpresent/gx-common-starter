@@ -9,7 +9,7 @@ import lombok.ToString;
 import java.util.UUID;
 
 /**
- * Базовый тип для DTO (объектов передачи данных), у которых локальный идентификатор системе и межсистменый globalId.
+ * Базовый тип для DTO (объектов передачи данных), у которых локальный идентификатор системе и межсистменый guid.
  */
 @Getter
 @Setter
@@ -17,7 +17,7 @@ import java.util.UUID;
 @ToString
 public abstract class AbstractDataObjectWithKeyAndGuid extends AbstractDataObjectWithKey implements DataObjectWithGuid {
     @JsonProperty
-    private UUID globalId;
+    private UUID guid;
 
     protected AbstractDataObjectWithKeyAndGuid() {
         super();
@@ -25,11 +25,11 @@ public abstract class AbstractDataObjectWithKeyAndGuid extends AbstractDataObjec
 
     @Override
     public Object getKey() {
-        return getGlobalId();
+        return getGuid();
     }
 
     @Override
-    public void cleanOnReturnToPool() {
-        this.globalId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    public void cleanOnReleaseToPool() {
+        this.guid = UUID.fromString("00000000-0000-0000-0000-000000000000");
     }
 }

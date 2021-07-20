@@ -57,12 +57,12 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
     /**
      * Возврат объекта в пул, когда этот объект более не нужен в использовании.
      * При его возврате будет вызван метод очистки объекта от данных.
-     * @see PoolableObject#cleanOnReturnToPool
+     * @see PoolableObject#cleanOnReleaseToPool
      * @param object Возвращаемый объект.
      */
     @Override
-    public void returnObject(T object) {
-        object.cleanOnReturnToPool();
+    public void releaseObject(T object) {
+        object.cleanOnReleaseToPool();
         this.objects.add(object);
     }
 

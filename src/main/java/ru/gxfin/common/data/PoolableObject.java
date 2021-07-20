@@ -7,5 +7,5 @@ public interface PoolableObject {
     /**
      * Процедура очистки объекта.
      */
-    void cleanOnReturnToPool();
+    void cleanOnReleaseToPool();
 }

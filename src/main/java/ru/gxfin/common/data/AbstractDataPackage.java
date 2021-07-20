@@ -25,8 +25,8 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      * @return элменты пакета.
      */
     @Override
-    @JsonProperty(value = "items")
-    public Collection<T> getItems() {
+    @JsonProperty(value = "objects")
+    public Collection<T> getObjects() {
         return this.getListItems();
     }
 

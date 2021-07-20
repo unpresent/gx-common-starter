@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -57,13 +58,13 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    protected AbstractMemoryRepository(ObjectMapper objectMapper, boolean isConcurrent, int initSize) throws SingletonInstanceAlreadyExists, ObjectsPoolException {
+    protected AbstractMemoryRepository(ObjectMapper objectMapper, boolean isConcurrent, int initSize) throws SingletonInstanceAlreadyExistsException, ObjectsPoolException {
         this.objectMapper = objectMapper;
 
         final var thisClass = this.getClass();
         synchronized (thisClass) {
             if (instance != null) {
-                throw new SingletonInstanceAlreadyExists("Singleton instance already exists! Class = " + thisClass.getName());
+                throw new SingletonInstanceAlreadyExistsException("Singleton instance already exists! Class = " + thisClass.getName());
             }
             instance = this;
         }
@@ -109,10 +110,10 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
      * @param object Объект репозитория.
      */
     @SuppressWarnings("unchecked")
-    public void returnObject(E object) {
+    public void releaseObject(E object) {
         if (object != null) {
             this.objects.remove(object.getKey());
-            this.objectsPool.returnObject(object);
+            this.objectsPool.releaseObject(object);
         }
     }
 
@@ -176,12 +177,10 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public E getByKey(Object key) {
-        return (E) this.getObjects().get(key);
+        return this.getObjects().get(key);
     }
 
-    @SuppressWarnings("unchecked")
     public boolean containsKey(Object key) {
         return this.objects.containsKey(key);
     }
@@ -203,12 +202,14 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
         return this.objects.values().spliterator();
     }
 
+    @SuppressWarnings("unused")
     public int size() {
         return this.objects.size();
     }
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация ObjectIdResolver">
+    @SuppressWarnings("unchecked")
     protected void bindItem(ObjectIdGenerator.IdKey id, Object pojo) {
         final var old = AbstractMemoryRepository.this.objects.get(id.key);
         if (old != null) {
@@ -223,12 +224,6 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
 
     protected Object resolveId(ObjectIdGenerator.IdKey id) {
         return AbstractMemoryRepository.this.objects.get(id.key);
-    }
-
-    protected boolean canUseFor(ObjectIdResolver resolverType) {
-        // TODO: Проверить для репо с наследованием. Например, AbstractInstrument и его наследники: Security и Currency.
-        // Явно кто-то от кого-то должен наследоваться.
-        return resolverType.getClass() == this.getClass();
     }
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
@@ -256,8 +251,10 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
         }
 
         @Override
-        public boolean canUseFor(ObjectIdResolver resolverType) {
-            return getInstance().canUseFor(resolverType);
+        public boolean canUseFor(@NotNull ObjectIdResolver resolverType) {
+            // TODO: Проверить для репо с наследованием. Например, AbstractInstrument и его наследники: Security и Currency.
+            // Явно кто-то от кого-то должен наследоваться.
+            return resolverType.getClass() == this.getClass();
         }
 
         @Override
@@ -297,7 +294,7 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
 
     /**
      * Пул объектов предназначен для выдачи "заготовок" объектов по требованию {@link #pollObject()}.
-     * Также в пул можно вернуть {@link #returnObject} уже более неиспользуемый объект,
+     * Также в пул можно вернуть {@link #releaseObject} уже более неиспользуемый объект,
      * который в этом случае почистится и станет "заготовкой".
      */
     protected static class SimpleObjectsPool extends AbstractSimpleObjectsPool<PoolableObject> {
@@ -319,7 +316,7 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
 
     /**
      * Пул объектов предназначен для выдачи "заготовок" объектов по требованию {@link #pollObject()}.
-     * Также в пул можно вернуть {@link #returnObject} уже более неиспользуемый объект,
+     * Также в пул можно вернуть {@link #releaseObject} уже более неиспользуемый объект,
      * который в этом случае почистится и станет "заготовкой".
      */
     protected static class ConcurrentObjectsPool extends AbstractConcurrentObjectsPool<PoolableObject> {

@@ -46,6 +46,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
@@ -62,6 +68,7 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+
 
     </dependencies>
 
