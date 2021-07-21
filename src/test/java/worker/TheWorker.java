@@ -27,12 +27,12 @@ public class TheWorker extends AbstractWorker {
     }
 
     @Override
-    public int getWaitOnStopMS() {
+    public int getWaitOnStopMs() {
         return 2000;
     }
 
     @Override
-    public int getWaitOnRestartMS() {
+    public int getWaitOnRestartMs() {
         return 20000;
     }
 

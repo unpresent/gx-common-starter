@@ -15,32 +15,23 @@ import ru.gxfin.common.data.ObjectsPoolException;
 @EqualsAndHashCode(callSuper = false)
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonIdentityInfo(property = "id", generator = ObjectIdGenerators.PropertyGenerator.class, resolver = TestObjectRepository.IdResolver.class)
-public class TestDataObject extends AbstractDataObjectWithKey {
-    private int id;
-
+@JsonIdentityInfo(property = "code", generator = ObjectIdGenerators.PropertyGenerator.class, resolver = TestDictionaryRepository.IdResolver.class)
+public class TestDictionaryObject extends AbstractDataObjectWithKey {
     private String code;
 
     private String name;
 
-    @JsonIdentityReference(alwaysAsId = true)
-    private TestDictionaryObject dictionaryObject;
-
-    protected TestDataObject() {
-        super();
-    }
-
     @Override
     @JsonIgnore
     public Object getKey() {
-        return this.id;
+        return getCode();
     }
 
     @SuppressWarnings("unused")
     @JsonCreator
-    public static TestDataObject createObject(
-            @JsonProperty(value = "id") int id
+    public static TestDictionaryObject createObject(
+            @JsonProperty(value = "code") String code
     ) throws ObjectsPoolException {
-        return TestObjectRepository.ObjectFactory.getOrCreateObject(id);
+        return TestDictionaryRepository.ObjectFactory.getOrCreateObject(code);
     }
 }

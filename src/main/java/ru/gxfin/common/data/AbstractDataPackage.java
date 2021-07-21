@@ -19,7 +19,7 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      */
     @Getter(AccessLevel.PROTECTED)
     @JsonIgnore
-    private final List<T> listItems = new ArrayList<>();
+    private final List<T> listObjects = new ArrayList<>();
 
     /**
      * @return элменты пакета.
@@ -27,7 +27,7 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
     @Override
     @JsonProperty(value = "objects")
     public Collection<T> getObjects() {
-        return this.getListItems();
+        return this.getListObjects();
     }
 
     /**
@@ -37,7 +37,7 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      */
     @JsonIgnore
     public T get(int index) {
-        return getListItems().get(index);
+        return getListObjects().get(index);
     }
 
     /**
@@ -46,7 +46,6 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
     @Override
     @JsonIgnore
     public int size() {
-        return getListItems().size();
+        return getListObjects().size();
     }
 }
-

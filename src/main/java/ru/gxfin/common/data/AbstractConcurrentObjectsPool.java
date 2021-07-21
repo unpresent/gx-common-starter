@@ -15,6 +15,9 @@ import java.util.Stack;
  */
 @Accessors(chain = true)
 public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> implements ObjectsPool<T> {
+    @Getter(AccessLevel.PROTECTED)
+    private final Object owner;
+
     /**
      * Признак допустимости создавать новые объекты после инициализации.
      */
@@ -29,11 +32,13 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
 
     /**
      * Конструктор пула объектов.
-     * @param allowCreateObjectsAfterInit Признак допустимости создавать новые объекты после инициализации.
-     * @param initSize Количество объектов, которое будет создано в процессе инициализации.
-     * @throws ObjectsPoolException Исключение может возникнуть в результате создания объекта.
+     * @param owner                         Владелец данного Пула. М.б. null.
+     * @param allowCreateObjectsAfterInit   Признак допустимости создавать новые объекты после инициализации.
+     * @param initSize                      Количество объектов, которое будет создано в процессе инициализации.
+     * @throws ObjectsPoolException         Исключение может возникнуть в результате создания объекта.
      */
-    protected AbstractConcurrentObjectsPool(boolean allowCreateObjectsAfterInit, int initSize) throws ObjectsPoolException {
+    protected AbstractConcurrentObjectsPool(Object owner, boolean allowCreateObjectsAfterInit, int initSize) throws ObjectsPoolException {
+        this.owner = owner;
         this.allowCreateObjectsAfterInit = allowCreateObjectsAfterInit;
         this.objects = new Stack<>();
         for (int i = 0; i < initSize; i++) {

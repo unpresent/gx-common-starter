@@ -133,7 +133,7 @@ public abstract class AbstractWorker implements Worker {
      * @see #internalWaitStop(int, boolean)
      */
     @Override
-    public abstract int getWaitOnStopMS();
+    public abstract int getWaitOnStopMs();
 
     /**
      * Настрйока (в мс), которая определяет какую паузу надо выждать перед перезапуском после останова.
@@ -141,7 +141,7 @@ public abstract class AbstractWorker implements Worker {
      * @see RunnerTimerTaskController
      */
     @Override
-    public abstract int getWaitOnRestartMS();
+    public abstract int getWaitOnRestartMs();
 
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
@@ -259,7 +259,7 @@ public abstract class AbstractWorker implements Worker {
         }
 
         synchronized (this) {
-            internalWaitStop(getWaitOnStopMS(), true);
+            internalWaitStop(getWaitOnStopMs(), true);
         }
         log.info("Finished internalStop()");
     }
@@ -513,7 +513,7 @@ public abstract class AbstractWorker implements Worker {
         @SneakyThrows
         @Override
         public void run() {
-            final var wait = getWaitOnRestartMS();
+            final var wait = getWaitOnRestartMs();
             log.info("Restarting... Wait: {} ms", wait);
             AbstractWorker.this.iterationExecuteEvent.setImmediateRunNextIteration(false);
             AbstractWorker.this.iterationExecuteEvent.setNeedRestart(false);
@@ -523,7 +523,7 @@ public abstract class AbstractWorker implements Worker {
             if (isRunning()) {
                 internalStop();
             }
-            final var waitTo = System.currentTimeMillis() + getWaitOnRestartMS();
+            final var waitTo = System.currentTimeMillis() + getWaitOnRestartMs();
             synchronized (AbstractWorker.this) {
                 while (System.currentTimeMillis() < waitTo) {
                     log.debug("Restarting... waitLeft: {}", waitTo - System.currentTimeMillis());

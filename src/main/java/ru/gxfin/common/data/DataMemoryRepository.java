@@ -39,4 +39,14 @@ public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> 
      */
     @SuppressWarnings("unused")
     boolean containsKey(Object key);
+
+    /**
+     * TODO: Временно! Подумать, как сделать хорошо.
+     * Возврат объекта в пул, когда этот объект более не нужен в использовании.
+     * При его возврате будет вызван метод очистки объекта от данных.
+     * @see PoolableObject#cleanOnReleaseToPool
+     * @param object Возвращаемый объект.
+     */
+    @SuppressWarnings("unused")
+    void releaseObject(T object);
 }

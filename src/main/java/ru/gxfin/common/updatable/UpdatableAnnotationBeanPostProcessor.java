@@ -1,6 +1,7 @@
 package ru.gxfin.common.updatable;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -41,7 +42,7 @@ public class UpdatableAnnotationBeanPostProcessor implements BeanPostProcessor, 
      * @throws BeansException ошибка при обработке.
      */
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessBeforeInitialization(@NotNull Object bean, @NotNull String beanName) throws BeansException {
 
         Updatable annotation = beanFactory.findAnnotationOnBean(beanName, Updatable.class);
         if (annotation != null) {
@@ -65,7 +66,7 @@ public class UpdatableAnnotationBeanPostProcessor implements BeanPostProcessor, 
      * @throws BeansException ошибка при обработке.
      */
     @Override
-    public Object postProcessAfterInitialization(Object proxyBean, String beanName) throws BeansException {
+    public Object postProcessAfterInitialization(@NotNull Object proxyBean, @NotNull String beanName) throws BeansException {
 
         Pair<Object, Updatable> pair = beansMap.get(beanName);
         if (pair != null) {
@@ -89,7 +90,7 @@ public class UpdatableAnnotationBeanPostProcessor implements BeanPostProcessor, 
      * @param beanFactory фабрика бинов.
      */
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+    public void setBeanFactory(@NotNull BeanFactory beanFactory) throws BeansException {
         if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
             throw new IllegalArgumentException(
                     getClass().getSimpleName() + " requires a ConfigurableListableBeanFactory: " + beanFactory);

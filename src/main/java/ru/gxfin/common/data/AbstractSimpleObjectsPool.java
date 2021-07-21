@@ -13,6 +13,9 @@ import java.util.ArrayList;
  * @param <T> Тип объектов, аправлемых данным пулом.
  */
 public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implements ObjectsPool<T> {
+    @Getter(AccessLevel.PROTECTED)
+    private final Object owner;
+
     /**
      * Признак допустимости создавать новые объекты после инициализации.
      */
@@ -31,7 +34,8 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
      * @param initSize Количество объектов, которое будет создано в процессе инициализации.
      * @throws ObjectsPoolException Исключение может возникнуть в результате создания объекта.
      */
-    protected AbstractSimpleObjectsPool(boolean allowCreateObjectsAfterInit, int initSize) throws ObjectsPoolException {
+    protected AbstractSimpleObjectsPool(Object owner, boolean allowCreateObjectsAfterInit, int initSize) throws ObjectsPoolException {
+        this.owner = owner;
         this.allowCreateObjectsAfterInit = allowCreateObjectsAfterInit;
         this.objects = new ArrayList<>(initSize + 32);
         for (int i = 0; i < initSize; i++) {
