@@ -325,7 +325,9 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
                 return result;
             }
 
-            return (X) owner.objectsPool.pollObject();
+            final var resultPolled = (X) owner.objectsPool.pollObject();
+            owner.objects.put(key, resultPolled);
+            return resultPolled;
         }
     }
     /**
