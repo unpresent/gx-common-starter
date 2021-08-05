@@ -4,13 +4,15 @@ package ru.gxfin.common.data;
  * Интерфейс пула объектов.
  * @param <T> тип объектов, которым управляет пул.
  */
+@SuppressWarnings("unused")
+@Deprecated
 public interface ObjectsPool<T extends PoolableObject> {
     /**
      * Получение объекта из пула. При его получении, он удаляется из списка свободных.
      * @return Чистый объект типа T из пула объектов.
-     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
+     * @throws ObjectCreateException Ошибки при создании экземпляра объекта.
      */
-    T pollObject() throws ObjectsPoolException;
+    T pollObject() throws ObjectCreateException;
 
     /**
      * Возврат объекта в пул, когда этот объект более не нужен в использовании.

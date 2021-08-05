@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -16,7 +17,7 @@ import java.util.function.Consumer;
  * Базовая непотокобезопасная реализация InMemory-репозитория объектов типа E.
  * <br/>
  * В поле {@link #objects} находятся объекты, с которыми сейчас работают.
- * В {@link #objectsPool} находятся заготовки объектов - свободные, которые выделяются при запросе у пула объекта.}
+ * // В {objectsPool} находятся заготовки объектов - свободные, которые выделяются при запросе у пула объекта.}
  * <p/>
  * Если в наследнике сделать публичным {@link AbstractIdResolver}, это будет означать, что все объекты обслуживаемого типа
  * и его наследники имеют сквозную идентификацию. Например, Инструмент (базовый) и наследники Бумага, Валюта и Дериватив.
@@ -35,11 +36,11 @@ import java.util.function.Consumer;
  * В наследниках рекомендуется переопределить {@link #internalCreateEmptyInstance()}, в которой создавать объект
  * оператором new() без вызова данной реализации через super.
  * <p/>
- * @param <E> Тип экземпляров, которыми управляет репозиторий.
+ * @param <O> Тип экземпляров, которыми управляет репозиторий.
  * @param <P> Тип пакетов объектов, которыми управляет репозиторий.
  */
-public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithKey, P extends DataPackage<E>>
-        implements DataMemoryRepository<E>, ObjectsPool<E> {
+public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P extends DataPackage<O>>
+        implements DataMemoryRepository<O, P> /*, ObjectsPool<O>*/ {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
     @SuppressWarnings("rawtypes")
@@ -48,7 +49,7 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
 
     @SuppressWarnings("rawtypes")
     @Getter(AccessLevel.PROTECTED)
-    private static final Map<Class<? extends AbstractDataObjectWithKey>, AbstractMemoryRepository> instancesByObjectsClass = new HashMap<>();
+    private static final Map<Class<? extends AbstractDataObject>, AbstractMemoryRepository> instancesByObjectsClass = new HashMap<>();
 
     @SuppressWarnings("rawtypes")
     protected static AbstractMemoryRepository getRepositoryByClass(Class<? extends AbstractMemoryRepository> repositoryClass) {
@@ -56,28 +57,34 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
     }
 
     @SuppressWarnings("rawtypes")
-    protected static AbstractMemoryRepository getRepositoryByObjectsClass(Class<? extends AbstractDataObjectWithKey> objectsClass) {
+    protected static AbstractMemoryRepository getRepositoryByObjectsClass(Class<? extends AbstractDataObject> objectsClass) {
         return instancesByObjectsClass.get(objectsClass);
     }
 
     @Getter(AccessLevel.PROTECTED)
     private final ObjectMapper objectMapper;
 
-    @SuppressWarnings("rawtypes")
-    private final ObjectsPool objectsPool;
-
     @Getter(AccessLevel.PROTECTED)
-    private final Map<Object, E> objects = new HashMap<>();
+    private final Map<Object, O> objects = new HashMap<>();
+
+    private Class<O> objectsClass;
+
+    private Class<P> packagesClass;
 
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    protected AbstractMemoryRepository(ObjectMapper objectMapper, boolean isConcurrent, int initSize) throws SingletonInstanceAlreadyExistsException, ObjectsPoolException {
+    @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "unchecked"})
+    protected AbstractMemoryRepository(ObjectMapper objectMapper) throws SingletonInstanceAlreadyExistsException {
         this.objectMapper = objectMapper;
 
         final var thisClass = this.getClass();
-        final var objectsClass = this.getObjectClass();
+        final var superClass = thisClass.getGenericSuperclass();
+        if (superClass != null) {
+            this.objectsClass = (Class<O>)((ParameterizedType)superClass).getActualTypeArguments()[0];
+            this.packagesClass = (Class<P>)((ParameterizedType)superClass).getActualTypeArguments()[1];
+        }
+
         synchronized (thisClass) {
             var instance = getRepositoryByClass(thisClass);
             if (instance != null) {
@@ -85,68 +92,61 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
             }
             instancesByRepositoryClass.put(thisClass, this);
 
-            instance = getRepositoryByObjectsClass(objectsClass);
+            instance = getRepositoryByObjectsClass(this.objectsClass);
             if (instance != null) {
-                throw new SingletonInstanceAlreadyExistsException("Singleton instance already registered (by Objects Class)! ObjectsClass = " + objectsClass.getName());
+                throw new SingletonInstanceAlreadyExistsException("Singleton instance already registered (by Objects Class)! ObjectsClass = " + this.objectsClass.getName());
             }
-            instancesByObjectsClass.put(objectsClass, this);
-        }
-
-        if (isConcurrent) {
-            this.objectsPool = new ConcurrentObjectsPool(this, true, initSize);
-        } else {
-            this.objectsPool = new SimpleObjectsPool(this, true, initSize);
+            instancesByObjectsClass.put(this.objectsClass, this);
         }
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="реализация ObjectPool">
+    // <editor-fold desc="// реализация ObjectPool">
     /**
-     * Создание "заготовки" объекта. Вызывается Пулом объектов.
+     * Создание "заготовки" объекта. Вызывается Фабрикой объектов.
      * Рекомендуется переопределить (без вызова данной реализации через super) в наследнике
      * и там создавать нормально через оператор new().
      * @return Объект репозитория.
-     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
      */
-    protected E internalCreateEmptyInstance() throws ObjectsPoolException {
+    protected O internalCreateEmptyInstance() throws ObjectCreateException {
         final var objectClass = getObjectClass();
         try {
             final var constructor = objectClass.getConstructor();
             return constructor.newInstance();
         } catch (Exception e) {
-            throw new ObjectsPoolException(e.getMessage(), e);
+            throw new ObjectCreateException("Ошибка при создании экземпляра класса: " + objectClass.getName(), e);
         }
     }
-
-    /**
-     * Получение объекта из пула. Если в пуле нет, то создается новый.
-     * @return Объект репозитория.
-     */
-    @SuppressWarnings("unchecked")
-    public E pollObject() throws ObjectsPoolException {
-        return (E) this.objectsPool.pollObject();
-    }
-
-    /**
-     * Возвращаем более неиспользуемый объект в пул.
-     * Удаляем из спска объектов в IdResolver-е.
-     * @param object Объект репозитория.
-     */
-    @SuppressWarnings("unchecked")
-    public void releaseObject(E object) {
-        if (object != null) {
-            this.objects.remove(object.getKey());
-            this.objectsPool.releaseObject(object);
-        }
-    }
-
-    /**
-     * @return Количество свободных объектов.
-     */
-    @Override
-    public int freeObjectsCount() {
-        return this.objectsPool.freeObjectsCount();
-    }
+    //
+    //    /**
+    //     * Получение объекта из пула. Если в пуле нет, то создается новый.
+    //     * @return Объект репозитория.
+    //     */
+    //    @SuppressWarnings("unchecked")
+    //    public O pollObject() throws ObjectsPoolException {
+    //        return (O) this.objectsPool.pollObject();
+    //    }
+    //
+    //    /**
+    //     * Возвращаем более неиспользуемый объект в пул.
+    //     * Удаляем из спска объектов в IdResolver-е.
+    //     * @param object Объект репозитория.
+    //     */
+    //    @SuppressWarnings("unchecked")
+    //    public void releaseObject(O object) {
+    //        if (object != null) {
+    //            this.objects.remove(object.getKey());
+    //            this.objectsPool.releaseObject(object);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * @return Количество свободных объектов.
+    //     */
+    //    @Override
+    //    public int freeObjectsCount() {
+    //        return this.objectsPool.freeObjectsCount();
+    //    }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация DataMemoryRepository">
@@ -154,12 +154,16 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
     /**
      * @return Класс объектов репозитория.
      */
-    public abstract Class<E> getObjectClass();
+    public Class<O> getObjectClass() {
+        return this.objectsClass;
+    }
 
     /**
      * @return Класс пакета объектов.
      */
-    public abstract Class<P> getPackageClass();
+    public Class<P> getPackageClass() {
+        return this.packagesClass;
+    }
 
     /**
      * Десериализация json-а в объект
@@ -168,13 +172,9 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
      * @return объект в виде DataObject
      */
     @Override
-    public E loadObject(String jsonObject) throws JsonProcessingException {
+    public O loadObject(String jsonObject) throws JsonProcessingException {
         final var objectClass = getObjectClass();
-        if (objectClass != null) {
-            return this.objectMapper.readValue(jsonObject, objectClass);
-        } else {
-            return null;
-        }
+        return (objectClass != null) ? this.objectMapper.readValue(jsonObject, objectClass) : null;
     }
 
     /**
@@ -184,7 +184,7 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
      * @return пакет объектов в виде DataPackage
      */
     @Override
-    public DataPackage<E> loadPackage(String jsonPackage) throws JsonProcessingException {
+    public P loadPackage(String jsonPackage) throws JsonProcessingException {
         final var packageClass = getPackageClass();
         if (packageClass != null) {
             return this.objectMapper.readValue(jsonPackage, packageClass);
@@ -200,7 +200,7 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
      */
     @Override
-    public E getByKey(Object key) {
+    public O getByKey(Object key) {
         return this.getObjects().get(key);
     }
 
@@ -211,17 +211,17 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация Iterable">
     @Override
-    public Iterator<E> iterator() {
+    public Iterator<O> iterator() {
         return this.objects.values().iterator();
     }
 
     @Override
-    public void forEach(Consumer<? super E> action) {
+    public void forEach(Consumer<? super O> action) {
         this.objects.values().forEach(action);
     }
 
     @Override
-    public Spliterator<E> spliterator() {
+    public Spliterator<O> spliterator() {
         return this.objects.values().spliterator();
     }
 
@@ -242,15 +242,12 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
             // TODO: Обновление объекта!
             throw new IllegalStateException("Already had POJO for id (" + id.key.getClass().getName() + ") [" + id + "]");
         }
-        AbstractMemoryRepository.this.objects.put(id.key, (E)pojo);
+        AbstractMemoryRepository.this.objects.put(id.key, (O)pojo);
     }
 
     protected Object resolveId(ObjectIdGenerator.IdKey id) {
         return AbstractMemoryRepository.this.objects.get(id.key);
     }
-    // </editor-fold>
-    // -------------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="реализация AbstractObjectsFactory">
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     /**
@@ -314,73 +311,19 @@ public abstract class AbstractMemoryRepository<E extends AbstractDataObjectWithK
          * (если в пуле закончились "заготовки", создается новый экземпляр).
          * @param key Ключ, по которому ищется объект в Репозитории
          * @return Уже существующий и ранее зарегестрированный объект в Репозитории, или заготовка из Пула, или новый экземпляр.
-         * @throws ObjectsPoolException Ошибка при выделении объекта из Пула
+         * @throws ObjectCreateException Ошибка при выделении объекта из Пула
          * (например, "заготовки" закончились, а создавать новый экземпляр запрещено).
          */
         @SuppressWarnings("unchecked")
-        protected static <X extends AbstractDataObjectWithKey> X getOrCreateObject(Class<X> objectClass, Object key) throws ObjectsPoolException {
+       protected static <X extends AbstractDataObject> X getOrCreateObject(Class<X> objectClass, Object key) throws ObjectCreateException {
             final var owner = getRepositoryByObjectsClass(objectClass);
-            final var result = (X)owner.getByKey(key);
+            var result = (X)owner.getByKey(key);
             if (result != null) {
                 return result;
             }
 
-            final var resultPolled = (X) owner.objectsPool.pollObject();
-            owner.objects.put(key, resultPolled);
-            return resultPolled;
-        }
-    }
-    /**
-     * Пул объектов предназначен для выдачи "заготовок" объектов по требованию {@link #pollObject()}.
-     * Также в пул можно вернуть {@link #releaseObject} уже более неиспользуемый объект,
-     * который в этом случае почистится и станет "заготовкой".
-     */
-    @SuppressWarnings("rawtypes")
-    protected static class SimpleObjectsPool extends AbstractSimpleObjectsPool<PoolableObject> {
-        protected SimpleObjectsPool(AbstractMemoryRepository owner, boolean allowCreateObjects, int initSize) throws ObjectsPoolException {
-            super(owner, allowCreateObjects, initSize);
-        }
-
-        protected AbstractMemoryRepository getOwnerRepository() {
-            return (AbstractMemoryRepository)getOwner();
-        }
-
-        /**
-         * Создание новой заготовки. Вызывается из {@link #objectsPool}
-         * @return Объект-заготовка.
-         * @throws ObjectsPoolException Ошибка при создании объекта-заготовки
-         * (например, если запрещено создавать новые экземпляры)
-         */
-        @Override
-        protected PoolableObject createInstance() throws ObjectsPoolException {
-            return this.getOwnerRepository().internalCreateEmptyInstance();
-        }
-    }
-
-    /**
-     * Пул объектов предназначен для выдачи "заготовок" объектов по требованию {@link #pollObject()}.
-     * Также в пул можно вернуть {@link #releaseObject} уже более неиспользуемый объект,
-     * который в этом случае почистится и станет "заготовкой".
-     */
-    @SuppressWarnings("rawtypes")
-    protected static class ConcurrentObjectsPool extends AbstractConcurrentObjectsPool<PoolableObject> {
-        protected ConcurrentObjectsPool(AbstractMemoryRepository owner, boolean allowCreateObjects, int initSize) throws ObjectsPoolException {
-            super(owner, allowCreateObjects, initSize);
-        }
-
-        protected AbstractMemoryRepository getOwnerRepository() {
-            return (AbstractMemoryRepository)getOwner();
-        }
-
-        /**
-         * Создание новой заготовки. Вызывает из {@link #objectsPool}
-         * @return Объект-заготовка.
-         * @throws ObjectsPoolException Ошибка при создании объекта-заготовки
-         * (например, если запрещено создавать новые экземпляры)
-         */
-        @Override
-        protected PoolableObject createInstance() throws ObjectsPoolException {
-            return this.getOwnerRepository().internalCreateEmptyInstance();
+            result = (X) owner.internalCreateEmptyInstance();
+            return result;
         }
     }
 }

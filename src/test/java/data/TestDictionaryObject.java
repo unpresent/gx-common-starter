@@ -6,8 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import ru.gxfin.common.data.AbstractDataObject;
 import ru.gxfin.common.data.AbstractDataObjectWithKey;
-import ru.gxfin.common.data.ObjectsPoolException;
+import ru.gxfin.common.data.ObjectCreateException;
 
 @Getter
 @Setter
@@ -16,22 +17,16 @@ import ru.gxfin.common.data.ObjectsPoolException;
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonIdentityInfo(property = "code", generator = ObjectIdGenerators.PropertyGenerator.class, resolver = TestDictionaryRepository.IdResolver.class)
-public class TestDictionaryObject extends AbstractDataObjectWithKey {
+public class TestDictionaryObject extends AbstractDataObject {
     private String code;
 
     private String name;
-
-    @Override
-    @JsonIgnore
-    public Object getKey() {
-        return getCode();
-    }
 
     @SuppressWarnings("unused")
     @JsonCreator
     public static TestDictionaryObject createObject(
             @JsonProperty(value = "code") String code
-    ) throws ObjectsPoolException {
+    ) throws ObjectCreateException {
         return TestDictionaryRepository.ObjectFactory.getOrCreateObject(code);
     }
 }

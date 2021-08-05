@@ -6,8 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import ru.gxfin.common.data.AbstractDataObjectWithKey;
-import ru.gxfin.common.data.ObjectsPoolException;
+import ru.gxfin.common.data.AbstractDataObject;
+import ru.gxfin.common.data.ObjectCreateException;
+import ru.gxfin.common.utils.StringUtils;
 
 @Getter
 @Setter
@@ -15,8 +16,8 @@ import ru.gxfin.common.data.ObjectsPoolException;
 @EqualsAndHashCode(callSuper = false)
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonIdentityInfo(property = "id", generator = ObjectIdGenerators.PropertyGenerator.class, resolver = TestObjectRepository.IdResolver.class)
-public class TestDataObject extends AbstractDataObjectWithKey {
+@JsonIdentityInfo(property = "id", generator = ObjectIdGenerators.PropertyGenerator.class, resolver = TestObjectsRepository.IdResolver.class)
+public class TestDataObject extends AbstractDataObject {
     private int id;
 
     private String code;
@@ -30,17 +31,16 @@ public class TestDataObject extends AbstractDataObjectWithKey {
         super();
     }
 
-    @Override
-    @JsonIgnore
-    public Object getKey() {
-        return this.id;
-    }
-
     @SuppressWarnings("unused")
     @JsonCreator
     public static TestDataObject createObject(
-            @JsonProperty(value = "id") int id
-    ) throws ObjectsPoolException {
-        return TestObjectRepository.ObjectFactory.getOrCreateObject(id);
+            @JsonProperty(value = "id") int id,
+            @JsonProperty(value = "code") String code
+    ) throws ObjectCreateException {
+        if (StringUtils.isNull(code, "X").charAt(0) != 'X') {
+            return TestObjectsRepository.ObjectFactory.getOrCreateObject(id);
+        } else {
+            return null;
+        }
     }
 }

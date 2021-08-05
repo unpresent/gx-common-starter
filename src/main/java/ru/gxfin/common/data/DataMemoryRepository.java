@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Интерфейс InMemory-репозитория объектов наследников DataObjects
- * @param <T> тип Data Objects, которые обрабатывает данные репозиторий
+ * @param <O> тип Data Objects, которые обрабатывает данные репозиторий
  */
-public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> {
+public interface DataMemoryRepository<O extends DataObject, P extends DataPackage<O>> extends Iterable<O> {
 
     /**
      * Десериализация json-а в объект. При этом объект регистрируется в репозитории.
@@ -14,7 +14,7 @@ public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> 
      * @return объект в виде DataObject
      */
     @SuppressWarnings("unused")
-    T loadObject(String jsonObject) throws JsonProcessingException;
+    O loadObject(String jsonObject) throws JsonProcessingException;
 
     /**
      * Десериализация json-а в пакет объектов. При этом объекты регистрируется в репозитории.
@@ -22,7 +22,7 @@ public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> 
      * @return пакет объектов в виде DataPackage
      */
     @SuppressWarnings("unused")
-    DataPackage<T> loadPackage(String jsonPackage) throws JsonProcessingException;
+    P loadPackage(String jsonPackage) throws JsonProcessingException;
 
     /**
      * Получение объекта по иденификатору (ключу), который указан у класса в @JsonIdentityInfo.
@@ -30,7 +30,7 @@ public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> 
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
      */
     @SuppressWarnings("unused")
-    T getByKey(Object key);
+    O getByKey(Object key);
 
     /**
      * Проверка наличия объекта с указанным ключом в репозитории.
@@ -39,14 +39,4 @@ public interface DataMemoryRepository<T extends DataObject> extends Iterable<T> 
      */
     @SuppressWarnings("unused")
     boolean containsKey(Object key);
-
-    /**
-     * TODO: Временно! Подумать, как сделать хорошо.
-     * Возврат объекта в пул, когда этот объект более не нужен в использовании.
-     * При его возврате будет вызван метод очистки объекта от данных.
-     * @see PoolableObject#cleanOnReleaseToPool
-     * @param object Возвращаемый объект.
-     */
-    @SuppressWarnings("unused")
-    void releaseObject(T object);
 }

@@ -5,27 +5,27 @@ import ru.gxfin.common.data.AbstractMemoryRepository;
 import ru.gxfin.common.data.ObjectCreateException;
 import ru.gxfin.common.data.SingletonInstanceAlreadyExistsException;
 
-public class TestDictionaryRepository extends AbstractMemoryRepository<TestDictionaryObject, TestDictionaryPackage> {
-    public TestDictionaryRepository(ObjectMapper objectMapper) throws SingletonInstanceAlreadyExistsException {
+public class TestObjectsRepository extends AbstractMemoryRepository<TestDataObject, TestDataPackage> {
+    public TestObjectsRepository(ObjectMapper objectMapper) throws SingletonInstanceAlreadyExistsException {
         super(objectMapper);
     }
 
     @Override
-    protected TestDictionaryObject internalCreateEmptyInstance() {
-        return new TestDictionaryObject();
+    protected TestDataObject internalCreateEmptyInstance() {
+        return new TestDataObject();
     }
 
     public static class IdResolver extends AbstractIdResolver {
         @SuppressWarnings("rawtypes")
         @Override
         protected Class<? extends AbstractMemoryRepository> getRepositoryClass() {
-            return TestDictionaryRepository.class;
+            return TestObjectsRepository.class;
         }
     }
 
     public static class ObjectFactory extends AbstractObjectsFactory {
-        public static TestDictionaryObject getOrCreateObject(String code) throws ObjectCreateException {
-            return AbstractObjectsFactory.getOrCreateObject(TestDictionaryObject.class, code);
+        public static TestDataObject getOrCreateObject(int id) throws ObjectCreateException {
+            return AbstractObjectsFactory.getOrCreateObject(TestDataObject.class, id);
         }
     }
 }

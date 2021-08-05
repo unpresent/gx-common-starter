@@ -3,6 +3,7 @@ package ru.gxfin.common.data;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 
@@ -12,6 +13,8 @@ import java.util.ArrayList;
  * Объект, которые возвращается в пул - свободен для повторного использования. При его возврате осуществляется очистка объекта.
  * @param <T> Тип объектов, аправлемых данным пулом.
  */
+@Deprecated
+@Accessors(chain = true)
 public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implements ObjectsPool<T> {
     @Getter(AccessLevel.PROTECTED)
     private final Object owner;
@@ -32,9 +35,9 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
      * Конструктор пула объектов.
      * @param allowCreateObjectsAfterInit Признак допустимости создавать новые объекты после инициализации.
      * @param initSize Количество объектов, которое будет создано в процессе инициализации.
-     * @throws ObjectsPoolException Исключение может возникнуть в результате создания объекта.
+     * @throws ObjectCreateException Исключение может возникнуть в результате создания объекта.
      */
-    protected AbstractSimpleObjectsPool(Object owner, boolean allowCreateObjectsAfterInit, int initSize) throws ObjectsPoolException {
+    protected AbstractSimpleObjectsPool(Object owner, boolean allowCreateObjectsAfterInit, int initSize) throws ObjectCreateException {
         this.owner = owner;
         this.allowCreateObjectsAfterInit = allowCreateObjectsAfterInit;
         this.objects = new ArrayList<>(initSize + 32);
@@ -46,10 +49,10 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
     /**
      * Получение объекта из пула. При его получении, он удаляется из списка свободных.
      * @return Чистый объект из пула объектов.
-     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
+     * @throws ObjectCreateException Ошибки при создании экземпляра объекта.
      */
     @Override
-    public T pollObject() throws ObjectsPoolException {
+    public T pollObject() throws ObjectCreateException {
         if (!objects.isEmpty()) {
             return this.objects.remove(this.objects.size() - 1);
         } else if (this.allowCreateObjectsAfterInit) {
@@ -81,7 +84,7 @@ public abstract class AbstractSimpleObjectsPool<T extends PoolableObject> implem
     /**
      * Процедура создания экземпляра объекта.
      * @return Экземпляр объекта.
-     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
+     * @throws ObjectCreateException Ошибки при создании экземпляра объекта.
      */
-    protected abstract T createInstance() throws ObjectsPoolException;
+    protected abstract T createInstance() throws ObjectCreateException;
 }

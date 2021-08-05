@@ -13,6 +13,7 @@ import java.util.Stack;
  * Объект, которые возвращается в пул - свободен для повторного использования. При его возврате осуществляется очистка объекта.
  * @param <T> Тип объектов, аправлемых данным пулом.
  */
+@Deprecated
 @Accessors(chain = true)
 public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> implements ObjectsPool<T> {
     @Getter(AccessLevel.PROTECTED)
@@ -35,9 +36,9 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
      * @param owner                         Владелец данного Пула. М.б. null.
      * @param allowCreateObjectsAfterInit   Признак допустимости создавать новые объекты после инициализации.
      * @param initSize                      Количество объектов, которое будет создано в процессе инициализации.
-     * @throws ObjectsPoolException         Исключение может возникнуть в результате создания объекта.
+     * @throws ObjectCreateException         Исключение может возникнуть в результате создания объекта.
      */
-    protected AbstractConcurrentObjectsPool(Object owner, boolean allowCreateObjectsAfterInit, int initSize) throws ObjectsPoolException {
+    protected AbstractConcurrentObjectsPool(Object owner, boolean allowCreateObjectsAfterInit, int initSize) throws ObjectCreateException {
         this.owner = owner;
         this.allowCreateObjectsAfterInit = allowCreateObjectsAfterInit;
         this.objects = new Stack<>();
@@ -49,10 +50,10 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
     /**
      * Получение объекта из пула. При его получении, он удаляется из списка свободных.
      * @return Чистый объект из пула объектов.
-     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
+     * @throws ObjectCreateException Ошибки при создании экземпляра объекта.
      */
     @Override
-    public T pollObject() throws ObjectsPoolException {
+    public T pollObject() throws ObjectCreateException {
         if (!objects.isEmpty()) {
             return this.objects.pop();
         } else if (this.allowCreateObjectsAfterInit) {
@@ -87,7 +88,7 @@ public abstract class AbstractConcurrentObjectsPool<T extends PoolableObject> im
     /**
      * Процедура создания экземпляра объекта.
      * @return Экземпляр объекта.
-     * @throws ObjectsPoolException Ошибки при создании экземпляра объекта.
+     * @throws ObjectCreateException Ошибки при создании экземпляра объекта.
      */
-    protected abstract T createInstance() throws ObjectsPoolException;
+    protected abstract T createInstance() throws ObjectCreateException;
 }
