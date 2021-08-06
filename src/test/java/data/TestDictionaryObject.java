@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.gxfin.common.data.AbstractDataObject;
-import ru.gxfin.common.data.AbstractDataObjectWithKey;
 import ru.gxfin.common.data.ObjectCreateException;
 
 @Getter
