@@ -15,6 +15,11 @@ public class TestObjectsRepository extends AbstractMemoryRepository<TestDataObje
         return new TestDataObject();
     }
 
+    @Override
+    public Object extractKey(TestDataObject dataObject) {
+        return dataObject.getId();
+    }
+
     public static class IdResolver extends AbstractIdResolver {
         @SuppressWarnings("rawtypes")
         @Override

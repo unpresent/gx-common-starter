@@ -3,6 +3,7 @@ package ru.gxfin.common.data;
 import com.fasterxml.jackson.annotation.ObjectIdGenerator;
 import com.fasterxml.jackson.annotation.ObjectIdResolver;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -36,6 +37,7 @@ import java.util.function.Consumer;
  * В наследниках рекомендуется переопределить {@link #internalCreateEmptyInstance()}, в которой создавать объект
  * оператором new() без вызова данной реализации через super.
  * <p/>
+ *
  * @param <O> Тип экземпляров, которыми управляет репозиторий.
  * @param <P> Тип пакетов объектов, которыми управляет репозиторий.
  */
@@ -81,8 +83,8 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         final var thisClass = this.getClass();
         final var superClass = thisClass.getGenericSuperclass();
         if (superClass != null) {
-            this.objectsClass = (Class<O>)((ParameterizedType)superClass).getActualTypeArguments()[0];
-            this.packagesClass = (Class<P>)((ParameterizedType)superClass).getActualTypeArguments()[1];
+            this.objectsClass = (Class<O>) ((ParameterizedType) superClass).getActualTypeArguments()[0];
+            this.packagesClass = (Class<P>) ((ParameterizedType) superClass).getActualTypeArguments()[1];
         }
 
         synchronized (thisClass) {
@@ -102,10 +104,12 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="// реализация ObjectPool">
+
     /**
      * Создание "заготовки" объекта. Вызывается Фабрикой объектов.
      * Рекомендуется переопределить (без вызова данной реализации через super) в наследнике
      * и там создавать нормально через оператор new().
+     *
      * @return Объект репозитория.
      */
     protected O internalCreateEmptyInstance() throws ObjectCreateException {
@@ -117,40 +121,9 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
             throw new ObjectCreateException("Ошибка при создании экземпляра класса: " + objectClass.getName(), e);
         }
     }
-    //
-    //    /**
-    //     * Получение объекта из пула. Если в пуле нет, то создается новый.
-    //     * @return Объект репозитория.
-    //     */
-    //    @SuppressWarnings("unchecked")
-    //    public O pollObject() throws ObjectsPoolException {
-    //        return (O) this.objectsPool.pollObject();
-    //    }
-    //
-    //    /**
-    //     * Возвращаем более неиспользуемый объект в пул.
-    //     * Удаляем из спска объектов в IdResolver-е.
-    //     * @param object Объект репозитория.
-    //     */
-    //    @SuppressWarnings("unchecked")
-    //    public void releaseObject(O object) {
-    //        if (object != null) {
-    //            this.objects.remove(object.getKey());
-    //            this.objectsPool.releaseObject(object);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * @return Количество свободных объектов.
-    //     */
-    //    @Override
-    //    public int freeObjectsCount() {
-    //        return this.objectsPool.freeObjectsCount();
-    //    }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация DataMemoryRepository">
-
     /**
      * @return Класс объектов репозитория.
      */
@@ -163,6 +136,15 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      */
     public Class<P> getPackageClass() {
         return this.packagesClass;
+    }
+
+    /**
+     * @return Количество объектов в Репозитории.
+     */
+    @SuppressWarnings("unused")
+    @Override
+    public int size() {
+        return this.objects.size();
     }
 
     /**
@@ -194,7 +176,109 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     }
 
     /**
-     * Получение объекта по иденификатору (ключу), который указан у класса в @JsonIdentityInfo.
+     * Добавление объекта в репозиторий.
+     * @param key                               Ключ добавляемого объекта.
+     * @param object                            Добавляемый объект.
+     * @throws ObjectAlreadyExistsException     Ошибка, если для ключа key уже зарегистрирован объект в репозитории.
+     */
+    @Override
+    public void insert(Object key, O object) throws ObjectAlreadyExistsException {
+        if (!containsKey(key)) {
+            put(key, object);
+        } else {
+            throw new ObjectAlreadyExistsException(key, object);
+        }
+    }
+
+    /**
+     * Обновление объекта с ключом key. Обновляемый экземпляр не заменяется, а обновляются данные самого объекта.
+     * @param key                           Ключ обновляемого объекта.
+     * @param object                        Новое состояние объекта.
+     * @throws JsonMappingException         Ошибка при десериализации объекта в объект.
+     * @throws ObjectNotExistsException     Ошибка, если для ключа key не зарегистрирован объект в репозитории.
+     */
+    @Override
+    public void update(Object key, O object) throws JsonMappingException, ObjectNotExistsException {
+        final var oldObject = getByKey(key);
+        if (oldObject != null) {
+            if (!oldObject.equals(object)) {
+                getObjectMapper().updateValue(oldObject, object);
+            }
+        } else {
+            throw new ObjectNotExistsException(key, object);
+        }
+    }
+
+    /**
+     * Замена объекта с ключом key в репозитории.
+     * @param key                       Ключ заменяемого объекта.
+     * @param object                    Новый объект, который заменит старый объект.
+     * @return                          Предыдущий объект, который был ассоциирован с ключом key.
+     * @throws ObjectNotExistsException
+     */
+    @Override
+    public O replace(Object key, O object) throws ObjectNotExistsException {
+        final var oldObject = getByKey(key);
+        if (oldObject != null) {
+            if (!oldObject.equals(object)) {
+                getObjects().put(key, object);
+                return oldObject;
+            } else {
+                return null;
+            }
+        } else {
+            throw new ObjectNotExistsException(key, object);
+        }
+    }
+
+    /**
+     * Запись объекта object с ключом key в репозиторий.
+     * @param key       Ключ объекта.
+     * @param object    Объект.
+     * @return          Предыдущий объект с заданным ключом, если такой был.
+     */
+    @Override
+    public O put(Object key, O object) {
+        return getObjects().put(key, object);
+    }
+
+    /**
+     * Запись нескольких объектов с соответствующими ключами для них.
+     * @param source    Map-а ключей и объектов.
+     */
+    @Override
+    public void putAll(Map<Object, O> source) {
+        getObjects().putAll(source);
+    }
+
+    /**
+     * Удаление объекта из репозитория, который зарегистрирован для ключа key.
+     * @param key       Ключ.
+     * @return          Объект, если
+     */
+    @Override
+    public O remove(Object key) {
+        return getObjects().remove(key);
+    }
+
+    /**
+     * Удаление объекта object из репозитория, который зарегистрирован для ключа key.
+     * @param key           Ключ.
+     * @param object        Удаляемый объект.
+     * @return              Удаленный объект, если с заданным ключом был объект, указанный в параметре object.
+     */
+    @Override
+    public O remove(Object key, O object) {
+        final var result = getObjects().get(key);
+        if (result != null && result.equals(object)) {
+            return remove(key);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Получение объекта по идентификатору (ключу), который указан у класса в @JsonIdentityInfo.
      *
      * @param key значение ключа, по которому ищем объект.
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
@@ -204,9 +288,23 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         return this.getObjects().get(key);
     }
 
+    /**
+     * Проверка наличия объекта с указанным ключом в репозитории.
+     * @param key Ключ.
+     * @return true - объект есть, false - объекта нет.
+     */
+    @Override
     public boolean containsKey(Object key) {
         return this.objects.containsKey(key);
     }
+
+    /**
+     * Получение ключа объекта, по которому его идентифицирует данный MemoryRepository.
+     * @param dataObject    Объект данных, из которого "извлекаем" ключ.
+     * @return              Ключ, идентифицирующий указанный объект данных.
+     */
+    @Override
+    public abstract Object extractKey(O dataObject);
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация Iterable">
@@ -224,16 +322,12 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     public Spliterator<O> spliterator() {
         return this.objects.values().spliterator();
     }
-
-    @SuppressWarnings("unused")
-    public int size() {
-        return this.objects.size();
-    }
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация ObjectIdResolver">
     @SuppressWarnings("unchecked")
     protected void bindItem(ObjectIdGenerator.IdKey id, Object pojo) {
+        /*
         final var old = AbstractMemoryRepository.this.objects.get(id.key);
         if (old != null) {
             if (Objects.equals(old, pojo)) {
@@ -242,7 +336,8 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
             // TODO: Обновление объекта!
             throw new IllegalStateException("Already had POJO for id (" + id.key.getClass().getName() + ") [" + id + "]");
         }
-        AbstractMemoryRepository.this.objects.put(id.key, (O)pojo);
+        AbstractMemoryRepository.this.objects.put(id.key, (O) pojo);
+        //*/
     }
 
     protected Object resolveId(ObjectIdGenerator.IdKey id) {
@@ -250,6 +345,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     }
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
+
     /**
      * IdResolver нужен для определения объекта по его ключу - нужен для ObjectMapper-а jackson-а.
      * При десериализации объекта jackson также регистриует объект с ключом в IdResolver-е.
@@ -272,6 +368,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
             }
             return this.repository;
         }
+
         // -------------------------------------------------------------------------------------------------------------
         // <editor-fold desc="реализация ObjectIdResolver">
         @Override
@@ -309,15 +406,16 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
          * Если объект с таким ключом уже зарегистрирован в репозитории, то будет выдан этот существующий объект.
          * Если объекта с таким ключом нет, от выдается из пула свободная "заготовка"
          * (если в пуле закончились "заготовки", создается новый экземпляр).
+         *
          * @param key Ключ, по которому ищется объект в Репозитории
          * @return Уже существующий и ранее зарегестрированный объект в Репозитории, или заготовка из Пула, или новый экземпляр.
          * @throws ObjectCreateException Ошибка при выделении объекта из Пула
-         * (например, "заготовки" закончились, а создавать новый экземпляр запрещено).
+         *                               (например, "заготовки" закончились, а создавать новый экземпляр запрещено).
          */
         @SuppressWarnings("unchecked")
-       protected static <X extends AbstractDataObject> X getOrCreateObject(Class<X> objectClass, Object key) throws ObjectCreateException {
+        protected static <X extends AbstractDataObject> X getOrCreateObject(Class<X> objectClass, Object key) throws ObjectCreateException {
             final var owner = getRepositoryByObjectsClass(objectClass);
-            var result = (X)owner.getByKey(key);
+            var result = (X) owner.getByKey(key);
             if (result != null) {
                 return result;
             }

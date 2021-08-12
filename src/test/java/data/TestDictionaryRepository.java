@@ -15,6 +15,11 @@ public class TestDictionaryRepository extends AbstractMemoryRepository<TestDicti
         return new TestDictionaryObject();
     }
 
+    @Override
+    public Object extractKey(TestDictionaryObject dataObject) {
+        return dataObject.getCode();
+    }
+
     public static class IdResolver extends AbstractIdResolver {
         @SuppressWarnings("rawtypes")
         @Override
