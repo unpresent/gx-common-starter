@@ -154,6 +154,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return объект в виде DataObject
      */
     @Override
+    @Deprecated
     public O loadObject(String jsonObject) throws JsonProcessingException {
         final var objectClass = getObjectClass();
         return (objectClass != null) ? this.objectMapper.readValue(jsonObject, objectClass) : null;
@@ -166,6 +167,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return пакет объектов в виде DataPackage
      */
     @Override
+    @Deprecated
     public P loadPackage(String jsonPackage) throws JsonProcessingException {
         final var packageClass = getPackageClass();
         if (packageClass != null) {
@@ -214,7 +216,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @param key                       Ключ заменяемого объекта.
      * @param object                    Новый объект, который заменит старый объект.
      * @return                          Предыдущий объект, который был ассоциирован с ключом key.
-     * @throws ObjectNotExistsException
+     * @throws ObjectNotExistsException Ошибка, если объект не найден в Репозитории.
      */
     @Override
     public O replace(Object key, O object) throws ObjectNotExistsException {
@@ -325,19 +327,17 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация ObjectIdResolver">
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unused")
     protected void bindItem(ObjectIdGenerator.IdKey id, Object pojo) {
-        /*
-        final var old = AbstractMemoryRepository.this.objects.get(id.key);
-        if (old != null) {
-            if (Objects.equals(old, pojo)) {
-                return;
-            }
-            // TODO: Обновление объекта!
-            throw new IllegalStateException("Already had POJO for id (" + id.key.getClass().getName() + ") [" + id + "]");
-        }
-        AbstractMemoryRepository.this.objects.put(id.key, (O) pojo);
-        //*/
+        //        final var old = AbstractMemoryRepository.this.objects.get(id.key);
+        //        if (old != null) {
+        //            if (Objects.equals(old, pojo)) {
+        //                return;
+        //            }
+        //            // TODO: Обновление объекта!
+        //            throw new IllegalStateException("Already had POJO for id (" + id.key.getClass().getName() + ") [" + id + "]");
+        //        }
+        //        AbstractMemoryRepository.this.objects.put(id.key, (O) pojo);
     }
 
     protected Object resolveId(ObjectIdGenerator.IdKey id) {

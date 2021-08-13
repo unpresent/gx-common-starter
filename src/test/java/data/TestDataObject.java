@@ -31,16 +31,16 @@ public class TestDataObject extends AbstractDataObject {
         super();
     }
 
-    @SuppressWarnings("unused")
-    @JsonCreator
-    public static TestDataObject createObject(
-            @JsonProperty(value = "id") int id,
-            @JsonProperty(value = "code") String code
-    ) throws ObjectCreateException {
-        if (StringUtils.isNull(code, "X").charAt(0) != 'X') {
-            return TestObjectsRepository.ObjectFactory.getOrCreateObject(id);
-        } else {
-            return null;
-        }
-    }
+    //    @SuppressWarnings("unused")
+    //    @JsonCreator
+    //    public static TestDataObject createObject(
+    //            @JsonProperty(value = "id") int id,
+    //            @JsonProperty(value = "code") String code
+    //    ) throws ObjectCreateException {
+    //        if (StringUtils.isNull(code, "X").charAt(0) != 'X') {
+    //            return TestObjectsRepository.ObjectFactory.getOrCreateObject(id);
+    //        } else {
+    //            return null;
+    //        }
+    //    }
 }

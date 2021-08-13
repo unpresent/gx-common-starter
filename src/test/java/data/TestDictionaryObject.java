@@ -21,11 +21,11 @@ public class TestDictionaryObject extends AbstractDataObject {
 
     private String name;
 
-    @SuppressWarnings("unused")
-    @JsonCreator
-    public static TestDictionaryObject createObject(
-            @JsonProperty(value = "code") String code
-    ) throws ObjectCreateException {
-        return TestDictionaryRepository.ObjectFactory.getOrCreateObject(code);
-    }
+    //    @SuppressWarnings("unused")
+    //    @JsonCreator
+    //    public static TestDictionaryObject createObject(
+    //            @JsonProperty(value = "code") String code
+    //    ) throws ObjectCreateException {
+    //        return TestDictionaryRepository.ObjectFactory.getOrCreateObject(code);
+    //    }
 }

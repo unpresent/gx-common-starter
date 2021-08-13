@@ -15,14 +15,14 @@ import java.util.List;
  */
 public abstract class AbstractDataPackage<T extends AbstractDataObject> implements DataPackage<T> {
     /**
-     * Элменты пакета - внутреннее хранение
+     * Элементы пакета - внутреннее хранение
      */
     @Getter(AccessLevel.PROTECTED)
     @JsonIgnore
     private final List<T> listObjects = new ArrayList<>();
 
     /**
-     * @return элменты пакета.
+     * @return элементы пакета.
      */
     @Override
     @JsonProperty(value = "objects")
@@ -41,7 +41,7 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
     }
 
     /**
-     * @return количество элментов в пакете
+     * @return количество элементов в пакете
      */
     @Override
     @JsonIgnore
