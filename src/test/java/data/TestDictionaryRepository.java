@@ -14,11 +14,6 @@ public class TestDictionaryRepository extends AbstractMemoryRepository<TestDicti
         return dataObject.getCode();
     }
 
-    public static class IdResolver extends AbstractIdResolver {
-        @SuppressWarnings("rawtypes")
-        @Override
-        protected Class<? extends AbstractMemoryRepository> getRepositoryClass() {
-            return TestDictionaryRepository.class;
-        }
+    public static class IdResolver extends AbstractIdResolver<TestDictionaryRepository> {
     }
 }

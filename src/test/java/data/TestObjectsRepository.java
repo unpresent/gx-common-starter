@@ -14,11 +14,6 @@ public class TestObjectsRepository extends AbstractMemoryRepository<TestDataObje
         return dataObject.getId();
     }
 
-    public static class IdResolver extends AbstractIdResolver {
-        @SuppressWarnings("rawtypes")
-        @Override
-        protected Class<? extends AbstractMemoryRepository> getRepositoryClass() {
-            return TestObjectsRepository.class;
-        }
+    public static class IdResolver extends AbstractIdResolver<TestObjectsRepository> {
     }
 }
