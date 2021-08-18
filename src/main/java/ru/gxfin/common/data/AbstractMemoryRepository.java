@@ -26,23 +26,25 @@ import java.util.function.Consumer;
  * публичного наследника {@link AbstractIdResolver}. И его уже использовать при определении классов DTO Бумаги, Валюты
  * и Деривативов.
  * <p/>
- * Если в наследнике сделать публичным {@link AbstractObjectsFactory}, это будет означать, что объекты обслуживаемого типа
- * можно создавать. В классах элементов нужно перехватывать с помощью @JsonCreator момент создания
- * и передать управление фабрике. Например, Инструмент (базовый) и наследники Бумаги, Валюты и Деривативы.
- * Тогда в репозитории Инструментов будет неуместно определять Фабрику, а в репозиториях Бумаг, Валют и Дериватов
- * необходимо определить Фабрику, которая будет наследником от {@link AbstractObjectsFactory}. В классах Бумага, Валюта
- * и Дериватив необходимо перехватить создание объекта @JsonCreate-ом и вызвать
- * {@link AbstractObjectsFactory#getOrCreateObject}
- * <p/>
- * В наследниках рекомендуется переопределить {@link #internalCreateEmptyInstance()}, в которой создавать объект
- * оператором new() без вызова данной реализации через super.
- * <p/>
  *
  * @param <O> Тип экземпляров, которыми управляет репозиторий.
  * @param <P> Тип пакетов объектов, которыми управляет репозиторий.
  */
 public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P extends DataPackage<O>>
         implements DataMemoryRepository<O, P> /*, ObjectsPool<O>*/ {
+
+    // * Если в наследнике сделать публичным {@link AbstractObjectsFactory}, это будет означать, что объекты обслуживаемого типа
+    // * можно создавать. В классах элементов нужно перехватывать с помощью @JsonCreator момент создания
+    // * и передать управление фабрике. Например, Инструмент (базовый) и наследники Бумаги, Валюты и Деривативы.
+    //            * Тогда в репозитории Инструментов будет неуместно определять Фабрику, а в репозиториях Бумаг, Валют и Дериватов
+    // * необходимо определить Фабрику, которая будет наследником от {@link AbstractObjectsFactory}. В классах Бумага, Валюта
+    // * и Дериватив необходимо перехватить создание объекта @JsonCreate-ом и вызвать
+    // * {@link AbstractObjectsFactory#getOrCreateObject}
+    // * <p/>
+    //            * В наследниках рекомендуется переопределить {@link #internalCreateEmptyInstance()}, в которой создавать объект
+    // * оператором new() без вызова данной реализации через super.
+    //            * <p/>
+
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
     @SuppressWarnings("rawtypes")
@@ -104,23 +106,23 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="// реализация ObjectPool">
-
-    /**
-     * Создание "заготовки" объекта. Вызывается Фабрикой объектов.
-     * Рекомендуется переопределить (без вызова данной реализации через super) в наследнике
-     * и там создавать нормально через оператор new().
-     *
-     * @return Объект репозитория.
-     */
-    protected O internalCreateEmptyInstance() throws ObjectCreateException {
-        final var objectClass = getObjectClass();
-        try {
-            final var constructor = objectClass.getConstructor();
-            return constructor.newInstance();
-        } catch (Exception e) {
-            throw new ObjectCreateException("Ошибка при создании экземпляра класса: " + objectClass.getName(), e);
-        }
-    }
+    //
+    //    /**
+    //     * Создание "заготовки" объекта. Вызывается Фабрикой объектов.
+    //     * Рекомендуется переопределить (без вызова данной реализации через super) в наследнике
+    //     * и там создавать нормально через оператор new().
+    //     *
+    //     * @return Объект репозитория.
+    //     */
+    //    protected O internalCreateEmptyInstance() throws ObjectCreateException {
+    //        final var objectClass = getObjectClass();
+    //        try {
+    //            final var constructor = objectClass.getConstructor();
+    //            return constructor.newInstance();
+    //        } catch (Exception e) {
+    //            throw new ObjectCreateException("Ошибка при создании экземпляра класса: " + objectClass.getName(), e);
+    //        }
+    //    }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация DataMemoryRepository">
@@ -352,15 +354,25 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * Это используется для наполнения списка объектов Репозитория {@link #objects}.
      */
     @SuppressWarnings("rawtypes")
-    protected static abstract class AbstractIdResolver implements ObjectIdResolver {
+    protected static abstract class AbstractIdResolver<O extends AbstractMemoryRepository> implements ObjectIdResolver {
         private AbstractMemoryRepository repository;
 
-        @SneakyThrows
+        private Class<? extends AbstractMemoryRepository> memoryRepositoryClass;
+
+        @SuppressWarnings("unchecked")
         public AbstractIdResolver() {
             super();
+
+            final var thisClass = this.getClass();
+            final var superClass = thisClass.getGenericSuperclass();
+            if (superClass != null) {
+                this.memoryRepositoryClass = (Class<O>) ((ParameterizedType) superClass).getActualTypeArguments()[0];
+            }
         }
 
-        protected abstract Class<? extends AbstractMemoryRepository> getRepositoryClass();
+        protected Class<? extends AbstractMemoryRepository> getRepositoryClass() {
+            return this.memoryRepositoryClass;
+        }
 
         private AbstractMemoryRepository getRepository() {
             if (this.repository == null) {
@@ -396,33 +408,34 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         // -------------------------------------------------------------------------------------------------------------
     }
 
-    /**
-     * Фабрика объектов. Предназначена для выделения экземпляров объектов
-     * с предварительной проверкой на существование объекта с таким же ключом.
-     */
-    @SuppressWarnings("unused")
-    protected static abstract class AbstractObjectsFactory {
-        /**
-         * Если объект с таким ключом уже зарегистрирован в репозитории, то будет выдан этот существующий объект.
-         * Если объекта с таким ключом нет, от выдается из пула свободная "заготовка"
-         * (если в пуле закончились "заготовки", создается новый экземпляр).
-         *
-         * @param key Ключ, по которому ищется объект в Репозитории
-         * @return Уже существующий и ранее зарегестрированный объект в Репозитории, или заготовка из Пула, или новый экземпляр.
-         * @throws ObjectCreateException Ошибка при выделении объекта из Пула
-         *                               (например, "заготовки" закончились, а создавать новый экземпляр запрещено).
-         */
-        @SuppressWarnings("unchecked")
-        protected static <X extends AbstractDataObject> X getOrCreateObject(Class<X> objectClass, Object key) throws ObjectCreateException {
-            final var owner = getRepositoryByObjectsClass(objectClass);
-            var result = (X) owner.getByKey(key);
-            if (result != null) {
-                return result;
-            }
-
-            result = (X) owner.internalCreateEmptyInstance();
-            return result;
-        }
-    }
+    //    /**
+    //     * Фабрика объектов. Предназначена для выделения экземпляров объектов
+    //     * с предварительной проверкой на существование объекта с таким же ключом.
+    //     */
+    //    @SuppressWarnings("unused")
+    //    protected static abstract class AbstractObjectsFactory {
+    //        /**
+    //         * Если объект с таким ключом уже зарегистрирован в репозитории, то будет выдан этот существующий объект.
+    //         * Если объекта с таким ключом нет, от выдается из пула свободная "заготовка"
+    //         * (если в пуле закончились "заготовки", создается новый экземпляр).
+    //         *
+    //         * @param key Ключ, по которому ищется объект в Репозитории
+    //         * @return Уже существующий и ранее зарегестрированный объект в Репозитории, или заготовка из Пула, или новый экземпляр.
+    //         * @throws ObjectCreateException Ошибка при выделении объекта из Пула
+    //         *                               (например, "заготовки" закончились, а создавать новый экземпляр запрещено).
+    //         */
+    //        @SuppressWarnings("unchecked")
+    //        @Deprecated
+    //        protected static <X extends AbstractDataObject> X getOrCreateObject(Class<X> objectClass, Object key) throws ObjectCreateException {
+    //            final var owner = getRepositoryByObjectsClass(objectClass);
+    //            var result = (X) owner.getByKey(key);
+    //            if (result != null) {
+    //                return result;
+    //            }
+    //
+    //            result = (X) owner.internalCreateEmptyInstance();
+    //            return result;
+    //        }
+    //    }
 }
 

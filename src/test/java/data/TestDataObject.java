@@ -1,14 +1,15 @@
 package data;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.gxfin.common.data.AbstractDataObject;
-import ru.gxfin.common.data.ObjectCreateException;
-import ru.gxfin.common.utils.StringUtils;
 
 @Getter
 @Setter
@@ -30,17 +31,4 @@ public class TestDataObject extends AbstractDataObject {
     protected TestDataObject() {
         super();
     }
-
-    //    @SuppressWarnings("unused")
-    //    @JsonCreator
-    //    public static TestDataObject createObject(
-    //            @JsonProperty(value = "id") int id,
-    //            @JsonProperty(value = "code") String code
-    //    ) throws ObjectCreateException {
-    //        if (StringUtils.isNull(code, "X").charAt(0) != 'X') {
-    //            return TestObjectsRepository.ObjectFactory.getOrCreateObject(id);
-    //        } else {
-    //            return null;
-    //        }
-    //    }
 }

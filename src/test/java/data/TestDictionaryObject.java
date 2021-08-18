@@ -1,13 +1,14 @@
 package data;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.gxfin.common.data.AbstractDataObject;
-import ru.gxfin.common.data.ObjectCreateException;
 
 @Getter
 @Setter
@@ -20,12 +21,4 @@ public class TestDictionaryObject extends AbstractDataObject {
     private String code;
 
     private String name;
-
-    //    @SuppressWarnings("unused")
-    //    @JsonCreator
-    //    public static TestDictionaryObject createObject(
-    //            @JsonProperty(value = "code") String code
-    //    ) throws ObjectCreateException {
-    //        return TestDictionaryRepository.ObjectFactory.getOrCreateObject(code);
-    //    }
 }
