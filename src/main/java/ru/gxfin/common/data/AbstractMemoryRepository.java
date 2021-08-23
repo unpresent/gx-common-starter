@@ -150,36 +150,6 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     }
 
     /**
-     * Десериализация json-а в объект
-     *
-     * @param jsonObject json-строка с объектом
-     * @return объект в виде DataObject
-     */
-    @Override
-    @Deprecated
-    public O loadObject(String jsonObject) throws JsonProcessingException {
-        final var objectClass = getObjectClass();
-        return (objectClass != null) ? this.objectMapper.readValue(jsonObject, objectClass) : null;
-    }
-
-    /**
-     * Десериализация json-а в пакет объектов
-     *
-     * @param jsonPackage json-строка с пакетом объектов
-     * @return пакет объектов в виде DataPackage
-     */
-    @Override
-    @Deprecated
-    public P loadPackage(String jsonPackage) throws JsonProcessingException {
-        final var packageClass = getPackageClass();
-        if (packageClass != null) {
-            return this.objectMapper.readValue(jsonPackage, packageClass);
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * Добавление объекта в репозиторий.
      * @param key                               Ключ добавляемого объекта.
      * @param object                            Добавляемый объект.

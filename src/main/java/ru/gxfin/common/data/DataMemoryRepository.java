@@ -1,6 +1,5 @@
 package ru.gxfin.common.data;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import java.util.Map;
@@ -15,24 +14,6 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
      * @return Количество объектов в Репозитории.
      */
     int size();
-
-    /**
-     * Десериализация json-а в объект. При этом объект регистрируется в репозитории.
-     * @param jsonObject json-строка с объектом
-     * @return объект в виде DataObject
-     */
-    @SuppressWarnings("unused")
-    @Deprecated
-    O loadObject(String jsonObject) throws JsonProcessingException;
-
-    /**
-     * Десериализация json-а в пакет объектов. При этом объекты регистрируется в репозитории.
-     * @param jsonPackage json-строка с пакетом объектов
-     * @return пакет объектов в виде DataPackage
-     */
-    @SuppressWarnings("unused")
-    @Deprecated
-    P loadPackage(String jsonPackage) throws JsonProcessingException;
 
     /**
      * Запись объекта object с ключом key в репозиторий.
