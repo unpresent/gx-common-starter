@@ -149,16 +149,20 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         return this.objects.size();
     }
 
+    private O putInternal(Object key, O object) {
+        return getObjects().put(key, object);
+    }
+
     /**
      * Добавление объекта в репозиторий.
-     * @param key                               Ключ добавляемого объекта.
      * @param object                            Добавляемый объект.
      * @throws ObjectAlreadyExistsException     Ошибка, если для ключа key уже зарегистрирован объект в репозитории.
      */
     @Override
-    public void insert(Object key, O object) throws ObjectAlreadyExistsException {
+    public void insert(O object) throws ObjectAlreadyExistsException {
+        final var key = extractKey(object);
         if (!containsKey(key)) {
-            put(key, object);
+            putInternal(key, object);
         } else {
             throw new ObjectAlreadyExistsException(key, object);
         }
@@ -166,13 +170,13 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Обновление объекта с ключом key. Обновляемый экземпляр не заменяется, а обновляются данные самого объекта.
-     * @param key                           Ключ обновляемого объекта.
      * @param object                        Новое состояние объекта.
      * @throws JsonMappingException         Ошибка при десериализации объекта в объект.
      * @throws ObjectNotExistsException     Ошибка, если для ключа key не зарегистрирован объект в репозитории.
      */
     @Override
-    public void update(Object key, O object) throws JsonMappingException, ObjectNotExistsException {
+    public void update(O object) throws JsonMappingException, ObjectNotExistsException {
+        final var key = extractKey(object);
         final var oldObject = getByKey(key);
         if (oldObject != null) {
             if (!oldObject.equals(object)) {
@@ -185,17 +189,17 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Замена объекта с ключом key в репозитории.
-     * @param key                       Ключ заменяемого объекта.
      * @param object                    Новый объект, который заменит старый объект.
      * @return                          Предыдущий объект, который был ассоциирован с ключом key.
      * @throws ObjectNotExistsException Ошибка, если объект не найден в Репозитории.
      */
     @Override
-    public O replace(Object key, O object) throws ObjectNotExistsException {
+    public O replace(O object) throws ObjectNotExistsException {
+        final var key = extractKey(object);
         final var oldObject = getByKey(key);
         if (oldObject != null) {
             if (!oldObject.equals(object)) {
-                getObjects().put(key, object);
+                putInternal(key, object);
                 return oldObject;
             } else {
                 return null;
@@ -207,13 +211,12 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Запись объекта object с ключом key в репозиторий.
-     * @param key       Ключ объекта.
      * @param object    Объект.
      * @return          Предыдущий объект с заданным ключом, если такой был.
      */
     @Override
-    public O put(Object key, O object) {
-        return getObjects().put(key, object);
+    public O put(O object) {
+        return putInternal(extractKey(object), object);
     }
 
     /**
@@ -231,21 +234,21 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return          Объект, если
      */
     @Override
-    public O remove(Object key) {
+    public O removeByKey(Object key) {
         return getObjects().remove(key);
     }
 
     /**
      * Удаление объекта object из репозитория, который зарегистрирован для ключа key.
-     * @param key           Ключ.
      * @param object        Удаляемый объект.
      * @return              Удаленный объект, если с заданным ключом был объект, указанный в параметре object.
      */
     @Override
-    public O remove(Object key, O object) {
+    public O remove(O object) {
+        final var key = extractKey(object);
         final var result = getObjects().get(key);
         if (result != null && result.equals(object)) {
-            return remove(key);
+            return removeByKey(key);
         } else {
             return null;
         }
@@ -408,4 +411,3 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     //        }
     //    }
 }
-

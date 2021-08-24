@@ -17,12 +17,11 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
 
     /**
      * Запись объекта object с ключом key в репозиторий.
-     * @param key       Ключ объекта.
      * @param object    Объект.
      * @return          Предыдущий объект с заданным ключом, если такой был.
      */
     @SuppressWarnings("UnusedReturnValue")
-    O put(Object key, O object);
+    O put(O object);
 
     /**
      * Запись нескольких объектов с соответствующими ключами для них.
@@ -32,44 +31,40 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
 
     /**
      * Добавление объекта в репозиторий.
-     * @param key                               Ключ добавляемого объекта.
      * @param object                            Добавляемый объект.
      * @throws ObjectAlreadyExistsException     Ошибка, если для ключа key уже зарегистрирован объект в репозитории.
      */
-    void insert(Object key, O object) throws ObjectAlreadyExistsException;
+    void insert(O object) throws ObjectAlreadyExistsException;
 
     /**
      * Обновление объекта с ключом key. Обновляемый экземпляр не заменяется, а обновляются данные самого объекта.
-     * @param key                           Ключ обновляемого объекта.
      * @param object                        Новое состояние объекта.
      * @throws JsonMappingException         Ошибка при десериализации объекта в объект.
      * @throws ObjectNotExistsException     Ошибка, если для ключа key не зарегистрирован объект в репозитории.
      */
-    void update(Object key, O object) throws JsonMappingException, ObjectNotExistsException;
+    void update(O object) throws JsonMappingException, ObjectNotExistsException;
 
     /**
      * Замена объекта с ключом key в репозитории.
-     * @param key                           Ключ заменяемого объекта.
      * @param object                        Новый объект, который заменит старый объект.
      * @return                              Предыдущий объект, который был ассоциирован с ключом key.
      * @throws ObjectNotExistsException     Ошибка в случае, если объекта с таким ключом в Репозитории не зарегистрированно.
      */
-    O replace(Object key, O object) throws ObjectNotExistsException;
+    O replace(O object) throws ObjectNotExistsException;
 
     /**
      * Удаление объекта из репозитория, который зарегистрирован для ключа key.
      * @param key       Ключ.
      * @return          Объект, если
      */
-    O remove(Object key);
+    O removeByKey(Object key);
 
     /**
      * Удаление объекта object из репозитория, который зарегистрирован для ключа key.
-     * @param key           Ключ.
      * @param object        Удаляемый объект.
      * @return              Удаленный объект, если с заданным ключом был объект, указанный в параметре object.
      */
-    O remove(Object key, O object);
+    O remove(O object);
 
     /**
      * Получение объекта по иденификатору (ключу), который указан у класса в @JsonIdentityInfo.

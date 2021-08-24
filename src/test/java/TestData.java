@@ -24,11 +24,11 @@ public class TestData {
         final var dictObjJsonString2 = "{\"code\":\"Y\",\"name\":\"Упулька\"}";
 
         final var d1 = objectMapper.readValue(dictObjJsonString1, TestDictionaryObject.class);
-        testDictRepo.insert(testDictRepo.extractKey(d1), d1);
+        testDictRepo.insert(d1);
         System.out.println(d1);
 
         final var d2 = objectMapper.readValue(dictObjJsonString2, TestDictionaryObject.class);
-        testDictRepo.insert(testDictRepo.extractKey(d2), d2);
+        testDictRepo.insert(d2);
         System.out.println(d2);
 
         final var jsonString1 = "{\"id\":1,\"code\":\"A\",\"name\":\"Имя мое есть Царь!\",\"dictionaryObject\":\"X\"}";
@@ -36,11 +36,11 @@ public class TestData {
         final var jsonString3 = "{\"id\":2,\"code\":\"X\",\"name\":\"***\",\"dictionaryObject\":\"Y\"}";
 
         final var o1 = objectMapper.readValue(jsonString1, TestDataObject.class);
-        testMemRepo.insert(testMemRepo.extractKey(o1), o1);
+        testMemRepo.insert(o1);
         System.out.println(o1);
 
         final var o2 = objectMapper.readValue(jsonString2, TestDataObject.class);
-        testMemRepo.update(testMemRepo.extractKey(o2), o2);
+        testMemRepo.update(o2);
         System.out.println(o2);
 
         if (o1 == testMemRepo.getByKey(testMemRepo.extractKey(o2))) {
