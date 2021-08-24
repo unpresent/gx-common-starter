@@ -224,8 +224,8 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @param source    Map-а ключей и объектов.
      */
     @Override
-    public void putAll(Map<Object, O> source) {
-        getObjects().putAll(source);
+    public void putAll(Collection<O> source) {
+        source.forEach(s -> this.putInternal(extractKey(s), s));
     }
 
     /**

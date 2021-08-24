@@ -2,6 +2,7 @@ package ru.gxfin.common.data;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -27,7 +28,7 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
      * Запись нескольких объектов с соответствующими ключами для них.
      * @param source    Map-а ключей и объектов.
      */
-    void putAll(Map<Object, O> source);
+    void putAll(Collection<O> source);
 
     /**
      * Добавление объекта в репозиторий.
