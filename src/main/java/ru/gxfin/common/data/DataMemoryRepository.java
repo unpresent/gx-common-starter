@@ -3,7 +3,6 @@ package ru.gxfin.common.data;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * Интерфейс InMemory-репозитория объектов наследников DataObjects

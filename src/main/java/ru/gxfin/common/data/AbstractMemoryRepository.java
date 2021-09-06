@@ -2,12 +2,10 @@ package ru.gxfin.common.data;
 
 import com.fasterxml.jackson.annotation.ObjectIdGenerator;
 import com.fasterxml.jackson.annotation.ObjectIdResolver;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.ParameterizedType;
@@ -18,7 +16,7 @@ import java.util.function.Consumer;
  * Базовая непотокобезопасная реализация InMemory-репозитория объектов типа E.
  * <br/>
  * В поле {@link #objects} находятся объекты, с которыми сейчас работают.
- * // В {objectsPool} находятся заготовки объектов - свободные, которые выделяются при запросе у пула объекта.}
+ * // В {objectsPool} находятся заготовки объектов - свободные, которые выделяются при запросе у пула объекта.
  * <p/>
  * Если в наследнике сделать публичным {@link AbstractIdResolver}, это будет означать, что все объекты обслуживаемого типа
  * и его наследники имеют сквозную идентификацию. Например, Инструмент (базовый) и наследники Бумага, Валюта и Дериватив.
@@ -47,21 +45,17 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
-    @SuppressWarnings("rawtypes")
     @Getter(AccessLevel.PROTECTED)
-    private static final Map<Class<? extends AbstractMemoryRepository>, AbstractMemoryRepository> instancesByRepositoryClass = new HashMap<>();
+    private static final Map<Class<? extends AbstractMemoryRepository<?, ?>>, AbstractMemoryRepository<?, ?>> instancesByRepositoryClass = new HashMap<>();
 
-    @SuppressWarnings("rawtypes")
     @Getter(AccessLevel.PROTECTED)
-    private static final Map<Class<? extends AbstractDataObject>, AbstractMemoryRepository> instancesByObjectsClass = new HashMap<>();
+    private static final Map<Class<? extends AbstractDataObject>, AbstractMemoryRepository<?, ?>> instancesByObjectsClass = new HashMap<>();
 
-    @SuppressWarnings("rawtypes")
-    protected static AbstractMemoryRepository getRepositoryByClass(Class<? extends AbstractMemoryRepository> repositoryClass) {
+    protected static AbstractMemoryRepository<?, ?> getRepositoryByClass(Class<? extends AbstractMemoryRepository<?, ?>> repositoryClass) {
         return instancesByRepositoryClass.get(repositoryClass);
     }
 
-    @SuppressWarnings("rawtypes")
-    protected static AbstractMemoryRepository getRepositoryByObjectsClass(Class<? extends AbstractDataObject> objectsClass) {
+    protected static AbstractMemoryRepository<?, ?> getRepositoryByObjectsClass(Class<? extends AbstractDataObject> objectsClass) {
         return instancesByObjectsClass.get(objectsClass);
     }
 
@@ -82,7 +76,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     protected AbstractMemoryRepository(ObjectMapper objectMapper) throws SingletonInstanceAlreadyExistsException {
         this.objectMapper = objectMapper;
 
-        final var thisClass = this.getClass();
+        final Class<? extends AbstractMemoryRepository<?, ?>> thisClass = (Class<? extends AbstractMemoryRepository<?, ?>>)this.getClass();
         final var superClass = thisClass.getGenericSuperclass();
         if (superClass != null) {
             this.objectsClass = (Class<O>) ((ParameterizedType) superClass).getActualTypeArguments()[0];
@@ -126,9 +120,11 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация DataMemoryRepository">
+
     /**
      * @return Класс объектов репозитория.
      */
+    @SuppressWarnings("unused")
     public Class<O> getObjectClass() {
         return this.objectsClass;
     }
@@ -136,6 +132,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     /**
      * @return Класс пакета объектов.
      */
+    @SuppressWarnings("unused")
     public Class<P> getPackageClass() {
         return this.packagesClass;
     }
@@ -155,8 +152,9 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Добавление объекта в репозиторий.
-     * @param object                            Добавляемый объект.
-     * @throws ObjectAlreadyExistsException     Ошибка, если для ключа key уже зарегистрирован объект в репозитории.
+     *
+     * @param object Добавляемый объект.
+     * @throws ObjectAlreadyExistsException Ошибка, если для ключа key уже зарегистрирован объект в репозитории.
      */
     @Override
     public void insert(O object) throws ObjectAlreadyExistsException {
@@ -170,9 +168,10 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Обновление объекта с ключом key. Обновляемый экземпляр не заменяется, а обновляются данные самого объекта.
-     * @param object                        Новое состояние объекта.
-     * @throws JsonMappingException         Ошибка при десериализации объекта в объект.
-     * @throws ObjectNotExistsException     Ошибка, если для ключа key не зарегистрирован объект в репозитории.
+     *
+     * @param object Новое состояние объекта.
+     * @throws JsonMappingException     Ошибка при десериализации объекта в объект.
+     * @throws ObjectNotExistsException Ошибка, если для ключа key не зарегистрирован объект в репозитории.
      */
     @Override
     public void update(O object) throws JsonMappingException, ObjectNotExistsException {
@@ -189,8 +188,9 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Замена объекта с ключом key в репозитории.
-     * @param object                    Новый объект, который заменит старый объект.
-     * @return                          Предыдущий объект, который был ассоциирован с ключом key.
+     *
+     * @param object Новый объект, который заменит старый объект.
+     * @return Предыдущий объект, который был ассоциирован с ключом key.
      * @throws ObjectNotExistsException Ошибка, если объект не найден в Репозитории.
      */
     @Override
@@ -211,8 +211,9 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Запись объекта object с ключом key в репозиторий.
-     * @param object    Объект.
-     * @return          Предыдущий объект с заданным ключом, если такой был.
+     *
+     * @param object Объект.
+     * @return Предыдущий объект с заданным ключом, если такой был.
      */
     @Override
     public O put(O object) {
@@ -221,7 +222,8 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Запись нескольких объектов с соответствующими ключами для них.
-     * @param source    Map-а ключей и объектов.
+     *
+     * @param source Map-а ключей и объектов.
      */
     @Override
     public void putAll(Collection<O> source) {
@@ -230,8 +232,9 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Удаление объекта из репозитория, который зарегистрирован для ключа key.
-     * @param key       Ключ.
-     * @return          Объект, если
+     *
+     * @param key Ключ.
+     * @return Объект, если
      */
     @Override
     public O removeByKey(Object key) {
@@ -240,8 +243,9 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Удаление объекта object из репозитория, который зарегистрирован для ключа key.
-     * @param object        Удаляемый объект.
-     * @return              Удаленный объект, если с заданным ключом был объект, указанный в параметре object.
+     *
+     * @param object Удаляемый объект.
+     * @return Удаленный объект, если с заданным ключом был объект, указанный в параметре object.
      */
     @Override
     public O remove(O object) {
@@ -267,6 +271,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Проверка наличия объекта с указанным ключом в репозитории.
+     *
      * @param key Ключ.
      * @return true - объект есть, false - объекта нет.
      */
@@ -277,11 +282,13 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * Получение ключа объекта, по которому его идентифицирует данный MemoryRepository.
-     * @param dataObject    Объект данных, из которого "извлекаем" ключ.
-     * @return              Ключ, идентифицирующий указанный объект данных.
+     *
+     * @param dataObject Объект данных, из которого "извлекаем" ключ.
+     * @return Ключ, идентифицирующий указанный объект данных.
      */
     @Override
     public abstract Object extractKey(O dataObject);
+
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация Iterable">
@@ -299,20 +306,12 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     public Spliterator<O> spliterator() {
         return this.objects.values().spliterator();
     }
+
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация ObjectIdResolver">
     @SuppressWarnings("unused")
     protected void bindItem(ObjectIdGenerator.IdKey id, Object pojo) {
-        //        final var old = AbstractMemoryRepository.this.objects.get(id.key);
-        //        if (old != null) {
-        //            if (Objects.equals(old, pojo)) {
-        //                return;
-        //            }
-        //            // TODO: Обновление объекта!
-        //            throw new IllegalStateException("Already had POJO for id (" + id.key.getClass().getName() + ") [" + id + "]");
-        //        }
-        //        AbstractMemoryRepository.this.objects.put(id.key, (O) pojo);
     }
 
     protected Object resolveId(ObjectIdGenerator.IdKey id) {
@@ -323,14 +322,13 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
     /**
      * IdResolver нужен для определения объекта по его ключу - нужен для ObjectMapper-а jackson-а.
-     * При десериализации объекта jackson также регистриует объект с ключом в IdResolver-е.
+     * При десериализации объекта jackson также регистрирует объект с ключом в IdResolver-е.
      * Это используется для наполнения списка объектов Репозитория {@link #objects}.
      */
-    @SuppressWarnings("rawtypes")
-    protected static abstract class AbstractIdResolver<O extends AbstractMemoryRepository> implements ObjectIdResolver {
-        private AbstractMemoryRepository repository;
+    protected static abstract class AbstractIdResolver<O extends AbstractMemoryRepository<?, ?>> implements ObjectIdResolver {
+        private AbstractMemoryRepository<?, ?> repository;
 
-        private Class<? extends AbstractMemoryRepository> memoryRepositoryClass;
+        private Class<? extends AbstractMemoryRepository<?, ?>> memoryRepositoryClass;
 
         @SuppressWarnings("unchecked")
         public AbstractIdResolver() {
@@ -343,11 +341,11 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
             }
         }
 
-        protected Class<? extends AbstractMemoryRepository> getRepositoryClass() {
+        protected Class<? extends AbstractMemoryRepository<?, ?>> getRepositoryClass() {
             return this.memoryRepositoryClass;
         }
 
-        private AbstractMemoryRepository getRepository() {
+        private AbstractMemoryRepository<?, ?> getRepository() {
             if (this.repository == null) {
                 this.repository = getRepositoryByClass(getRepositoryClass());
             }
@@ -368,8 +366,6 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
 
         @Override
         public boolean canUseFor(@NotNull ObjectIdResolver resolverType) {
-            // TODO: Проверить для репо с наследованием. Например, AbstractInstrument и его наследники: Security и Currency.
-            // Явно кто-то от кого-то должен наследоваться.
             return resolverType.getClass() == this.getClass();
         }
 
@@ -380,34 +376,4 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         // </editor-fold>
         // -------------------------------------------------------------------------------------------------------------
     }
-
-    //    /**
-    //     * Фабрика объектов. Предназначена для выделения экземпляров объектов
-    //     * с предварительной проверкой на существование объекта с таким же ключом.
-    //     */
-    //    @SuppressWarnings("unused")
-    //    protected static abstract class AbstractObjectsFactory {
-    //        /**
-    //         * Если объект с таким ключом уже зарегистрирован в репозитории, то будет выдан этот существующий объект.
-    //         * Если объекта с таким ключом нет, от выдается из пула свободная "заготовка"
-    //         * (если в пуле закончились "заготовки", создается новый экземпляр).
-    //         *
-    //         * @param key Ключ, по которому ищется объект в Репозитории
-    //         * @return Уже существующий и ранее зарегестрированный объект в Репозитории, или заготовка из Пула, или новый экземпляр.
-    //         * @throws ObjectCreateException Ошибка при выделении объекта из Пула
-    //         *                               (например, "заготовки" закончились, а создавать новый экземпляр запрещено).
-    //         */
-    //        @SuppressWarnings("unchecked")
-    //        @Deprecated
-    //        protected static <X extends AbstractDataObject> X getOrCreateObject(Class<X> objectClass, Object key) throws ObjectCreateException {
-    //            final var owner = getRepositoryByObjectsClass(objectClass);
-    //            var result = (X) owner.getByKey(key);
-    //            if (result != null) {
-    //                return result;
-    //            }
-    //
-    //            result = (X) owner.internalCreateEmptyInstance();
-    //            return result;
-    //        }
-    //    }
 }
