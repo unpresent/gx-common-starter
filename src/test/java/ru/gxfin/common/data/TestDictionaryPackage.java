@@ -1,6 +1,4 @@
-package data;
-
-import ru.gxfin.common.data.AbstractDataPackage;
+package ru.gxfin.common.data;
 
 public class TestDictionaryPackage extends AbstractDataPackage<TestDictionaryObject> {
 }

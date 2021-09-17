@@ -1,11 +1,7 @@
-package worker;
+package ru.gxfin.common.worker;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import ru.gxfin.common.worker.AbstractIterationExecuteEvent;
-import ru.gxfin.common.worker.AbstractStartingExecuteEvent;
-import ru.gxfin.common.worker.AbstractStoppingExecuteEvent;
-import ru.gxfin.common.worker.AbstractWorker;
 
 @Slf4j
 public class TheWorker extends AbstractWorker {
@@ -69,8 +65,7 @@ public class TheWorker extends AbstractWorker {
     }
 
     private void internalTreatmentExceptionOnDataRead(TheIterationExecuteEvent event, Exception e) {
-        log.error(e.getMessage());
-        log.error(e.getStackTrace().toString());
+        log.error("", e);
         if (e instanceof InterruptedException) {
             log.info("event.setStopExecution(true)");
             event.setStopExecution(true);

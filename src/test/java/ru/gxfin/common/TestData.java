@@ -1,11 +1,13 @@
+package ru.gxfin.common;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import data.TestDataObject;
-import data.TestDictionaryObject;
-import data.TestDictionaryRepository;
-import data.TestObjectsRepository;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
+import ru.gxfin.common.data.TestDataObject;
+import ru.gxfin.common.data.TestDictionaryObject;
+import ru.gxfin.common.data.TestDictionaryRepository;
+import ru.gxfin.common.data.TestObjectsRepository;
 
 @SuppressWarnings("unused")
 @Testable

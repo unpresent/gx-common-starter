@@ -1,5 +1,7 @@
 package ru.gxfin.common.settings;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Интерфейс контроллера настроек
  */
@@ -10,12 +12,12 @@ public interface SettingsController {
      * @return значение настройки
      */
     @SuppressWarnings("unused")
-    Object getSetting(String settingName);
+    Object getSetting(@NotNull String settingName);
 
     /**
      * Установка новго значения настойки. Если значение изменяется, то бросается событие об изменении.
      * @param settingName название настйроки
      * @param value значение настройки
      */
-    void setSetting(String settingName, Object value);
+    void setSetting(@NotNull String settingName, Object value);
 }

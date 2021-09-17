@@ -1,6 +1,4 @@
-package worker;
-
-import ru.gxfin.common.worker.AbstractStoppingExecuteEvent;
+package ru.gxfin.common.worker;
 
 public class TheStoppingExecuteEvent extends AbstractStoppingExecuteEvent {
     public TheStoppingExecuteEvent(Object source) {

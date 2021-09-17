@@ -1,8 +1,7 @@
-package data;
+package ru.gxfin.common.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.gxfin.common.data.AbstractMemoryRepository;
-import ru.gxfin.common.data.SingletonInstanceAlreadyExistsException;
+import org.jetbrains.annotations.NotNull;
 
 public class TestDictionaryRepository extends AbstractMemoryRepository<TestDictionaryObject, TestDictionaryPackage> {
     public TestDictionaryRepository(ObjectMapper objectMapper) throws SingletonInstanceAlreadyExistsException {
@@ -10,7 +9,7 @@ public class TestDictionaryRepository extends AbstractMemoryRepository<TestDicti
     }
 
     @Override
-    public Object extractKey(TestDictionaryObject dataObject) {
+    public Object extractKey(@NotNull TestDictionaryObject dataObject) {
         return dataObject.getCode();
     }
 

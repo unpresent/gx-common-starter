@@ -3,6 +3,7 @@ package ru.gxfin.common.settings;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
@@ -37,7 +38,7 @@ public abstract class AbstractSettingsController implements SettingsController {
     @Getter(AccessLevel.PROTECTED)
     private final SettingsChangedEvent settingsChangedEvent;
 
-    public AbstractSettingsController(ApplicationContext context) {
+    public AbstractSettingsController(@NotNull ApplicationContext context) {
         super();
         this.context = context;
         this.environment = context.getEnvironment();
@@ -61,7 +62,7 @@ public abstract class AbstractSettingsController implements SettingsController {
      * @return значение настройки.
      */
     @Override
-    public Object getSetting(String settingName) {
+    public Object getSetting(@NotNull String settingName) {
         return this.settings.get(settingName);
     }
 
@@ -72,7 +73,7 @@ public abstract class AbstractSettingsController implements SettingsController {
      * @param value       новое значение настройки.
      */
     @Override
-    public void setSetting(String settingName, Object value) {
+    public void setSetting(@NotNull String settingName, Object value) {
         final var oldValue = this.settings.get(settingName);
         if ((oldValue == null && value != null) || (oldValue != null && !oldValue.equals(value))) {
             log.info("setSetting({}, {})", settingName, value);
@@ -83,7 +84,7 @@ public abstract class AbstractSettingsController implements SettingsController {
     }
 
     @SuppressWarnings("unused")
-    protected void loadStringSetting(String settingName) throws UnknownApplicationSettingException {
+    protected void loadStringSetting(@NotNull String settingName) throws UnknownApplicationSettingException {
         final var settingValue = this.getEnvironment().getProperty(settingName);
         if (settingValue == null) {
             throw new UnknownApplicationSettingException(settingName);
@@ -92,7 +93,7 @@ public abstract class AbstractSettingsController implements SettingsController {
     }
 
     @SuppressWarnings("unused")
-    protected void loadIntegerSetting(String settingName) throws UnknownApplicationSettingException {
+    protected void loadIntegerSetting(@NotNull String settingName) throws UnknownApplicationSettingException {
         final var settingValue = this.getEnvironment().getProperty(settingName);
         if (settingValue == null) {
             throw new UnknownApplicationSettingException(settingName);

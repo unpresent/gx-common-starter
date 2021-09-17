@@ -157,7 +157,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @throws ObjectAlreadyExistsException Ошибка, если для ключа key уже зарегистрирован объект в репозитории.
      */
     @Override
-    public void insert(O object) throws ObjectAlreadyExistsException {
+    public void insert(@NotNull O object) throws ObjectAlreadyExistsException {
         final var key = extractKey(object);
         if (!containsKey(key)) {
             putInternal(key, object);
@@ -174,7 +174,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @throws ObjectNotExistsException Ошибка, если для ключа key не зарегистрирован объект в репозитории.
      */
     @Override
-    public void update(O object) throws JsonMappingException, ObjectNotExistsException {
+    public void update(@NotNull O object) throws JsonMappingException, ObjectNotExistsException {
         final var key = extractKey(object);
         final var oldObject = getByKey(key);
         if (oldObject != null) {
@@ -194,7 +194,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @throws ObjectNotExistsException Ошибка, если объект не найден в Репозитории.
      */
     @Override
-    public O replace(O object) throws ObjectNotExistsException {
+    public O replace(@NotNull O object) throws ObjectNotExistsException {
         final var key = extractKey(object);
         final var oldObject = getByKey(key);
         if (oldObject != null) {
@@ -216,7 +216,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Предыдущий объект с заданным ключом, если такой был.
      */
     @Override
-    public O put(O object) {
+    public O put(@NotNull O object) {
         return putInternal(extractKey(object), object);
     }
 
@@ -226,7 +226,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @param source Map-а ключей и объектов.
      */
     @Override
-    public void putAll(Collection<O> source) {
+    public void putAll(@NotNull Collection<O> source) {
         source.forEach(s -> this.putInternal(extractKey(s), s));
     }
 
@@ -237,7 +237,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Объект, если
      */
     @Override
-    public O removeByKey(Object key) {
+    public O removeByKey(@NotNull Object key) {
         return getObjects().remove(key);
     }
 
@@ -248,7 +248,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Удаленный объект, если с заданным ключом был объект, указанный в параметре object.
      */
     @Override
-    public O remove(O object) {
+    public O remove(@NotNull O object) {
         final var key = extractKey(object);
         final var result = getObjects().get(key);
         if (result != null && result.equals(object)) {
@@ -265,7 +265,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
      */
     @Override
-    public O getByKey(Object key) {
+    public O getByKey(@NotNull Object key) {
         return this.getObjects().get(key);
     }
 
@@ -276,7 +276,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return true - объект есть, false - объекта нет.
      */
     @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(@NotNull Object key) {
         return this.objects.containsKey(key);
     }
 
@@ -287,7 +287,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Ключ, идентифицирующий указанный объект данных.
      */
     @Override
-    public abstract Object extractKey(O dataObject);
+    public abstract Object extractKey(@NotNull O dataObject);
 
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
@@ -298,7 +298,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     }
 
     @Override
-    public void forEach(Consumer<? super O> action) {
+    public void forEach(@NotNull Consumer<? super O> action) {
         this.objects.values().forEach(action);
     }
 
@@ -311,10 +311,10 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация ObjectIdResolver">
     @SuppressWarnings("unused")
-    protected void bindItem(ObjectIdGenerator.IdKey id, Object pojo) {
+    protected void bindItem(@NotNull ObjectIdGenerator.IdKey id, @NotNull Object pojo) {
     }
 
-    protected Object resolveId(ObjectIdGenerator.IdKey id) {
+    protected Object resolveId(@NotNull ObjectIdGenerator.IdKey id) {
         return AbstractMemoryRepository.this.objects.get(id.key);
     }
     // </editor-fold>
@@ -355,12 +355,12 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         // -------------------------------------------------------------------------------------------------------------
         // <editor-fold desc="реализация ObjectIdResolver">
         @Override
-        public void bindItem(ObjectIdGenerator.IdKey id, Object pojo) {
+        public void bindItem(@NotNull ObjectIdGenerator.IdKey id, @NotNull Object pojo) {
             getRepository().bindItem(id, pojo);
         }
 
         @Override
-        public Object resolveId(ObjectIdGenerator.IdKey id) {
+        public Object resolveId(@NotNull ObjectIdGenerator.IdKey id) {
             return getRepository().resolveId(id);
         }
 

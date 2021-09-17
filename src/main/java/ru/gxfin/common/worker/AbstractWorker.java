@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -146,7 +147,7 @@ public abstract class AbstractWorker implements Worker {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Init">
-    protected AbstractWorker(String name) {
+    protected AbstractWorker(@NotNull String name) {
         super();
         this.name = name;
         this.iterationExecuteEvent = createIterationExecuteEvent();
@@ -238,8 +239,7 @@ public abstract class AbstractWorker implements Worker {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
-                    log.error(e.getMessage());
-                    log.error(e.getStackTrace().toString());
+                    log.error("", e);
                 }
                 if (isRunning()) {
                     this.stoppingExecuteEventCalled = false;
@@ -283,8 +283,7 @@ public abstract class AbstractWorker implements Worker {
                 try {
                     Thread.sleep(timeoutMs / 10);
                 } catch (InterruptedException e) {
-                    log.error(e.getMessage());
-                    log.error(e.getStackTrace().toString());
+                    log.error("", e);
                 }
             }
 
@@ -428,8 +427,6 @@ public abstract class AbstractWorker implements Worker {
 
         /**
          * Выполняет одну итерацию цикла обработки.
-         *
-         * @return true - требуется продолжать обработку. false - требуется остановить обработку.
          */
         protected void doIteration() {
             log.debug("Starting doStep()");
@@ -465,8 +462,7 @@ public abstract class AbstractWorker implements Worker {
                     log.debug("doIdleIfNeed(): sleep(" + sleepTime + ")!");
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    log.error(e.getMessage());
-                    log.error(e.getStackTrace().toString());
+                    log.error("", e);
                 }
             }
         }
