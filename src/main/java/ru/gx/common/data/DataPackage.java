@@ -1,5 +1,7 @@
 package ru.gx.common.data;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
 
 /**
@@ -8,9 +10,10 @@ import java.util.Collection;
  */
 public interface DataPackage<T extends DataObject> {
     /**
-     * @return Элменты пакета
+     * @return Элементы пакета
      */
     @SuppressWarnings("unused")
+    @NotNull
     Collection<T> getObjects();
 
     /**
@@ -19,10 +22,11 @@ public interface DataPackage<T extends DataObject> {
      * @return элемент с индексом index
      */
     @SuppressWarnings("unused")
+    @NotNull
     T get(int index);
 
     /**
-     * @return количество элментов в пакете
+     * @return количество элементов в пакете
      */
     @SuppressWarnings("unused")
     int size();

@@ -1,5 +1,8 @@
 package ru.gx.common.utils;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 @SuppressWarnings("unused")
 public class IntegerUtils {
     /**
@@ -8,7 +11,8 @@ public class IntegerUtils {
      * @param defaultValue значение, которое будет возращено, если value == null.
      * @return value, если value не null. Иначе defaultValue.
      */
-    public static Integer isNull(Integer value, Integer defaultValue) {
+    @NotNull
+    public static Integer isNull(@Nullable final Integer value, @NotNull final Integer defaultValue) {
         return value == null ? defaultValue : value;
     }
 
@@ -17,7 +21,8 @@ public class IntegerUtils {
      * @param ifValue значение, с которым сверяется mainValue.
      * @return null, если #mainValue.equals(ifValue). Иначе mainValue.
      */
-    public static Integer nullIf(Integer mainValue, Integer ifValue) {
+    @Nullable
+    public static Integer nullIf(@Nullable final Integer mainValue, @Nullable final Integer ifValue) {
         if (mainValue == null) {
             return null;
         }

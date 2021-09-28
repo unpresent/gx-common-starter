@@ -9,5 +9,7 @@ import org.junit.platform.commons.annotation.Testable;
 public class TestWorker {
     @Test
     public void testWorker() {
+//        final var context = new ApplicationContext();
+//        final var settingsController = new SimpleSettingsController(context);
     }
 }

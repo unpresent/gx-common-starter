@@ -1,15 +1,17 @@
 package ru.gx.common.worker;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
+import ru.gx.common.settings.SettingsController;
 
 @Slf4j
-public class TheWorker extends AbstractWorker {
-    private int iterationIndex = 0;
+public class TheWorker extends SimpleWorker {
     private final int[] iterationsTimes = new int[] {100, 500, 1000, 2000, 5000, 11000, 12000, 1000};
 
-    public TheWorker(String name) {
-        super(name);
+    public TheWorker(String name, ApplicationContext context, SettingsController settingsController) {
+        super(name, context, settingsController);
     }
 
     @Override
@@ -32,29 +34,14 @@ public class TheWorker extends AbstractWorker {
         return 20000;
     }
 
-    @Override
-    protected AbstractIterationExecuteEvent createIterationExecuteEvent() {
-        return new TheIterationExecuteEvent(this);
-    }
-
-    @Override
-    protected AbstractStartingExecuteEvent createStartingExecuteEvent() {
-        return new TheStartingExecuteEvent(this);
-    }
-
-    @Override
-    protected AbstractStoppingExecuteEvent createStoppingExecuteEvent() {
-        return new TheStoppingExecuteEvent(this);
-    }
-
-
-    @EventListener(TheIterationExecuteEvent.class)
-    public void iterationExecute(TheIterationExecuteEvent event) {
+    @EventListener(SimpleIterationExecuteEvent.class)
+    public void iterationExecute(@NotNull final SimpleIterationExecuteEvent event) {
         log.debug("Starting iterationExecute()");
         try {
             runnerIsLifeSet();
-            final var wait = this.iterationIndex < this.iterationsTimes.length
-                    ? this.iterationsTimes[this.iterationIndex]
+            int iterationIndex = 0;
+            final var wait = iterationIndex < this.iterationsTimes.length
+                    ? this.iterationsTimes[iterationIndex]
                     : 250;
             Thread.sleep(wait);
         } catch (Exception e) {
@@ -64,7 +51,7 @@ public class TheWorker extends AbstractWorker {
         }
     }
 
-    private void internalTreatmentExceptionOnDataRead(TheIterationExecuteEvent event, Exception e) {
+    private void internalTreatmentExceptionOnDataRead(@NotNull final SimpleIterationExecuteEvent event, Exception e) {
         log.error("", e);
         if (e instanceof InterruptedException) {
             log.info("event.setStopExecution(true)");

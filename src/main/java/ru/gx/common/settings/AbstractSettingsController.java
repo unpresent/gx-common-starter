@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
@@ -21,24 +22,28 @@ public abstract class AbstractSettingsController implements SettingsController {
     public static final String ALL = "*";
 
     @Getter(AccessLevel.PROTECTED)
+    @NotNull
     private final ApplicationContext context;
 
     @Getter(AccessLevel.PROTECTED)
+    @NotNull
     private final Environment environment;
 
     /**
-     * Список насроек со значениями
+     * Список настроек со значениями
      */
     @Getter(AccessLevel.PROTECTED)
+    @NotNull
     private final Map<String, Object> settings;
 
     /**
      * Объект-событие об изменении настройки/настроек
      */
     @Getter(AccessLevel.PROTECTED)
+    @NotNull
     private final SettingsChangedEvent settingsChangedEvent;
 
-    public AbstractSettingsController(@NotNull ApplicationContext context) {
+    protected AbstractSettingsController(@NotNull final ApplicationContext context) {
         super();
         this.context = context;
         this.environment = context.getEnvironment();
@@ -48,9 +53,10 @@ public abstract class AbstractSettingsController implements SettingsController {
 
     /**
      * @return Создается объект-событие, которое будет использоваться для вызова события об изменении настройки/настроек.
-     * Можно переопределять в наследниках, чтобы объект-событие был наследником от SettingsChangedEvent
+     * Можно переопределять в наследниках, чтобы объект-событие был наследником от SettingsChangedEvent-а.
      * @see SettingsChangedEvent
      */
+    @NotNull
     protected SettingsChangedEvent createSettingsChangedEvent() {
         return new SettingsChangedEvent(this, ALL);
     }
@@ -62,8 +68,35 @@ public abstract class AbstractSettingsController implements SettingsController {
      * @return значение настройки.
      */
     @Override
-    public Object getSetting(@NotNull String settingName) {
+    @Nullable
+    public Object getSetting(@NotNull final String settingName) {
         return this.settings.get(settingName);
+    }
+
+    @Override
+    @NotNull
+    public Integer getIntegerSetting(@NotNull final String settingName) throws ClassCastException {
+        final var value = getSetting(settingName);
+        if (value == null) {
+            throw new ClassCastException("Can't get setting " + settingName + " as Integer. Setting is null!");
+        }
+        if (value instanceof Integer) {
+            return (Integer) value;
+        }
+        throw new ClassCastException("Can't get setting " + settingName + " as Integer. Setting class is " + value.getClass().getSimpleName());
+    }
+
+    @Override
+    @NotNull
+    public String getStringSetting(@NotNull final String settingName) throws ClassCastException {
+        final var value = getSetting(settingName);
+        if (value == null) {
+            throw new ClassCastException("Can't get setting " + settingName + " as Integer. Setting is null!");
+        }
+        if (value instanceof String) {
+            return (String) value;
+        }
+        throw new ClassCastException("Can't get setting " + settingName + " as String. Setting class is " + value.getClass().getSimpleName());
     }
 
     /**
@@ -73,7 +106,7 @@ public abstract class AbstractSettingsController implements SettingsController {
      * @param value       новое значение настройки.
      */
     @Override
-    public void setSetting(@NotNull String settingName, Object value) {
+    public void setSetting(@NotNull final String settingName, @Nullable final Object value) {
         final var oldValue = this.settings.get(settingName);
         if ((oldValue == null && value != null) || (oldValue != null && !oldValue.equals(value))) {
             log.info("setSetting({}, {})", settingName, value);
@@ -84,7 +117,7 @@ public abstract class AbstractSettingsController implements SettingsController {
     }
 
     @SuppressWarnings("unused")
-    protected void loadStringSetting(@NotNull String settingName) throws UnknownApplicationSettingException {
+    protected void loadStringSetting(@NotNull final String settingName) throws UnknownApplicationSettingException {
         final var settingValue = this.getEnvironment().getProperty(settingName);
         if (settingValue == null) {
             throw new UnknownApplicationSettingException(settingName);

@@ -1,23 +1,24 @@
 package ru.gx.common.worker;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import ru.gx.common.settings.SettingsController;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static lombok.AccessLevel.*;
+
 /**
  * Класс исполнителя.<br/>
  * Запускает внутреннего Runner-а в отдельном потоке. Runner внутри себя бросает событие (spring-event),
  * обработчик которого должен содержать главную логику работы итераций. <br/>
- * Также зпускает контроллера-демона, который следит за работой Runner-а, если второй зависает, то демон перезапускает Runner-а.
+ * Также запускает контроллера-демона, который следит за работой Runner-а, если второй зависает, то демон перезапускает Runner-а.
  *
  * @see AbstractIterationExecuteEvent
  * @see Worker
@@ -25,81 +26,107 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public abstract class AbstractWorker implements Worker {
     // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Constants">
+    public final static String settingSuffixWaitOnStopMs = "wait_on_stop_ms";
+    public final static String settingSuffixWaitOnRestartMs = "wait_on_restart_ms";
+    public final static String settingSuffixMinTimePerIterationMs = "min_time_per_iteration_ms";
+    public final static String settingSuffixTimoutRunnerLifeMs = "timeout_runner_life_ms";
+    // </editor-fold>
+    // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields & Settings">
-    /**
-     * ApplicationContext используется для бросания событий stepExecutorEvent (используется spring-events)
-     */
-    @Getter(AccessLevel.PROTECTED)
-    @Autowired
-    private ApplicationContext context;
-
     /**
      * Название исполнителя. Используется в логировании.
      */
     @Getter
+    @NotNull
     private final String name;
+
+    /**
+     * ApplicationContext используется для бросания событий stepExecutorEvent (используется spring-events)
+     */
+    @Getter(PROTECTED)
+    @NotNull
+    private final ApplicationContext context;
+
+    @Getter(PROTECTED)
+    @NotNull
+    private final SettingsController settingsController;
+
+    @NotNull
+    private final String settingNameWaitOnStopMs;
+
+    @NotNull
+    private final String settingNameWaitOnRestartMs;
+
+    @NotNull
+    private final String settingNameTimoutRunnerLifeMs;
+
+    @NotNull
+    private final String settingNameMinTimePerIterationMs;
 
     /**
      * Признак того, что исполнителя требуется перезапускать автоматически, если он остановлен по каким-либо причинам
      */
     @Getter
-    @Setter(AccessLevel.PROTECTED)
+    @Setter(PROTECTED)
     private volatile boolean autoRestart;
 
     /**
      * Внутренний исполнитель - работает в отдельном потоке. Содержит в себе цикл до сигнала выхода.
      */
     @Getter
-    @Setter(AccessLevel.PRIVATE)
+    @Setter(PRIVATE)
     private volatile Runner runner;
 
     /**
      * Контроллер, который следит за тем, что исполнитель "живой" ("не завис")
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     private volatile RunnerTimerTaskController runnerTimerTaskController;
 
     /**
      * Таймер, который запускает периодически Контролера за Исполнителем
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     private volatile Timer timer;
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     private volatile RestartingController restartingController = null;
 
     /**
      * Объект-команда, который является spring-event-ом. Его обработчик по сути должен содержать логику итераций
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     private final AbstractIterationExecuteEvent iterationExecuteEvent;
 
     /**
      * Объект-команда, который является spring-event-ом. Его обработчик по сути будет вызван перед запуском Исполнителя.
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     private final AbstractStartingExecuteEvent startingExecuteEvent;
 
     /**
      * Объект-команда, который является spring-event-ом. Его обработчик по сути будет вызван после останова Исполнителя.
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     private final AbstractStoppingExecuteEvent stoppingExecuteEvent;
 
     /**
-     * Признак того, что событие об остнове Исполнителя уже вызывалось.
+     * Признак того, что событие об основе Исполнителя уже вызывалось.
      * Требуется для разового вызова.
      * При останове исполнителя устанавливается в true.
      * При запуске Исполнителя сбрасывается в false.
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     private boolean stoppingExecuteEventCalled = false;
 
     /**
      * Минимальное время на итерацию. Если после выполнения итерации не требуется немедленно продолжить,
-     * и время выполнения текущей итерации было менее указанного, то поток исполнителя заспает
+     * и время выполнения текущей итерации было менее указанного, то поток исполнителя засыпает.
      */
-    protected abstract int getMinTimePerIterationMs();
+    protected int getMinTimePerIterationMs() {
+        return this.settingsController.getIntegerSetting(this.settingNameMinTimePerIterationMs);
+    }
 
     /**
      * Момент времени, когда Runner последний раз отчитывался, что работает.
@@ -108,7 +135,7 @@ public abstract class AbstractWorker implements Worker {
     private volatile long lastRunnerLifeCheckedMs = 0;
 
     /**
-     * Метод, с помощью которого исполнитель отчитыватся, что еще "жив"
+     * Метод, с помощью которого исполнитель отчитывается, что еще "жив".
      *
      * @see #lastRunnerLifeCheckedMs
      * @see #getTimoutRunnerLifeMs()
@@ -118,59 +145,71 @@ public abstract class AbstractWorker implements Worker {
     }
 
     /**
-     * Настрйока (в мс), которая определяет период времени, в течение которого исполнитель обязан отчитаться о своей "жизни".
+     * Определяющая настройка (в мс) период времени, в течение которого исполнитель обязан отчитаться о своей "жизни".
      * Если исполнитель не отчитается, то его требуется остановить (и при необходимости запустить снова).
      *
      * @see #runnerIsLifeSet()
      * @see #lastRunnerLifeCheckedMs
      * @see #autoRestart
      */
-    protected abstract int getTimoutRunnerLifeMs();
+    protected int getTimoutRunnerLifeMs() {
+        return this.settingsController.getIntegerSetting(this.settingNameTimoutRunnerLifeMs);
+    }
 
     /**
-     * Настрйока (в мс), которая определяет сколько можно ждать штатного завершения исполнителя во время stop().
+     * Настройка (в мс), которая определяет сколько можно ждать штатного завершения исполнителя во время stop().
      *
      * @see #internalStop()
      * @see #internalWaitStop(int, boolean)
      */
     @Override
-    public abstract int getWaitOnStopMs();
+    public int getWaitOnStopMs() {
+        return this.settingsController.getIntegerSetting(this.settingNameWaitOnStopMs);
+    }
 
     /**
-     * Настрйока (в мс), которая определяет какую паузу надо выждать перед перезапуском после останова.
+     * Настройка (в мс), которая определяет какую паузу надо выждать перед перезапуском после останова.
      *
      * @see RunnerTimerTaskController
      */
     @Override
-    public abstract int getWaitOnRestartMs();
+    public int getWaitOnRestartMs() {
+        return this.settingsController.getIntegerSetting(this.settingNameWaitOnRestartMs);
+    }
 
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Init">
-    protected AbstractWorker(@NotNull String name) {
+    protected AbstractWorker(@NotNull final String name, @NotNull final ApplicationContext context, @NotNull final SettingsController settingsController) {
         super();
         this.name = name;
+        this.context = context;
+        this.settingsController = settingsController;
+        this.settingNameWaitOnStopMs = name + "." + settingSuffixWaitOnStopMs;
+        this.settingNameWaitOnRestartMs = name + "." + settingSuffixWaitOnRestartMs;
+        this.settingNameMinTimePerIterationMs = name + "." + settingSuffixMinTimePerIterationMs;
+        this.settingNameTimoutRunnerLifeMs = name + "." + settingSuffixTimoutRunnerLifeMs;
         this.iterationExecuteEvent = createIterationExecuteEvent();
         this.startingExecuteEvent = createStartingExecuteEvent();
         this.stoppingExecuteEvent = createStoppingExecuteEvent();
     }
 
     /**
-     * Требуется переопределить в наледнике.
+     * Требуется переопределить в наследнике.
      *
      * @return объект-событие, которое будет использоваться для вызова итераций.
      */
     protected abstract AbstractIterationExecuteEvent createIterationExecuteEvent();
 
     /**
-     * Требуется переопределить в наледнике.
+     * Требуется переопределить в наследнике.
      *
      * @return объект-событие, которое будет использоваться для вызова при запуске Исполнителя.
      */
     protected abstract AbstractStartingExecuteEvent createStartingExecuteEvent();
 
     /**
-     * Требуется переопределить в наледнике.
+     * Требуется переопределить в наследнике.
      *
      * @return объект-событие, которое будет использоваться для вызова при останове Исполнителя.
      */
@@ -268,7 +307,7 @@ public abstract class AbstractWorker implements Worker {
      * Ожидание штатного завершения исполнителя в течение заданного времени.
      *
      * @param timeoutMs     время в течение которого надо подождать штатного завершения исполнителя.
-     * @param withInterrupt треуется ли прервать выполнение исполнителя, если он не завершился за отведенное время.
+     * @param withInterrupt требуется ли прервать выполнение исполнителя, если он не завершился за отведенное время.
      */
     private void internalWaitStop(int timeoutMs, boolean withInterrupt) {
         var runner = getRunner();
@@ -372,7 +411,7 @@ public abstract class AbstractWorker implements Worker {
     // -----------------------------------------------------------------------------------------------------------------
 
     /**
-     * Исполнитель. run() работает в своем потоке.
+     * Исполнитель run() работает в своем потоке.
      */
     protected class Runner implements Runnable {
         private final AtomicBoolean isStopping = new AtomicBoolean(false);

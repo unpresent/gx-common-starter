@@ -9,6 +9,7 @@ public class TestObjectsRepository extends AbstractMemoryRepository<TestDataObje
     }
 
     @Override
+    @NotNull
     public Object extractKey(@NotNull TestDataObject dataObject) {
         return dataObject.getId();
     }

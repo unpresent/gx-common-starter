@@ -2,10 +2,15 @@ package ru.gx.common.data;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
 public class InvalidDataObjectTypeException extends Exception {
-    public InvalidDataObjectTypeException(String message, @NotNull DataObject object, @NotNull Class<? extends DataObject> needType) {
+    public InvalidDataObjectTypeException(
+            @Nullable final String message,
+            @NotNull final DataObject object,
+            @NotNull final Class<? extends DataObject> needType
+    ) {
         super(StringUtils.isNotEmpty(message)
                 ? message
                 : "Invalid object type."

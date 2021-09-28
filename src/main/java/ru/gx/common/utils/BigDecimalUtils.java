@@ -1,5 +1,8 @@
 package ru.gx.common.utils;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.math.BigDecimal;
 
 /**
@@ -13,7 +16,8 @@ public abstract class BigDecimalUtils {
      * @param defaultValue значение, которое будет возращено, если value == null.
      * @return value, если value не null. Иначе defaultValue.
      */
-    public static BigDecimal isNull(BigDecimal value, BigDecimal defaultValue) {
+    @NotNull
+    public static BigDecimal isNull(@Nullable final BigDecimal value, @NotNull final BigDecimal defaultValue) {
         return value == null ? defaultValue : value;
     }
 
@@ -22,7 +26,8 @@ public abstract class BigDecimalUtils {
      * @param ifValue значение, с которым сверяется mainValue.
      * @return null, если #mainValue.equals(ifValue). Иначе mainValue.
      */
-    public static BigDecimal nullIf(BigDecimal mainValue, BigDecimal ifValue) {
+    @Nullable
+    public static BigDecimal nullIf(@Nullable final BigDecimal mainValue, @Nullable final BigDecimal ifValue) {
         if (mainValue == null) {
             return null;
         }

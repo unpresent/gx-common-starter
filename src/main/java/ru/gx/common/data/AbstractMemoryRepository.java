@@ -7,8 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.ParameterizedType;
+import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -29,40 +31,45 @@ import java.util.function.Consumer;
  * @param <P> Тип пакетов объектов, которыми управляет репозиторий.
  */
 public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P extends DataPackage<O>>
-        implements DataMemoryRepository<O, P> /*, ObjectsPool<O>*/ {
-
-    // * Если в наследнике сделать публичным {@link AbstractObjectsFactory}, это будет означать, что объекты обслуживаемого типа
-    // * можно создавать. В классах элементов нужно перехватывать с помощью @JsonCreator момент создания
-    // * и передать управление фабрике. Например, Инструмент (базовый) и наследники Бумаги, Валюты и Деривативы.
-    //            * Тогда в репозитории Инструментов будет неуместно определять Фабрику, а в репозиториях Бумаг, Валют и Дериватов
-    // * необходимо определить Фабрику, которая будет наследником от {@link AbstractObjectsFactory}. В классах Бумага, Валюта
-    // * и Дериватив необходимо перехватить создание объекта @JsonCreate-ом и вызвать
-    // * {@link AbstractObjectsFactory#getOrCreateObject}
-    // * <p/>
-    //            * В наследниках рекомендуется переопределить {@link #internalCreateEmptyInstance()}, в которой создавать объект
-    // * оператором new() без вызова данной реализации через super.
-    //            * <p/>
-
+        implements DataMemoryRepository<O, P> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
+    @NotNull
+    private static final Object monitor = new Object();
+
     @Getter(AccessLevel.PROTECTED)
+    @NotNull
     private static final Map<Class<? extends AbstractMemoryRepository<?, ?>>, AbstractMemoryRepository<?, ?>> instancesByRepositoryClass = new HashMap<>();
 
     @Getter(AccessLevel.PROTECTED)
+    @NotNull
     private static final Map<Class<? extends AbstractDataObject>, AbstractMemoryRepository<?, ?>> instancesByObjectsClass = new HashMap<>();
 
-    protected static AbstractMemoryRepository<?, ?> getRepositoryByClass(Class<? extends AbstractMemoryRepository<?, ?>> repositoryClass) {
-        return instancesByRepositoryClass.get(repositoryClass);
+    @NotNull
+    protected static AbstractMemoryRepository<?, ?> getRepositoryByClass(@NotNull final Class<? extends AbstractMemoryRepository<?, ?>> repositoryClass) {
+        final var result = instancesByRepositoryClass.get(repositoryClass);
+        if (result == null) {
+            throw new InvalidParameterException("Repository " + repositoryClass.getSimpleName() + " not registered!");
+        }
+        return result;
     }
 
-    protected static AbstractMemoryRepository<?, ?> getRepositoryByObjectsClass(Class<? extends AbstractDataObject> objectsClass) {
-        return instancesByObjectsClass.get(objectsClass);
+    @SuppressWarnings("unused")
+    @NotNull
+    protected static AbstractMemoryRepository<?, ?> getRepositoryByObjectsClass(@NotNull final Class<? extends AbstractDataObject> objectsClass) {
+        final var result = instancesByObjectsClass.get(objectsClass);
+        if (result == null) {
+            throw new InvalidParameterException("ObjectClass " + objectsClass.getSimpleName() + " not registered!");
+        }
+        return result;
     }
 
     @Getter(AccessLevel.PROTECTED)
+    @NotNull
     private final ObjectMapper objectMapper;
 
     @Getter(AccessLevel.PROTECTED)
+    @NotNull
     private final Map<Object, O> objects = new HashMap<>();
 
     private Class<O> objectsClass;
@@ -72,8 +79,8 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
-    @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "unchecked"})
-    protected AbstractMemoryRepository(ObjectMapper objectMapper) throws SingletonInstanceAlreadyExistsException {
+    @SuppressWarnings({"unchecked"})
+    protected AbstractMemoryRepository(@NotNull final ObjectMapper objectMapper) throws SingletonInstanceAlreadyExistsException, InvalidParameterException {
         this.objectMapper = objectMapper;
 
         final Class<? extends AbstractMemoryRepository<?, ?>> thisClass = (Class<? extends AbstractMemoryRepository<?, ?>>)this.getClass();
@@ -82,49 +89,33 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
             this.objectsClass = (Class<O>) ((ParameterizedType) superClass).getActualTypeArguments()[0];
             this.packagesClass = (Class<P>) ((ParameterizedType) superClass).getActualTypeArguments()[1];
         }
+        if (this.objectsClass == null) {
+            throw new InvalidParameterException("Can't create " + thisClass.getSimpleName() + " due undefined generic parameter[0].");
+        }
+        if (this.packagesClass == null) {
+            throw new InvalidParameterException("Can't create " + thisClass.getSimpleName() + " due undefined generic parameter[1].");
+        }
 
-        synchronized (thisClass) {
-            var instance = getRepositoryByClass(thisClass);
-            if (instance != null) {
+        synchronized (monitor) {
+            if (instancesByRepositoryClass.containsKey(thisClass)) {
                 throw new SingletonInstanceAlreadyExistsException("Singleton instance already registered! Class = " + thisClass.getName());
             }
-            instancesByRepositoryClass.put(thisClass, this);
-
-            instance = getRepositoryByObjectsClass(this.objectsClass);
-            if (instance != null) {
+            if (instancesByObjectsClass.containsKey(this.objectsClass)) {
                 throw new SingletonInstanceAlreadyExistsException("Singleton instance already registered (by Objects Class)! ObjectsClass = " + this.objectsClass.getName());
             }
+
+            instancesByRepositoryClass.put(thisClass, this);
             instancesByObjectsClass.put(this.objectsClass, this);
         }
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="// реализация ObjectPool">
-    //
-    //    /**
-    //     * Создание "заготовки" объекта. Вызывается Фабрикой объектов.
-    //     * Рекомендуется переопределить (без вызова данной реализации через super) в наследнике
-    //     * и там создавать нормально через оператор new().
-    //     *
-    //     * @return Объект репозитория.
-    //     */
-    //    protected O internalCreateEmptyInstance() throws ObjectCreateException {
-    //        final var objectClass = getObjectClass();
-    //        try {
-    //            final var constructor = objectClass.getConstructor();
-    //            return constructor.newInstance();
-    //        } catch (Exception e) {
-    //            throw new ObjectCreateException("Ошибка при создании экземпляра класса: " + objectClass.getName(), e);
-    //        }
-    //    }
-    // </editor-fold>
-    // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация DataMemoryRepository">
-
     /**
      * @return Класс объектов репозитория.
      */
     @SuppressWarnings("unused")
+    @NotNull
     public Class<O> getObjectClass() {
         return this.objectsClass;
     }
@@ -133,6 +124,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Класс пакета объектов.
      */
     @SuppressWarnings("unused")
+    @NotNull
     public Class<P> getPackageClass() {
         return this.packagesClass;
     }
@@ -146,8 +138,13 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         return this.objects.size();
     }
 
-    private O putInternal(Object key, O object) {
-        return getObjects().put(key, object);
+    @NotNull
+    private O putInternal(@NotNull final Object key, @NotNull final O object) {
+        final var result = getObjects().put(key, object);
+        if (result == null) {
+            throw new InvalidParameterException("Invalid null value object.");
+        }
+        return result;
     }
 
     /**
@@ -194,6 +191,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @throws ObjectNotExistsException Ошибка, если объект не найден в Репозитории.
      */
     @Override
+    @NotNull
     public O replace(@NotNull O object) throws ObjectNotExistsException {
         final var key = extractKey(object);
         final var oldObject = getByKey(key);
@@ -202,7 +200,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
                 putInternal(key, object);
                 return oldObject;
             } else {
-                return null;
+                return object;
             }
         } else {
             throw new ObjectNotExistsException(key, object);
@@ -216,6 +214,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Предыдущий объект с заданным ключом, если такой был.
      */
     @Override
+    @NotNull
     public O put(@NotNull O object) {
         return putInternal(extractKey(object), object);
     }
@@ -237,6 +236,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Объект, если
      */
     @Override
+    @Nullable
     public O removeByKey(@NotNull Object key) {
         return getObjects().remove(key);
     }
@@ -248,6 +248,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Удаленный объект, если с заданным ключом был объект, указанный в параметре object.
      */
     @Override
+    @Nullable
     public O remove(@NotNull O object) {
         final var key = extractKey(object);
         final var result = getObjects().get(key);
@@ -265,6 +266,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
      */
     @Override
+    @Nullable
     public O getByKey(@NotNull Object key) {
         return this.getObjects().get(key);
     }
@@ -287,12 +289,14 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Ключ, идентифицирующий указанный объект данных.
      */
     @Override
+    @NotNull
     public abstract Object extractKey(@NotNull O dataObject);
 
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация Iterable">
     @Override
+    @NotNull
     public Iterator<O> iterator() {
         return this.objects.values().iterator();
     }
@@ -303,6 +307,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     }
 
     @Override
+    @NotNull
     public Spliterator<O> spliterator() {
         return this.objects.values().spliterator();
     }
@@ -311,10 +316,10 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="реализация ObjectIdResolver">
     @SuppressWarnings("unused")
-    protected void bindItem(@NotNull ObjectIdGenerator.IdKey id, @NotNull Object pojo) {
+    protected void bindItem(@NotNull final ObjectIdGenerator.IdKey id, @NotNull final Object pojo) {
     }
 
-    protected Object resolveId(@NotNull ObjectIdGenerator.IdKey id) {
+    protected Object resolveId(@NotNull final ObjectIdGenerator.IdKey id) {
         return AbstractMemoryRepository.this.objects.get(id.key);
     }
     // </editor-fold>
@@ -341,10 +346,12 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
             }
         }
 
+        @NotNull
         protected Class<? extends AbstractMemoryRepository<?, ?>> getRepositoryClass() {
             return this.memoryRepositoryClass;
         }
 
+        @NotNull
         private AbstractMemoryRepository<?, ?> getRepository() {
             if (this.repository == null) {
                 this.repository = getRepositoryByClass(getRepositoryClass());
@@ -355,22 +362,23 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         // -------------------------------------------------------------------------------------------------------------
         // <editor-fold desc="реализация ObjectIdResolver">
         @Override
-        public void bindItem(@NotNull ObjectIdGenerator.IdKey id, @NotNull Object pojo) {
+        public void bindItem(@NotNull final ObjectIdGenerator.IdKey id, @NotNull final Object pojo) {
             getRepository().bindItem(id, pojo);
         }
 
         @Override
-        public Object resolveId(@NotNull ObjectIdGenerator.IdKey id) {
+        public Object resolveId(@NotNull final ObjectIdGenerator.IdKey id) {
             return getRepository().resolveId(id);
         }
 
         @Override
-        public boolean canUseFor(@NotNull ObjectIdResolver resolverType) {
+        public boolean canUseFor(@NotNull final ObjectIdResolver resolverType) {
             return resolverType.getClass() == this.getClass();
         }
 
         @Override
-        public ObjectIdResolver newForDeserialization(Object context) {
+        @NotNull
+        public ObjectIdResolver newForDeserialization(@NotNull final Object context) {
             return this;
         }
         // </editor-fold>

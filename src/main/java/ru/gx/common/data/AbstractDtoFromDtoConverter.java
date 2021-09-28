@@ -6,7 +6,8 @@ import org.jetbrains.annotations.NotNull;
 public abstract class AbstractDtoFromDtoConverter<DEST extends DataObject, DESTPACKAGE extends DataPackage<DEST>, SRC extends DataObject>
         implements DtoFromDtoConverter<DEST, DESTPACKAGE, SRC> {
 
-    protected abstract DEST getOrCreateDestinationBySource(@NotNull SRC source);
+    @NotNull
+    protected abstract DEST getOrCreateDestinationBySource(@NotNull final SRC source);
 
     /**
      * Наполнение destination (DataObject) данными из source (DateObject).
@@ -15,7 +16,7 @@ public abstract class AbstractDtoFromDtoConverter<DEST extends DataObject, DESTP
      * @param source      Объект, из которого берем данные.
      */
     @Override
-    public abstract void fillDtoFromDto(@NotNull DEST destination, @NotNull SRC source);
+    public abstract void fillDtoFromDto(@NotNull final DEST destination, @NotNull final SRC source);
 
     /**
      * Наполнение пакета DTOs из списка объектов источника.
@@ -24,7 +25,7 @@ public abstract class AbstractDtoFromDtoConverter<DEST extends DataObject, DESTP
      * @param source      Источник - список объектов-источников.
      */
     @Override
-    public void fillDtoPackageFromDtoList(@NotNull DESTPACKAGE destination, @NotNull Iterable<SRC> source) {
+    public void fillDtoPackageFromDtoList(@NotNull final DESTPACKAGE destination, @NotNull final Iterable<SRC> source) {
         final var destObjects = destination.getObjects();
         for (var src : source) {
             final var dest = getOrCreateDestinationBySource(src);

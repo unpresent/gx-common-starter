@@ -10,12 +10,12 @@ public interface DtoFromDtoConverter<DEST extends DataObject, DESTPACKAGE extend
      * @param destination   Объект, в который загружаем данные.
      * @param source        Объект, из которого берем данные.
      */
-    void fillDtoFromDto(@NotNull DEST destination, @NotNull SRC source);
+    void fillDtoFromDto(@NotNull final DEST destination, @NotNull final SRC source);
 
     /**
      * Наполнение пакета DTOs из списка объектов источника.
      * @param destination   Пакет DTOs.
      * @param source        Источник - список объектов-источников.
      */
-    void fillDtoPackageFromDtoList(@NotNull DESTPACKAGE destination, @NotNull Iterable<SRC> source);
+    void fillDtoPackageFromDtoList(@NotNull final DESTPACKAGE destination, @NotNull final Iterable<SRC> source);
 }

@@ -9,6 +9,7 @@ public class TestDictionaryRepository extends AbstractMemoryRepository<TestDicti
     }
 
     @Override
+    @NotNull
     public Object extractKey(@NotNull TestDictionaryObject dataObject) {
         return dataObject.getCode();
     }

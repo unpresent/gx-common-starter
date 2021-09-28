@@ -2,6 +2,7 @@ package ru.gx.common.data;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -22,6 +23,7 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
      * @return          Предыдущий объект с заданным ключом, если такой был.
      */
     @SuppressWarnings("UnusedReturnValue")
+    @NotNull
     O put(@NotNull O object);
 
     /**
@@ -49,8 +51,9 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
      * Замена объекта с ключом key в репозитории.
      * @param object                        Новый объект, который заменит старый объект.
      * @return                              Предыдущий объект, который был ассоциирован с ключом key.
-     * @throws ObjectNotExistsException     Ошибка в случае, если объекта с таким ключом в Репозитории не зарегистрированно.
+     * @throws ObjectNotExistsException     Ошибка в случае, если объекта с таким ключом в Репозитории не зарегистрировано.
      */
+    @NotNull
     O replace(@NotNull O object) throws ObjectNotExistsException;
 
     /**
@@ -58,6 +61,7 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
      * @param key       Ключ.
      * @return          Объект, если
      */
+    @Nullable
     O removeByKey(@NotNull Object key);
 
     /**
@@ -65,15 +69,17 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
      * @param object        Удаляемый объект.
      * @return              Удаленный объект, если с заданным ключом был объект, указанный в параметре object.
      */
+    @Nullable
     O remove(@NotNull O object);
 
     /**
-     * Получение объекта по иденификатору (ключу), который указан у класса в @JsonIdentityInfo.
+     * Получение объекта по идентификатору (ключу), который указан у класса в @JsonIdentityInfo.
      * @param key значение ключа, по которому ищем объект.
      * @return объект, если такой найден; null, если по такому ключу в IdResolver-е нет объекта.
      */
     @SuppressWarnings("unused")
-    O getByKey(@NotNull Object key);
+    @Nullable
+    O getByKey(@NotNull final Object key);
 
     /**
      * Проверка наличия объекта с указанным ключом в репозитории.
@@ -81,12 +87,13 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
      * @return true - объект есть, false - объекта нет.
      */
     @SuppressWarnings("unused")
-    boolean containsKey(@NotNull Object key);
+    boolean containsKey(@NotNull final Object key);
 
     /**
      * Получение ключа объекта, по которому его идентифицирует данный MemoryRepository.
      * @param dataObject    Объект данных, из которого "извлекаем" ключ.
      * @return              Ключ, идентифицирующий указанный объект данных.
      */
-    Object extractKey(@NotNull O dataObject);
+    @NotNull
+    Object extractKey(@NotNull final O dataObject);
 }

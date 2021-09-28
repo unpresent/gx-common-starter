@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +26,8 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      * @return элементы пакета.
      */
     @Override
-    @JsonProperty(value = "objects")
+    @JsonProperty("objects")
+    @NotNull
     public Collection<T> getObjects() {
         return this.getListObjects();
     }
@@ -36,7 +38,8 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      * @return элемент с индексом index
      */
     @JsonIgnore
-    public T get(int index) {
+    @NotNull
+    public T get(final int index) {
         return getListObjects().get(index);
     }
 
