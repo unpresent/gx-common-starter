@@ -6,8 +6,8 @@ import ru.gx.common.settings.SettingsController;
 
 @SuppressWarnings("unused")
 public class SimpleWorker extends AbstractWorker {
-    public SimpleWorker(@NotNull String name, @NotNull ApplicationContext context, @NotNull SettingsController settingsController) {
-        super(name, context, settingsController);
+    public SimpleWorker(@NotNull String name, @NotNull SettingsController settingsController) {
+        super(name, settingsController);
     }
 
     @Override

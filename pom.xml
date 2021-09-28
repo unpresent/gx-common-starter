@@ -6,7 +6,7 @@
 
     <groupId>ru.gx.common</groupId>
     <artifactId>gx-common-starter</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 
     <properties>
         <encoding>UTF-8</encoding>
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>21.0.1</version>
+            <version>22.0.0</version>
             <scope>compile</scope>
         </dependency>
 

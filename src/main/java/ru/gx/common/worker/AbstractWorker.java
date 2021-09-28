@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import ru.gx.common.settings.SettingsController;
 
 import java.util.Timer;
@@ -24,7 +25,7 @@ import static lombok.AccessLevel.*;
  * @see Worker
  */
 @Slf4j
-public abstract class AbstractWorker implements Worker {
+public abstract class AbstractWorker implements Worker, ApplicationContextAware {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Constants">
     public final static String settingSuffixWaitOnStopMs = "wait_on_stop_ms";
@@ -44,9 +45,9 @@ public abstract class AbstractWorker implements Worker {
     /**
      * ApplicationContext используется для бросания событий stepExecutorEvent (используется spring-events)
      */
-    @Getter(PROTECTED)
-    @NotNull
-    private final ApplicationContext context;
+    @Getter
+    @Setter
+    private ApplicationContext applicationContext;
 
     @Getter(PROTECTED)
     @NotNull
@@ -180,10 +181,9 @@ public abstract class AbstractWorker implements Worker {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Init">
-    protected AbstractWorker(@NotNull final String name, @NotNull final ApplicationContext context, @NotNull final SettingsController settingsController) {
+    protected AbstractWorker(@NotNull final String name, @NotNull final SettingsController settingsController) {
         super();
         this.name = name;
-        this.context = context;
         this.settingsController = settingsController;
         this.settingNameWaitOnStopMs = name + "." + settingSuffixWaitOnStopMs;
         this.settingNameWaitOnRestartMs = name + "." + settingSuffixWaitOnRestartMs;
@@ -270,7 +270,7 @@ public abstract class AbstractWorker implements Worker {
             log.info("starting Runner " + getName());
             if (getRunner() == null) {
                 if (getStartingExecuteEvent() != null) {
-                    getContext().publishEvent(getStartingExecuteEvent());
+                    getApplicationContext().publishEvent(getStartingExecuteEvent());
                 }
                 createAndStartRunner();
                 startRunnerTimerTaskController();
@@ -345,7 +345,7 @@ public abstract class AbstractWorker implements Worker {
             }
             if (getStoppingExecuteEvent() != null) {
                 this.stoppingExecuteEventCalled = true;
-                getContext().publishEvent(getStoppingExecuteEvent());
+                getApplicationContext().publishEvent(getStoppingExecuteEvent());
             }
         }
     }
@@ -366,7 +366,7 @@ public abstract class AbstractWorker implements Worker {
                 log.info("Timer stopped.");
                 if (getStoppingExecuteEvent() != null) {
                     this.stoppingExecuteEventCalled = true;
-                    getContext().publishEvent(getStoppingExecuteEvent());
+                    getApplicationContext().publishEvent(getStoppingExecuteEvent());
                 }
             }
         }
@@ -470,7 +470,7 @@ public abstract class AbstractWorker implements Worker {
         protected void doIteration() {
             log.debug("Starting doStep()");
             runnerIsLifeSet();
-            getContext().publishEvent(iterationExecuteEvent);
+            getApplicationContext().publishEvent(iterationExecuteEvent);
             if (iterationExecuteEvent.isStopExecution()) {
                 this.isStopping.set(true);
             }

@@ -138,13 +138,9 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         return this.objects.size();
     }
 
-    @NotNull
+    @Nullable
     private O putInternal(@NotNull final Object key, @NotNull final O object) {
-        final var result = getObjects().put(key, object);
-        if (result == null) {
-            throw new InvalidParameterException("Invalid null value object.");
-        }
-        return result;
+        return getObjects().put(key, object);
     }
 
     /**
@@ -214,7 +210,7 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
      * @return Предыдущий объект с заданным ключом, если такой был.
      */
     @Override
-    @NotNull
+    @Nullable
     public O put(@NotNull O object) {
         return putInternal(extractKey(object), object);
     }

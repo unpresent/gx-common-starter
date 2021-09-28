@@ -2,51 +2,58 @@ package ru.gx.common.settings;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static lombok.AccessLevel.*;
+
 /**
  * Базовая реализация контроллера настроек.
  */
 @Slf4j
-public abstract class AbstractSettingsController implements SettingsController {
+public abstract class AbstractSettingsController implements SettingsController, ApplicationContextAware {
     /**
      * Передается в поле settingName объекта-события об изменении настройки, если поменялось слишком много настроек.
      */
     public static final String ALL = "*";
 
-    @Getter(AccessLevel.PROTECTED)
-    @NotNull
-    private final ApplicationContext context;
+    @Getter
+    private ApplicationContext applicationContext;
 
-    @Getter(AccessLevel.PROTECTED)
-    @NotNull
-    private final Environment environment;
+    @Getter(PROTECTED)
+    private Environment environment;
+
+    @Override
+    public void setApplicationContext(@NotNull final ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+        this.environment = applicationContext.getEnvironment();
+    }
 
     /**
      * Список настроек со значениями
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     @NotNull
     private final Map<String, Object> settings;
 
     /**
      * Объект-событие об изменении настройки/настроек
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     @NotNull
     private final SettingsChangedEvent settingsChangedEvent;
 
-    protected AbstractSettingsController(@NotNull final ApplicationContext context) {
+    protected AbstractSettingsController() {
         super();
-        this.context = context;
-        this.environment = context.getEnvironment();
         this.settings = new HashMap<>();
         this.settingsChangedEvent = createSettingsChangedEvent();
     }
@@ -112,7 +119,7 @@ public abstract class AbstractSettingsController implements SettingsController {
             log.info("setSetting({}, {})", settingName, value);
             this.settings.put(settingName, value);
             log.info("publishEvent(SettingsChangedEvent({}))", settingName);
-            context.publishEvent(this.settingsChangedEvent.reset(settingName));
+            this.applicationContext.publishEvent(this.settingsChangedEvent.reset(settingName));
         }
     }
 

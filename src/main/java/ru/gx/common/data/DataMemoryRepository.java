@@ -23,7 +23,7 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
      * @return          Предыдущий объект с заданным ключом, если такой был.
      */
     @SuppressWarnings("UnusedReturnValue")
-    @NotNull
+    @Nullable
     O put(@NotNull O object);
 
     /**

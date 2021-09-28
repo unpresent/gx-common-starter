@@ -7,11 +7,11 @@ import org.springframework.context.event.EventListener;
 import ru.gx.common.settings.SettingsController;
 
 @Slf4j
-public class TheWorker extends SimpleWorker {
+public class TestableWorker extends SimpleWorker {
     private final int[] iterationsTimes = new int[] {100, 500, 1000, 2000, 5000, 11000, 12000, 1000};
 
-    public TheWorker(String name, ApplicationContext context, SettingsController settingsController) {
-        super(name, context, settingsController);
+    public TestableWorker(String name, SettingsController settingsController) {
+        super(name, settingsController);
     }
 
     @Override
