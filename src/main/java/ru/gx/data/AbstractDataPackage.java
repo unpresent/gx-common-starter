@@ -20,6 +20,7 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
      */
     @Getter(AccessLevel.PROTECTED)
     @JsonIgnore
+    @NotNull
     private final List<T> listObjects = new ArrayList<>();
 
     /**
