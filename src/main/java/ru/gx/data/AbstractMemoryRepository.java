@@ -4,15 +4,19 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerator;
 import com.fasterxml.jackson.annotation.ObjectIdResolver;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.ParameterizedType;
 import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.function.Consumer;
+
+import static lombok.AccessLevel.PROTECTED;
 
 /**
  * Базовая непотокобезопасная реализация InMemory-репозитория объектов типа E.
@@ -37,11 +41,11 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     @NotNull
     private static final Object monitor = new Object();
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     @NotNull
     private static final Map<Class<? extends AbstractMemoryRepository<?, ?>>, AbstractMemoryRepository<?, ?>> instancesByRepositoryClass = new HashMap<>();
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     @NotNull
     private static final Map<Class<? extends AbstractDataObject>, AbstractMemoryRepository<?, ?>> instancesByObjectsClass = new HashMap<>();
 
@@ -64,11 +68,11 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         return result;
     }
 
-    @Getter(AccessLevel.PROTECTED)
-    @NotNull
-    private final ObjectMapper objectMapper;
+    @Getter(PROTECTED)
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    private ObjectMapper objectMapper;
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     @NotNull
     private final Map<Object, O> objects = new HashMap<>();
 
@@ -80,9 +84,8 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
     @SuppressWarnings({"unchecked"})
-    protected AbstractMemoryRepository(@NotNull final ObjectMapper objectMapper) throws SingletonInstanceAlreadyExistsException, InvalidParameterException {
-        this.objectMapper = objectMapper;
-
+    @PostConstruct
+    public void init() throws SingletonInstanceAlreadyExistsException, InvalidParameterException {
         final Class<? extends AbstractMemoryRepository<?, ?>> thisClass = (Class<? extends AbstractMemoryRepository<?, ?>>)this.getClass();
         final var superClass = thisClass.getGenericSuperclass();
         if (superClass != null) {

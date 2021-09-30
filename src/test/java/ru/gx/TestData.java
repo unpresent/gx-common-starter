@@ -17,8 +17,14 @@ public class TestData {
     public void TestMemRepo() {
         // Должно создаваться в Config-ах приложения
         final var objectMapper = new ObjectMapper();
-        final var testDictRepo = new TestDictionaryRepository(objectMapper);
-        final var testMemRepo = new TestObjectsRepository(objectMapper);
+
+        final var testDictRepo = new TestDictionaryRepository();
+        testDictRepo.init();
+        testDictRepo.setObjectMapper(objectMapper);
+
+        final var testMemRepo = new TestObjectsRepository();
+        testMemRepo.init();
+        testMemRepo.setObjectMapper(objectMapper);
 
         final var c = TestDataObject.class;
 
