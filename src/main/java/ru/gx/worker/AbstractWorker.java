@@ -5,10 +5,12 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import ru.gx.settings.SettingsController;
 
+import javax.annotation.PostConstruct;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,7 +42,7 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
      */
     @Getter
     @NotNull
-    private final String name;
+    private final String serviceName;
 
     /**
      * ApplicationContext используется для бросания событий stepExecutorEvent (используется spring-events)
@@ -50,8 +52,8 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
     private ApplicationContext applicationContext;
 
     @Getter(PROTECTED)
-    @NotNull
-    private final SettingsController settingsController;
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    private SettingsController settingsController;
 
     @NotNull
     private final String settingNameWaitOnStopMs;
@@ -181,17 +183,20 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Init">
-    protected AbstractWorker(@NotNull final String name, @NotNull final SettingsController settingsController) {
+    protected AbstractWorker(@NotNull final String serviceName) {
         super();
-        this.name = name;
-        this.settingsController = settingsController;
-        this.settingNameWaitOnStopMs = name + "." + settingSuffixWaitOnStopMs;
-        this.settingNameWaitOnRestartMs = name + "." + settingSuffixWaitOnRestartMs;
-        this.settingNameMinTimePerIterationMs = name + "." + settingSuffixMinTimePerIterationMs;
-        this.settingNameTimoutRunnerLifeMs = name + "." + settingSuffixTimoutRunnerLifeMs;
+        this.serviceName = serviceName;
+        this.settingNameWaitOnStopMs = getServiceName() + "." + settingSuffixWaitOnStopMs;
+        this.settingNameWaitOnRestartMs = getServiceName() + "." + settingSuffixWaitOnRestartMs;
+        this.settingNameMinTimePerIterationMs = getServiceName() + "." + settingSuffixMinTimePerIterationMs;
+        this.settingNameTimoutRunnerLifeMs = getServiceName() + "." + settingSuffixTimoutRunnerLifeMs;
         this.iterationExecuteEvent = createIterationExecuteEvent();
         this.startingExecuteEvent = createStartingExecuteEvent();
         this.stoppingExecuteEvent = createStoppingExecuteEvent();
+    }
+
+    @PostConstruct
+    public void init() {
     }
 
     /**
@@ -262,19 +267,19 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
     // <editor-fold desc="Internal methods for implements Worker">
     protected void internalStart() {
         if (isRunning()) {
-            log.info("Runner " + getName() + " already is running!");
+            log.info("Runner " + getServiceName() + " already is running!");
             return;
         }
 
         synchronized (this) {
-            log.info("starting Runner " + getName());
+            log.info("starting Runner " + getServiceName());
             if (getRunner() == null) {
                 if (getStartingExecuteEvent() != null) {
                     getApplicationContext().publishEvent(getStartingExecuteEvent());
                 }
                 createAndStartRunner();
                 startRunnerTimerTaskController();
-                log.info("Runner " + getName() + " started");
+                log.info("Runner " + getServiceName() + " started");
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -282,18 +287,18 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
                 }
                 if (isRunning()) {
                     this.stoppingExecuteEventCalled = false;
-                    log.info("Runner " + getName() + " started success.");
+                    log.info("Runner " + getServiceName() + " started success.");
                     return;
                 }
             }
         }
-        log.error("Runner " + getName() + " not started!");
+        log.error("Runner " + getServiceName() + " not started!");
     }
 
     protected void internalStop() {
         log.info("Starting internalStop()");
         if (!isRunning()) {
-            log.info("Runner " + getName() + " already is stopped!");
+            log.info("Runner " + getServiceName() + " already is stopped!");
             return;
         }
 
@@ -339,9 +344,9 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
         } finally {
             if (!isRunning()) {
                 internalStopTimer();
-                log.info("Runner " + getName() + " is stopped success!");
+                log.info("Runner " + getServiceName() + " is stopped success!");
             } else {
-                log.info("Runner " + getName() + " is not stopped!");
+                log.info("Runner " + getServiceName() + " is not stopped!");
             }
             if (getStoppingExecuteEvent() != null) {
                 this.stoppingExecuteEventCalled = true;
@@ -380,7 +385,7 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
         this.iterationExecuteEvent.setNeedRestart(false);
         this.iterationExecuteEvent.setStopExecution(false);
         runnerIsLifeSet();
-        new Thread((this.runner = new Runner()), this.name).start();
+        new Thread((this.runner = new Runner()), this.serviceName).start();
     }
 
     /**
@@ -394,7 +399,7 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
             if (getRestartingController() != null) {
                 return;
             }
-            new Thread((this.restartingController = new RestartingController()), this.name + "-Restart").start();
+            new Thread((this.restartingController = new RestartingController()), this.serviceName + "-Restart").start();
         }
     }
 
@@ -404,7 +409,7 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
     protected void startRunnerTimerTaskController() {
         final var timeout = getTimoutRunnerLifeMs();
         this.runnerTimerTaskController = new RunnerTimerTaskController();
-        this.timer = new Timer(getName() + "-Timer", true);
+        this.timer = new Timer(getServiceName() + "-Timer", true);
         this.timer.scheduleAtFixedRate(this.runnerTimerTaskController, timeout, timeout / 10);
     }
     // </editor-fold>

@@ -1,12 +1,11 @@
 package ru.gx.worker;
 
 import org.jetbrains.annotations.NotNull;
-import ru.gx.settings.SettingsController;
 
 @SuppressWarnings("unused")
 public class SimpleWorker extends AbstractWorker {
-    public SimpleWorker(@NotNull String name, @NotNull SettingsController settingsController) {
-        super(name, settingsController);
+    public SimpleWorker(@NotNull String serviceName) {
+        super(serviceName);
     }
 
     @Override
@@ -22,5 +21,10 @@ public class SimpleWorker extends AbstractWorker {
     @Override
     protected AbstractStoppingExecuteEvent createStoppingExecuteEvent() {
         return new SimpleStoppingExecuteEvent(this);
+    }
+
+    @Override
+    public void runnerIsLifeSet() {
+        super.runnerIsLifeSet();
     }
 }
