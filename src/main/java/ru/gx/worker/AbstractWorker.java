@@ -6,9 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEventPublisher;
 import ru.gx.settings.SettingsController;
 
 import javax.annotation.PostConstruct;
@@ -28,7 +26,7 @@ import static lombok.AccessLevel.*;
  * @see Worker
  */
 @Slf4j
-public abstract class AbstractWorker implements Worker, ApplicationContextAware {
+public abstract class AbstractWorker implements Worker {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Constants">
     public final static String settingSuffixWaitOnStopMs = "wait_on_stop_ms";
@@ -46,25 +44,37 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
     private final String serviceName;
 
     /**
-     * ApplicationContext используется для бросания событий stepExecutorEvent (используется spring-events)
+     * ApplicationEventPublisher используется для бросания событий
      */
-    @Getter
-    @Setter
-    private ApplicationContext applicationContext;
+    @Getter(PROTECTED)
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Getter(PROTECTED)
     @Setter(value = PROTECTED, onMethod_ = @Autowired)
     private SettingsController settingsController;
 
+    /**
+     * Имя настройки "Количество миллисекунд на ожидание останова"
+     */
     @NotNull
     private final String settingNameWaitOnStopMs;
 
+    /**
+     * Имя настройки "Количество миллисекунд на ожидание перезапуска"
+     */
     @NotNull
     private final String settingNameWaitOnRestartMs;
 
+    /**
+     * Имя настройки "Количество миллисекунд на таймаут, в течение которого Runner обязан отчитываться, что еще живой"
+     */
     @NotNull
     private final String settingNameTimoutRunnerLifeMs;
 
+    /**
+     * Имя настройки "Минимальное количество миллисекунд на итерацию, если итерация завершается быстрее, то sleep"
+     */
     @NotNull
     private final String settingNameMinTimePerIterationMs;
 
@@ -275,7 +285,7 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
             log.info("starting Runner " + getServiceName());
             if (getRunner() == null) {
                 if (getStartingExecuteEvent() != null) {
-                    getApplicationContext().publishEvent(getStartingExecuteEvent());
+                    getApplicationEventPublisher().publishEvent(getStartingExecuteEvent());
                 }
                 createAndStartRunner();
                 startRunnerTimerTaskController();
@@ -350,7 +360,7 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
             }
             if (getStoppingExecuteEvent() != null) {
                 this.stoppingExecuteEventCalled = true;
-                getApplicationContext().publishEvent(getStoppingExecuteEvent());
+                getApplicationEventPublisher().publishEvent(getStoppingExecuteEvent());
             }
         }
     }
@@ -371,7 +381,7 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
                 log.info("Timer stopped.");
                 if (getStoppingExecuteEvent() != null) {
                     this.stoppingExecuteEventCalled = true;
-                    getApplicationContext().publishEvent(getStoppingExecuteEvent());
+                    getApplicationEventPublisher().publishEvent(getStoppingExecuteEvent());
                 }
             }
         }
@@ -475,7 +485,7 @@ public abstract class AbstractWorker implements Worker, ApplicationContextAware 
         protected void doIteration() {
             log.debug("Starting doStep()");
             runnerIsLifeSet();
-            getApplicationContext().publishEvent(iterationExecuteEvent);
+            getApplicationEventPublisher().publishEvent(iterationExecuteEvent);
             if (iterationExecuteEvent.isStopExecution()) {
                 this.isStopping.set(true);
             }
