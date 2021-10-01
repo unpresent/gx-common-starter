@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public class SimpleWorker extends AbstractWorker {
-    public SimpleWorker(@NotNull String serviceName) {
+    public SimpleWorker(@NotNull final String serviceName) {
         super(serviceName);
     }
 

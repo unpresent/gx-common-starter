@@ -2,6 +2,7 @@ package ru.gx.settings;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 
@@ -16,7 +17,7 @@ public class SimpleSettingsController extends AbstractSettingsController {
     @NotNull
     private final String serviceName;
 
-    public SimpleSettingsController(@NotNull String serviceName) {
+    public SimpleSettingsController(@NotNull final String serviceName) {
         super();
         this.serviceName = serviceName;
     }
