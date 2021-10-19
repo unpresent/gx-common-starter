@@ -18,6 +18,11 @@ public interface DataMemoryRepository<O extends DataObject, P extends DataPackag
     int size();
 
     /**
+     * @return Список всех объектов.
+     */
+    Iterable<O> getAll();
+
+    /**
      * Запись объекта object с ключом key в репозиторий.
      * @param object    Объект.
      * @return          Предыдущий объект с заданным ключом, если такой был.

@@ -141,6 +141,15 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         return this.objects.size();
     }
 
+    /**
+     * @return Список всех объектов.
+     */
+    @Override
+    @NotNull
+    public Iterable<O> getAll() {
+        return this.objects.values();
+    }
+
     @Nullable
     private O putInternal(@NotNull final Object key, @NotNull final O object) {
         return getObjects().put(key, object);
