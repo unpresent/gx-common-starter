@@ -3,7 +3,6 @@ package ru.gx.worker;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.event.EventListener;
-import ru.gx.settings.SettingsController;
 
 @Slf4j
 public class TestableWorker extends SimpleWorker {
@@ -33,8 +32,8 @@ public class TestableWorker extends SimpleWorker {
         return 20000;
     }
 
-    @EventListener(SimpleIterationExecuteEvent.class)
-    public void iterationExecute(@NotNull final SimpleIterationExecuteEvent event) {
+    @EventListener(SimpleOnIterationExecuteEvent.class)
+    public void iterationExecute(@NotNull final SimpleOnIterationExecuteEvent event) {
         log.debug("Starting iterationExecute()");
         try {
             runnerIsLifeSet();
@@ -50,7 +49,7 @@ public class TestableWorker extends SimpleWorker {
         }
     }
 
-    private void internalTreatmentExceptionOnDataRead(@NotNull final SimpleIterationExecuteEvent event, Exception e) {
+    private void internalTreatmentExceptionOnDataRead(@NotNull final SimpleOnIterationExecuteEvent event, Exception e) {
         log.error("", e);
         if (e instanceof InterruptedException) {
             log.info("event.setStopExecution(true)");

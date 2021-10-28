@@ -10,14 +10,14 @@ import org.springframework.context.ApplicationEvent;
 
 /**
  * Объект-событие.<br/>
- * Используется для передачи управления обработчику итерации исполнителя.
+ * Слушатель данного события получает управление каждую итерацию цикла Worker-а.
  */
 @Getter
 @Setter
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public abstract class AbstractIterationExecuteEvent extends ApplicationEvent {
+public abstract class AbstractOnIterationExecuteEvent extends ApplicationEvent {
     /**
      * Признак того, требуется ли перезапустить работу Исполнителя.
      * @see Worker
@@ -39,14 +39,15 @@ public abstract class AbstractIterationExecuteEvent extends ApplicationEvent {
      */
     private boolean immediateRunNextIteration;
 
-    protected AbstractIterationExecuteEvent(@NotNull final Object source) {
+    protected AbstractOnIterationExecuteEvent(@NotNull final Object source) {
         super(source);
     }
 
-    public void reset() {
+    public AbstractOnIterationExecuteEvent reset() {
         this
                 .setNeedRestart(false)
                 .setStopExecution(false)
                 .setImmediateRunNextIteration(false);
+        return this;
     }
 }

@@ -8,13 +8,18 @@ import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEvent;
 
+/**
+ * Объект-событие.<br/>
+ * Публикация данного события запускает Worker.
+ * Слушателем данного является сам Worker.
+ */
 @Getter
 @Setter
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class AbstractStartingExecuteEvent extends ApplicationEvent {
-    protected AbstractStartingExecuteEvent(@NotNull final Object source) {
+public abstract class AbstractDoStartWorkerEvent extends ApplicationEvent {
+    protected AbstractDoStartWorkerEvent(@NotNull final Object source) {
         super(source);
     }
 }

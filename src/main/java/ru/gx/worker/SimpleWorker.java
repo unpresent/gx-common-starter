@@ -9,18 +9,18 @@ public class SimpleWorker extends AbstractWorker {
     }
 
     @Override
-    protected AbstractIterationExecuteEvent createIterationExecuteEvent() {
-        return new SimpleIterationExecuteEvent(this);
+    public AbstractOnIterationExecuteEvent iterationExecuteEvent() {
+        return getIterationExecuteEvent().reset();
     }
 
     @Override
-    protected AbstractStartingExecuteEvent createStartingExecuteEvent() {
-        return new SimpleStartingExecuteEvent(this);
+    public AbstractOnStartingExecuteEvent startingExecuteEvent() {
+        return getStartingExecuteEvent().reset();
     }
 
     @Override
-    protected AbstractStoppingExecuteEvent createStoppingExecuteEvent() {
-        return new SimpleStoppingExecuteEvent(this);
+    public AbstractOnStoppingExecuteEvent stoppingExecuteEvent() {
+        return getStoppingExecuteEvent().reset();
     }
 
     @Override

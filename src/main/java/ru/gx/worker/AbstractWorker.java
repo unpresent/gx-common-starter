@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import ru.gx.settings.SettingsController;
 
 import javax.annotation.PostConstruct;
@@ -22,7 +23,7 @@ import static lombok.AccessLevel.*;
  * обработчик которого должен содержать главную логику работы итераций. <br/>
  * Также запускает контроллера-демона, который следит за работой Runner-а, если второй зависает, то демон перезапускает Runner-а.
  *
- * @see AbstractIterationExecuteEvent
+ * @see AbstractOnIterationExecuteEvent
  * @see Worker
  */
 @Slf4j
@@ -111,19 +112,22 @@ public abstract class AbstractWorker implements Worker {
      * Объект-команда, который является spring-event-ом. Его обработчик по сути должен содержать логику итераций
      */
     @Getter(PROTECTED)
-    private final AbstractIterationExecuteEvent iterationExecuteEvent;
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    private AbstractOnIterationExecuteEvent iterationExecuteEvent;
 
     /**
      * Объект-команда, который является spring-event-ом. Его обработчик по сути будет вызван перед запуском Исполнителя.
      */
     @Getter(PROTECTED)
-    private final AbstractStartingExecuteEvent startingExecuteEvent;
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    private AbstractOnStartingExecuteEvent startingExecuteEvent;
 
     /**
      * Объект-команда, который является spring-event-ом. Его обработчик по сути будет вызван после останова Исполнителя.
      */
     @Getter(PROTECTED)
-    private final AbstractStoppingExecuteEvent stoppingExecuteEvent;
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    private AbstractOnStoppingExecuteEvent stoppingExecuteEvent;
 
     /**
      * Признак того, что событие об основе Исполнителя уже вызывалось.
@@ -200,13 +204,19 @@ public abstract class AbstractWorker implements Worker {
         this.settingNameWaitOnRestartMs = getServiceName() + "." + settingSuffixWaitOnRestartMs;
         this.settingNameMinTimePerIterationMs = getServiceName() + "." + settingSuffixMinTimePerIterationMs;
         this.settingNameTimoutRunnerLifeMs = getServiceName() + "." + settingSuffixTimoutRunnerLifeMs;
-        this.iterationExecuteEvent = createIterationExecuteEvent();
-        this.startingExecuteEvent = createStartingExecuteEvent();
-        this.stoppingExecuteEvent = createStoppingExecuteEvent();
     }
 
     @PostConstruct
     public void init() {
+        if (this.iterationExecuteEvent == null) {
+            throw new NullPointerException("iterationExecuteEvent doesn't defined!");
+        }
+        if (this.startingExecuteEvent == null) {
+            throw new NullPointerException("startingExecuteEvent doesn't defined!");
+        }
+        if (this.stoppingExecuteEvent == null) {
+            throw new NullPointerException("stoppingExecuteEvent doesn't defined!");
+        }
     }
 
     /**
@@ -214,30 +224,43 @@ public abstract class AbstractWorker implements Worker {
      *
      * @return объект-событие, которое будет использоваться для вызова итераций.
      */
-    protected abstract AbstractIterationExecuteEvent createIterationExecuteEvent();
+    @Override
+    public abstract AbstractOnIterationExecuteEvent iterationExecuteEvent();
 
     /**
      * Требуется переопределить в наследнике.
      *
      * @return объект-событие, которое будет использоваться для вызова при запуске Исполнителя.
      */
-    protected abstract AbstractStartingExecuteEvent createStartingExecuteEvent();
+    @Override
+    public abstract AbstractOnStartingExecuteEvent startingExecuteEvent();
 
     /**
      * Требуется переопределить в наследнике.
      *
      * @return объект-событие, которое будет использоваться для вызова при останове Исполнителя.
      */
-    protected abstract AbstractStoppingExecuteEvent createStoppingExecuteEvent();
+    @Override
+    public abstract AbstractOnStoppingExecuteEvent stoppingExecuteEvent();
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="implements Worker">
+
+    @EventListener(AbstractDoStartWorkerEvent.class)
+    public void onDoStartWorkerEvent(AbstractDoStartWorkerEvent __) {
+        this.start();
+    }
+
+    @EventListener(AbstractDoStopWorkerEvent.class)
+    public void onDoStopWorkerEvent(AbstractDoStopWorkerEvent __) {
+        this.stop();
+    }
 
     /**
      * Запуск исполнителя.
      */
     @Override
-    public final void start() {
+    public void start() {
         log.info("Starting start()");
         try {
             this.autoRestart = true;
@@ -251,7 +274,7 @@ public abstract class AbstractWorker implements Worker {
      * Принудительный останов после ожидания штатного завершения.
      */
     @Override
-    public final void stop() {
+    public void stop() {
         log.info("Starting stop()");
         try {
             this.autoRestart = false;
