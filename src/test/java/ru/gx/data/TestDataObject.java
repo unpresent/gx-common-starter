@@ -1,33 +1,37 @@
 package ru.gx.data;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.*;
+import lombok.*;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Setter
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, of = "id")
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonIdentityInfo(property = "id", generator = ObjectIdGenerators.PropertyGenerator.class, resolver = TestObjectsRepository.IdResolver.class)
 public class TestDataObject extends AbstractDataObject {
-    private int id;
+    private final int id;
 
-    private String code;
+    @NotNull
+    private final String code;
 
-    private String name;
+    private final String name;
 
     @JsonIdentityReference(alwaysAsId = true)
-    private TestDictionaryObject dictionaryObject;
+    private final TestDictionaryObject dictionaryObject;
 
-    protected TestDataObject() {
-        super();
+    @JsonCreator
+    public TestDataObject(
+            @JsonProperty("id") final int id,
+            @JsonProperty("code") @NotNull final String code,
+            @JsonProperty("name") final String name,
+            @JsonProperty("dictionaryObject") final TestDictionaryObject dictionaryObject) {
+        this.id = id;
+        this.code = code;
+        this.name = name;
+        this.dictionaryObject = dictionaryObject;
     }
 }

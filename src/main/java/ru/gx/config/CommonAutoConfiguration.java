@@ -4,24 +4,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 import ru.gx.settings.SimpleSettingsController;
+import ru.gx.settings.SimpleWorkerSettingsContainer;
 import ru.gx.worker.SimpleOnIterationExecuteEvent;
 import ru.gx.worker.SimpleOnStartingExecuteEvent;
 import ru.gx.worker.SimpleOnStoppingExecuteEvent;
 import ru.gx.worker.SimpleWorker;
 
 @Configuration
+@EnableConfigurationProperties(ConfigurationPropertiesService.class)
 public class CommonAutoConfiguration {
-    @Value("${service.name}")
-    private String serviceName;
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(value = "service.simple-settings-controller.enabled", havingValue = "true")
+    public SimpleSettingsController simpleSettingsController() {
+        return new SimpleSettingsController();
+    }
 
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(value = "service.simple-worker.enabled", havingValue = "true")
     public SimpleWorker simpleWorker() {
-        return new SimpleWorker(this.serviceName);
+        return new SimpleWorker();
     }
 
     @Bean
@@ -51,9 +60,8 @@ public class CommonAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(value = "service.simple-worker.enabled", havingValue = "true")
-    public SimpleSettingsController simpleSettingsController() {
-        return new SimpleSettingsController(this.serviceName);
+    public SimpleWorkerSettingsContainer simpleWorkerSettingsContainer() {
+        return new SimpleWorkerSettingsContainer();
     }
-
 
 }

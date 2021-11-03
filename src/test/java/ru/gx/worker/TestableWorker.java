@@ -8,8 +8,8 @@ import org.springframework.context.event.EventListener;
 public class TestableWorker extends SimpleWorker {
     private final int[] iterationsTimes = new int[] {100, 500, 1000, 2000, 5000, 11000, 12000, 1000};
 
-     public TestableWorker(@NotNull final String serviceName) {
-        super(serviceName);
+     public TestableWorker() {
+        super();
     }
 
     @Override

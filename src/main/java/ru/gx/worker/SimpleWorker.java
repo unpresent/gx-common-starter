@@ -1,11 +1,11 @@
 package ru.gx.worker;
 
-import org.jetbrains.annotations.NotNull;
-
 @SuppressWarnings("unused")
 public class SimpleWorker extends AbstractWorker {
-    public SimpleWorker(@NotNull final String serviceName) {
-        super(serviceName);
+    public static final String SIMPLE_WORKER_NAME = "simple-worker";
+
+    public SimpleWorker() {
+        super(SIMPLE_WORKER_NAME);
     }
 
     @Override

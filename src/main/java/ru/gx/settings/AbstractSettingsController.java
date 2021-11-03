@@ -121,8 +121,7 @@ public abstract class AbstractSettingsController implements SettingsController, 
         }
     }
 
-    @SuppressWarnings("unused")
-    protected void loadStringSetting(@NotNull final String settingName) throws UnknownApplicationSettingException {
+    public void loadStringSetting(@NotNull final String settingName) throws UnknownApplicationSettingException {
         final var settingValue = this.getEnvironment().getProperty(settingName);
         if (settingValue == null) {
             throw new UnknownApplicationSettingException(settingName);
@@ -130,8 +129,7 @@ public abstract class AbstractSettingsController implements SettingsController, 
         setSetting(settingName, settingValue);
     }
 
-    @SuppressWarnings("unused")
-    protected void loadIntegerSetting(@NotNull String settingName) throws UnknownApplicationSettingException {
+    public void loadIntegerSetting(@NotNull String settingName) throws UnknownApplicationSettingException {
         final var settingValue = this.getEnvironment().getProperty(settingName);
         if (settingValue == null) {
             throw new UnknownApplicationSettingException(settingName);

@@ -30,10 +30,11 @@ import static lombok.AccessLevel.*;
 public abstract class AbstractWorker implements Worker {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Constants">
-    public final static String settingSuffixWaitOnStopMs = "wait_on_stop_ms";
-    public final static String settingSuffixWaitOnRestartMs = "wait_on_restart_ms";
-    public final static String settingSuffixMinTimePerIterationMs = "min_time_per_iteration_ms";
-    public final static String settingSuffixTimoutRunnerLifeMs = "timeout_runner_life_ms";
+    public final static String SETTINGS_PREFIX = "service";
+    public final static String WAIT_ON_STOP_MS = "wait-on-stop-ms";
+    public final static String WAIT_ON_RESTART_MS = "wait-on-restart-ms";
+    public final static String MIN_TIME_PER_ITERATION_MS = "min-time-per-iteration-ms";
+    public final static String TIMEOUT_RUNNER_LIFE_MS = "timeout-runner-life-ms";
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields & Settings">
@@ -42,7 +43,7 @@ public abstract class AbstractWorker implements Worker {
      */
     @Getter
     @NotNull
-    private final String serviceName;
+    private final String workerName;
 
     /**
      * ApplicationEventPublisher используется для бросания событий
@@ -198,12 +199,12 @@ public abstract class AbstractWorker implements Worker {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Init">
-    protected AbstractWorker(@NotNull final String serviceName) {
-        this.serviceName = serviceName;
-        this.settingNameWaitOnStopMs = getServiceName() + "." + settingSuffixWaitOnStopMs;
-        this.settingNameWaitOnRestartMs = getServiceName() + "." + settingSuffixWaitOnRestartMs;
-        this.settingNameMinTimePerIterationMs = getServiceName() + "." + settingSuffixMinTimePerIterationMs;
-        this.settingNameTimoutRunnerLifeMs = getServiceName() + "." + settingSuffixTimoutRunnerLifeMs;
+    protected AbstractWorker(@NotNull final String workerName) {
+        this.workerName = workerName;
+        this.settingNameWaitOnStopMs = SETTINGS_PREFIX + "." + getWorkerName() + "." + WAIT_ON_STOP_MS;
+        this.settingNameWaitOnRestartMs = SETTINGS_PREFIX + "." + getWorkerName() + "." + WAIT_ON_RESTART_MS;
+        this.settingNameMinTimePerIterationMs = SETTINGS_PREFIX + "." + getWorkerName() + "." + MIN_TIME_PER_ITERATION_MS;
+        this.settingNameTimoutRunnerLifeMs = SETTINGS_PREFIX + "." + getWorkerName() + "." + TIMEOUT_RUNNER_LIFE_MS;
     }
 
     @PostConstruct
@@ -300,19 +301,19 @@ public abstract class AbstractWorker implements Worker {
     // <editor-fold desc="Internal methods for implements Worker">
     protected void internalStart() {
         if (isRunning()) {
-            log.info("Runner " + getServiceName() + " already is running!");
+            log.info("Runner " + getWorkerName() + " already is running!");
             return;
         }
 
         synchronized (this) {
-            log.info("starting Runner " + getServiceName());
+            log.info("starting Runner " + getWorkerName());
             if (getRunner() == null) {
                 if (getStartingExecuteEvent() != null) {
                     getApplicationEventPublisher().publishEvent(getStartingExecuteEvent());
                 }
                 createAndStartRunner();
                 startRunnerTimerTaskController();
-                log.info("Runner " + getServiceName() + " started");
+                log.info("Runner " + getWorkerName() + " started");
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -320,18 +321,18 @@ public abstract class AbstractWorker implements Worker {
                 }
                 if (isRunning()) {
                     this.stoppingExecuteEventCalled = false;
-                    log.info("Runner " + getServiceName() + " started success.");
+                    log.info("Runner " + getWorkerName() + " started success.");
                     return;
                 }
             }
         }
-        log.error("Runner " + getServiceName() + " not started!");
+        log.error("Runner " + getWorkerName() + " not started!");
     }
 
     protected void internalStop() {
         log.info("Starting internalStop()");
         if (!isRunning()) {
-            log.info("Runner " + getServiceName() + " already is stopped!");
+            log.info("Runner " + getWorkerName() + " already is stopped!");
             return;
         }
 
@@ -377,9 +378,9 @@ public abstract class AbstractWorker implements Worker {
         } finally {
             if (!isRunning()) {
                 internalStopTimer();
-                log.info("Runner " + getServiceName() + " is stopped success!");
+                log.info("Runner " + getWorkerName() + " is stopped success!");
             } else {
-                log.info("Runner " + getServiceName() + " is not stopped!");
+                log.info("Runner " + getWorkerName() + " is not stopped!");
             }
             if (getStoppingExecuteEvent() != null) {
                 this.stoppingExecuteEventCalled = true;
@@ -418,7 +419,7 @@ public abstract class AbstractWorker implements Worker {
         this.iterationExecuteEvent.setNeedRestart(false);
         this.iterationExecuteEvent.setStopExecution(false);
         runnerIsLifeSet();
-        new Thread((this.runner = new Runner()), this.serviceName).start();
+        new Thread((this.runner = new Runner()), this.workerName).start();
     }
 
     /**
@@ -432,7 +433,7 @@ public abstract class AbstractWorker implements Worker {
             if (getRestartingController() != null) {
                 return;
             }
-            new Thread((this.restartingController = new RestartingController()), this.serviceName + "-Restart").start();
+            new Thread((this.restartingController = new RestartingController()), this.workerName + "-Restart").start();
         }
     }
 
@@ -442,7 +443,7 @@ public abstract class AbstractWorker implements Worker {
     protected void startRunnerTimerTaskController() {
         final var timeout = getTimoutRunnerLifeMs();
         this.runnerTimerTaskController = new RunnerTimerTaskController();
-        this.timer = new Timer(getServiceName() + "-Timer", true);
+        this.timer = new Timer(getWorkerName() + "-Timer", true);
         this.timer.scheduleAtFixedRate(this.runnerTimerTaskController, timeout, timeout / 10);
     }
     // </editor-fold>
