@@ -49,7 +49,7 @@ public abstract class AbstractDtoFromDtoConverter<DEST extends DataObject, SRC e
      * @param source        Источник - список объектов-источников.
      */
     @Override
-    public void fillDtoCollectionFromDtoList(@NotNull Collection<DEST> destination, @NotNull Iterable<SRC> source) {
+    public void fillDtoCollectionFromSource(@NotNull Collection<DEST> destination, @NotNull Iterable<SRC> source) {
         for (var sourceObject : source) {
             var destObject = findDtoBySource(sourceObject);
             if (destObject == null) {

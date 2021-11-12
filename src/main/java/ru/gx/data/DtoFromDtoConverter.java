@@ -43,5 +43,5 @@ public interface DtoFromDtoConverter<DEST extends DataObject, SRC extends DataOb
      * @param destination   Пакет DTOs.
      * @param source        Источник - список объектов-источников.
      */
-    void fillDtoCollectionFromDtoList(@NotNull final Collection<DEST> destination, @NotNull final Iterable<SRC> source);
+    void fillDtoCollectionFromSource(@NotNull final Collection<DEST> destination, @NotNull final Iterable<SRC> source);
 }
