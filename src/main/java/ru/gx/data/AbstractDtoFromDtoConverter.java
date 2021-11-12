@@ -41,7 +41,7 @@ public abstract class AbstractDtoFromDtoConverter<DEST extends DataObject, SRC e
      * @param source        Объект, из которого берем данные.
      */
     @Override
-    public abstract void updateDtoBySource(@NotNull DEST destination, @NotNull SRC source);
+    public abstract void updateDtoBySource(@NotNull DEST destination, @NotNull SRC source) throws NotAllowedObjectUpdateException;
 
     /**
      * Наполнение пакета DTOs из списка объектов источника.
@@ -49,7 +49,7 @@ public abstract class AbstractDtoFromDtoConverter<DEST extends DataObject, SRC e
      * @param source        Источник - список объектов-источников.
      */
     @Override
-    public void fillDtoCollectionFromSource(@NotNull Collection<DEST> destination, @NotNull Iterable<SRC> source) {
+    public void fillDtoCollectionFromSource(@NotNull Collection<DEST> destination, @NotNull Iterable<SRC> source) throws NotAllowedObjectUpdateException {
         for (var sourceObject : source) {
             var destObject = findDtoBySource(sourceObject);
             if (destObject == null) {
