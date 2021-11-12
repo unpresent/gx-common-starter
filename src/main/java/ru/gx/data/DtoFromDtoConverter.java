@@ -1,6 +1,7 @@
 package ru.gx.data;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -17,12 +18,14 @@ public interface DtoFromDtoConverter<DEST extends DataObject, SRC extends DataOb
      * Поиск объекта одного типа по указанному источнику другого типа.
      * @param source        Объект, из которого берем данные.
      */
-    DEST findDtoBySource(@NotNull final SRC source);
+    @Nullable
+    DEST findDtoBySource(@Nullable final SRC source);
 
     /**
      * Создание объекта по источнику.
      * @param source        Объект, из которого берем данные.
      */
+    @NotNull
     DEST createDtoBySource(@NotNull final SRC source);
 
     /**

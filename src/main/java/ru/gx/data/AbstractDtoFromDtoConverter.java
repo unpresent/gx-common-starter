@@ -1,6 +1,7 @@
 package ru.gx.data;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -19,13 +20,15 @@ public abstract class AbstractDtoFromDtoConverter<DEST extends DataObject, SRC e
      * @param source        Объект, из которого берем данные.
      */
     @Override
-    public abstract DEST findDtoBySource(@NotNull SRC source);
+    @Nullable
+    public abstract DEST findDtoBySource(@Nullable SRC source);
 
     /**
      * Создание объекта по источнику.
      * @param source        Объект, из которого берем данные.
      */
     @Override
+    @NotNull
     public abstract DEST createDtoBySource(@NotNull SRC source);
 
     /**
