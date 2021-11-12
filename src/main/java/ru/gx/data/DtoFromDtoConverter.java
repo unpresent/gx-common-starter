@@ -36,7 +36,7 @@ public interface DtoFromDtoConverter<DEST extends DataObject, SRC extends DataOb
      * @param destination   Объект, в который загружаем данные.
      * @param source        Объект, из которого берем данные.
      */
-    void updateDtoBySource(@NotNull final DEST destination, @NotNull final SRC source);
+    void updateDtoBySource(@NotNull final DEST destination, @NotNull final SRC source) throws NotAllowedObjectUpdateException;
 
     /**
      * Наполнение пакета DTOs из списка объектов источника.
