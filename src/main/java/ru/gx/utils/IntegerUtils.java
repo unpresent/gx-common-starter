@@ -28,4 +28,17 @@ public class IntegerUtils {
         }
         return mainValue.equals(ifValue) ? null : mainValue;
     }
+
+    /**
+     * @param fromString Исходная строка, которую парсим.
+     * @return Число из строки, если строка не null. Null, если строка null.
+     * @throws NumberFormatException Ошибка при парсинге строки.
+     */
+    @Nullable
+    public static Integer parseNullableInt(@Nullable final String fromString) throws NumberFormatException  {
+        if (fromString == null) {
+            return null;
+        }
+        return Integer.parseInt(fromString);
+    }
 }
