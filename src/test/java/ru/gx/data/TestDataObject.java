@@ -1,11 +1,12 @@
 package ru.gx.data;
 
 import com.fasterxml.jackson.annotation.*;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.apache.tomcat.jni.Local;
 import org.jetbrains.annotations.NotNull;
-import ru.gx.json.JsonPropertyEx;
 
 import java.time.LocalTime;
 
