@@ -25,7 +25,6 @@ public abstract class AbstractIncomeChannelDescriptor<O extends DataObject, P ex
         implements IncomeChannelDescriptor<O, P> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
-
     /**
      * Фильтровальщик, который определяет, требуется ли обрабатывать данные.
      */
@@ -175,4 +174,6 @@ public abstract class AbstractIncomeChannelDescriptor<O extends DataObject, P ex
         this.processType = processType;
         return this;
     }
+    // </editor-fold>
+    // -----------------------------------------------------------------------------------------------------------------
 }

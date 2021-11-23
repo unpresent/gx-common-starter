@@ -1,12 +1,16 @@
 package ru.gx.events;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
-import ru.gx.worker.*;
+import ru.gx.worker.AbstractOnIterationExecuteEvent;
+import ru.gx.worker.AbstractWorker;
+import ru.gx.worker.AbstractWorkerStatisticsInfo;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -16,52 +20,39 @@ public class StandardEventsExecutor extends AbstractWorker {
 
     @Getter(PROTECTED)
     @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    @NotNull
     private EventsPrioritizedQueue eventsQueue;
 
-    @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private StandardEventsExecutorSettingsContainer settingsContainer;
-
-    @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private StandardEventsExecutorStatisticsInfo statisticsInfo;
-
+    @NotNull
     private final EventsProcessor eventsProcessor;
 
+    @Getter
     private final OnIterationExecuteEventInternal iterationExecuteEvent;
 
-    @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private StandardEventsExecutorOnStartingExecuteEvent onStartingExecuteEvent;
+    @Getter
+    @NotNull
+    private final StandardEventsExecutorOnStartingExecuteEvent startingExecuteEvent;
 
-    @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private StandardEventsExecutorOnStoppingExecuteEvent onStoppingExecuteEvent;
+    @Getter
+    @NotNull
+    private final StandardEventsExecutorOnStoppingExecuteEvent stoppingExecuteEvent;
 
-    public StandardEventsExecutor(@NotNull final String name) {
-        super(name);
-        this.eventsProcessor = new EventsProcessorInternal();
+    public StandardEventsExecutor(
+            @NotNull final String name,
+            @NotNull final StandardEventsExecutorSettingsContainer settingsContainer,
+            @NotNull final ApplicationEventPublisher eventPublisher,
+            @NotNull final MeterRegistry meterRegistry
+    ) {
+        super(name, settingsContainer, meterRegistry);
+        this.eventsProcessor = new EventsProcessorInternal(eventPublisher, (StandardEventsExecutorStatisticsInfo)this.getStatisticsInfo());
         this.iterationExecuteEvent = new OnIterationExecuteEventInternal(this);
-    }
-
-    @Override
-    public AbstractOnIterationExecuteEvent iterationExecuteEvent() {
-        return this.iterationExecuteEvent;
-    }
-
-    @Override
-    public AbstractOnStartingExecuteEvent startingExecuteEvent() {
-        return this.onStartingExecuteEvent;
-    }
-
-    @Override
-    public AbstractOnStoppingExecuteEvent stoppingExecuteEvent() {
-        return this.onStoppingExecuteEvent;
+        this.startingExecuteEvent = new StandardEventsExecutorOnStartingExecuteEvent(this);
+        this.stoppingExecuteEvent = new StandardEventsExecutorOnStoppingExecuteEvent(this);
     }
 
     protected static class EventsProcessorInternal extends AbstractEventsProcessor {
-        protected EventsProcessorInternal() {
-            super();
+        protected EventsProcessorInternal(@NotNull final ApplicationEventPublisher eventPublisher, @NotNull final StandardEventsExecutorStatisticsInfo eventsStatisticsInfo) {
+            super(eventPublisher, eventsStatisticsInfo);
         }
     }
 
@@ -76,25 +67,14 @@ public class StandardEventsExecutor extends AbstractWorker {
         log.debug("Starting iterationExecute()");
         try {
             this.runnerIsLifeSet();
-            final var publishStatisticsEveryMs = this.settingsContainer.printStatisticsEveryMs();
             iterationEvent.setImmediateRunNextIteration(false);
 
-            Event dataEvent = null;
-            this.statisticsInfo.eventExecuteStarting();
-            try {
-                dataEvent = this.eventsProcessor.pollAndProcessEvent(this.eventsQueue);
-                if (dataEvent != null) {
-                    iterationEvent.setImmediateRunNextIteration(true);
-                }
-            } finally {
-                if (dataEvent != null) {
-                    this.statisticsInfo.eventExecuteFinished(dataEvent);
-                }
+            Event dataEvent = this.eventsProcessor.pollEvent(this.eventsQueue);
+            if (dataEvent != null) {
+                this.eventsProcessor.processEvent(dataEvent);
             }
-
-            if (this.statisticsInfo.lastResetMsAgo() > publishStatisticsEveryMs) {
-                log.info(this.statisticsInfo.getInfoForLog());
-                this.statisticsInfo.reset();
+            if (dataEvent != null || this.getEventsQueue().queueSize() > 0) {
+                iterationEvent.setImmediateRunNextIteration(true);
             }
         } catch (Exception e) {
             internalTreatmentExceptionOnDataRead(iterationEvent, e);
@@ -118,5 +98,20 @@ public class StandardEventsExecutor extends AbstractWorker {
             log.info("event.setNeedRestart(true)");
             event.setNeedRestart(true);
         }
+    }
+
+    @EventListener(DoStartStandardEventsExecutorEvent.class)
+    public void doStartSimpleWorkerEvent(DoStartStandardEventsExecutorEvent __) {
+        this.start();
+    }
+
+    @EventListener(DoStopStandardEventsExecutorEvent.class)
+    public void doStopSimpleWorkerEvent(DoStopStandardEventsExecutorEvent __) {
+        this.stop();
+    }
+
+    @Override
+    protected AbstractWorkerStatisticsInfo createStatisticsInfo() {
+        return new StandardEventsExecutorStatisticsInfo(this, this.getMeterRegistry());
     }
 }

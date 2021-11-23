@@ -1,27 +1,29 @@
-package ru.gx.worker;
+package ru.gx.simpleworker;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import ru.gx.events.Event;
 
 /**
  * Объект-событие.<br/>
- * Публикация данного события запускает Worker.
+ * Публикация данного события останавливает Worker.
  * Слушателем данного является сам Worker.
  */
 @SuppressWarnings("unused")
-public class SimpleDoStartWorkerEvent extends AbstractDoStartWorkerEvent {
-    protected SimpleDoStartWorkerEvent(@NotNull final Object source) {
+public class DoStopSimpleWorkerEvent extends ApplicationEvent implements Event {
+    protected DoStopSimpleWorkerEvent(@NotNull final Object source) {
         super(source);
     }
 
     public static void publish(@NotNull final ApplicationEventPublisher publisher, @NotNull final Object source) {
-        final var event = new SimpleDoStartWorkerEvent(source);
+        final var event = new DoStopSimpleWorkerEvent(source);
         publisher.publishEvent(event);
     }
 
     public static void publish(@NotNull final ApplicationContext context, @NotNull final Object source) {
-        final var event = new SimpleDoStartWorkerEvent(source);
+        final var event = new DoStopSimpleWorkerEvent(source);
         context.publishEvent(event);
     }
 }

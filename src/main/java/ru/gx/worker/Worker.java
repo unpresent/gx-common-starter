@@ -1,5 +1,6 @@
 package ru.gx.worker;
 
+import lombok.Getter;
 import org.springframework.context.Lifecycle;
 
 /**
@@ -7,33 +8,40 @@ import org.springframework.context.Lifecycle;
  */
 public interface Worker extends Lifecycle {
     /**
-     * Настрйока (в мс), которая определяет сколько можно ждать штатного завершения исполнителя во время stop().
-     */
-    int getWaitOnStopMs();
-
-    /**
-     * Настрйока (в мс), которая определяет какую паузу надо выждать перед перезапуском после останова.
-     */
-    int getWaitOnRestartMs();
-
-    /**
      * Требуется переопределить в наследнике.
      *
      * @return объект-событие, которое будет использоваться для вызова итераций.
      */
-    AbstractOnIterationExecuteEvent iterationExecuteEvent();
+    OnIterationExecuteEvent getIterationExecuteEvent();
 
     /**
      * Требуется переопределить в наследнике.
      *
      * @return объект-событие, которое будет использоваться для вызова при запуске Исполнителя.
      */
-    AbstractOnStartingExecuteEvent startingExecuteEvent();
+    OnStartingExecuteEvent getStartingExecuteEvent();
 
     /**
      * Требуется переопределить в наследнике.
      *
      * @return объект-событие, которое будет использоваться для вызова при останове Исполнителя.
      */
-    AbstractOnStoppingExecuteEvent stoppingExecuteEvent();
+    OnStoppingExecuteEvent getStoppingExecuteEvent();
+
+    /**
+     * @return Момент времени, когда Runner последний раз отчитывался, что работает.
+     */
+    long getLastRunnerLifeCheckedMs();
+
+    /**
+     * Метод, с помощью которого исполнитель отчитывается, что еще "жив".
+     *
+     * @see #getLastRunnerLifeCheckedMs()
+     */
+    void runnerIsLifeSet();
+
+    /**
+     * @return Получение статистики исполнения.
+     */
+    StatisticsInfo getStatisticsInfo();
 }

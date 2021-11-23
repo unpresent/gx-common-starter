@@ -17,7 +17,7 @@ import org.springframework.context.ApplicationEvent;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class AbstractOnStartingExecuteEvent extends ApplicationEvent {
+public class AbstractOnStartingExecuteEvent extends ApplicationEvent implements OnStartingExecuteEvent {
     protected AbstractOnStartingExecuteEvent(@NotNull final Object source) {
         super(source);
     }

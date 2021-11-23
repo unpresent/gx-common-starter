@@ -17,7 +17,7 @@ import org.springframework.context.ApplicationEvent;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public abstract class AbstractOnIterationExecuteEvent extends ApplicationEvent {
+public abstract class AbstractOnIterationExecuteEvent extends ApplicationEvent implements OnIterationExecuteEvent {
     /**
      * Признак того, требуется ли перезапустить работу Исполнителя.
      * @see Worker
@@ -43,6 +43,7 @@ public abstract class AbstractOnIterationExecuteEvent extends ApplicationEvent {
         super(source);
     }
 
+    @Override
     public AbstractOnIterationExecuteEvent reset() {
         this
                 .setNeedRestart(false)

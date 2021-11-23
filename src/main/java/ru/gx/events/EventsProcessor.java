@@ -1,16 +1,28 @@
 package ru.gx.events;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.gx.worker.StatisticsInfo;
 
 /**
  * Интерфейс исполнителя событий.
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface EventsProcessor {
 
     /**
-     * Извлечь событие из контейнера очередей и обработать его (вызвать обработчик).
+     * Извлечь событие из контейнера очередей.
      * @param queue Контейнер очередей.
-     * @return Cобытие, которое было извлечено и обработано. Null - нет событий в очереди.
+     * @return Событие, которое было извлечено и обработано. Null - нет событий в очереди.
      */
-    Event pollAndProcessEvent(@NotNull final EventsPrioritizedQueue queue);
+    @Nullable
+    Event pollEvent(@NotNull final EventsPrioritizedQueue queue);
+
+    /**
+     * Вызвать обработчик события.
+     * @param event Событие.
+     * @return this.
+     */
+    @NotNull
+    EventsProcessor processEvent(@NotNull final Event event);
 }

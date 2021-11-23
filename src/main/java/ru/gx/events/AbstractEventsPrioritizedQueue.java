@@ -34,6 +34,7 @@ public abstract class AbstractEventsPrioritizedQueue implements EventsPrioritize
 
     /**
      * Конструктор контейнера очередей.
+     *
      * @param name Имя контейнера. Используется для логирования.
      */
     protected AbstractEventsPrioritizedQueue(@NotNull String name) {
@@ -57,6 +58,7 @@ public abstract class AbstractEventsPrioritizedQueue implements EventsPrioritize
 
     /**
      * Проверка на возможность бросить событие в очередь.
+     *
      * @return true - контейнер очередей готов принять событие.
      */
     @Override
@@ -67,8 +69,9 @@ public abstract class AbstractEventsPrioritizedQueue implements EventsPrioritize
 
     /**
      * Отправка события в контейнер очередей.
+     *
      * @param priority Приоритет события.
-     * @param event Событие.
+     * @param event    Событие.
      * @return this.
      */
     @Override
@@ -89,6 +92,7 @@ public abstract class AbstractEventsPrioritizedQueue implements EventsPrioritize
 
     /**
      * Извлечение события из контейнера очередей. Будет предоставлено наиболее старое событие из очереди с наименьшим приоритетом.
+     *
      * @return Событие, которое надо обработать.
      */
     @Override
@@ -97,11 +101,13 @@ public abstract class AbstractEventsPrioritizedQueue implements EventsPrioritize
             return null;
         }
         synchronized (monitor) {
-            for (var pQueue : this.priorities) {
-                final var result = pQueue.poll();
-                if (result != null) {
-                    this.size.decrementAndGet();
-                    return result;
+            for (final var pQueue : this.priorities) {
+                if (pQueue.size() > 0) {
+                    final var result = pQueue.poll();
+                    if (result != null) {
+                        this.size.decrementAndGet();
+                        return result;
+                    }
                 }
             }
         }
@@ -112,6 +118,7 @@ public abstract class AbstractEventsPrioritizedQueue implements EventsPrioritize
      * Извлечение списка событий из контейнера очередей. Будут предоставлены наиболее старые события из очереди с наименьшим приоритетом.
      * Далее в результирующую коллекцию будут добавляться события из очереди со следующим приоритетом.
      * И так до тех пор, пока в результирующей коллекции не наберется заданное количество событий на обработку или пока не закончатся события в очередях.
+     *
      * @param maxCount Сколько извлечь событий. Может быть предоставлено меньше событий (если они закончились в очереди).
      * @return Коллекция событий, которые надо обработать.
      */

@@ -30,16 +30,12 @@ public class ConfigurationPropertiesService {
     @Setter
     public static class SimpleWorker {
         private boolean enabled = false;
-        private int wait_on_stop_ms = 3000;
-        private int wait_on_restart_ms = 30000;
-        private int min_time_per_iteration_ms = 1000;
-        private int timeout_runner_life_ms = 20000;
-    }
-
-    @Getter
-    @Setter
-    public static class WorkerEx extends SimpleWorker {
-        private int name;
+        private String name = "simple-worker";
+        private int waitOnStopMs = 3000;
+        private int waitOnRestartMs = 30000;
+        private int minTimePerIterationMs = 1000;
+        private int timeoutRunnerLifeMs = 20000;
+        private int printStatisticsEveryMs = 1000;
     }
 
     @Getter
@@ -56,16 +52,19 @@ public class ConfigurationPropertiesService {
     @Setter
     public static class StandardExecutor {
         private boolean enabled = true;
-        private int wait_on_stop_ms = 3000;
-        private int wait_on_restart_ms = 30000;
-        private int min_time_per_iteration_ms = 1000;
-        private int timeout_runner_life_ms = 20000;
+        private String name = "std-events-executor";
+        private int waitOnStopMs = 3000;
+        private int waitOnRestartMs = 30000;
+        private int minTimePerIterationMs = 1000;
+        private int timeoutRunnerLifeMs = 20000;
+        private int printStatisticsEveryMs = 1000;
     }
 
     @Getter
     @Setter
     public static class StandardQueue {
         private boolean enabled = true;
+        private String name = "std-events-queue";
         private int printStatisticsEveryMs = 1000;
         private int maxQueueSize = 1000;
         private int prioritiesCount = 8;

@@ -7,7 +7,12 @@ public interface StatisticsInfo {
     /**
      * @return Информация о собранной статистике для вывода в лог.
      */
-    String getInfoForLog();
+    String getPrintableInfo();
+
+    //    /**
+    //     * @return Информация о собранной статистике для вывода в структурированном Json.
+    //     */
+    //    String getJsonInfo();
 
     /**
      * Сброс статистических параметров.

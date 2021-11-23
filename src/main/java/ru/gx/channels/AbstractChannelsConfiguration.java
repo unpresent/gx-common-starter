@@ -113,9 +113,9 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
                     .filter(c -> {
                         final var paramsTypes = c.getParameterTypes();
                         return paramsTypes.length == 3
-                                && paramsTypes[0].isAssignableFrom(ChannelsConfiguration.class)
-                                && paramsTypes[1].isAssignableFrom(String.class)
-                                && paramsTypes[2].isAssignableFrom(AbstractChannelDescriptorsDefaults.class);
+                                && ChannelsConfiguration.class.isAssignableFrom(paramsTypes[0])
+                                && String.class.isAssignableFrom(paramsTypes[1])
+                                && AbstractChannelDescriptorsDefaults.class.isAssignableFrom(paramsTypes[2]);
                     })
                     .findFirst();
             if (constructor3.isPresent()) {
