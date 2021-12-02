@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.gx.core.config.ConfigurationPropertiesService;
 import ru.gx.core.worker.AbstractWorkerSettingsContainer;
 import ru.gx.core.settings.StandardSettingsController;
 import ru.gx.core.settings.UnknownApplicationSettingException;
@@ -28,11 +29,11 @@ public class SimpleWorkerSettingsContainer extends AbstractWorkerSettingsContain
 
     @PostConstruct
     public void init() throws UnknownApplicationSettingException {
-        this.simpleSettingsController.loadIntegerSetting(SETTING_WAIT_ON_STOP_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_WAIT_ON_RESTART_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS);
+        this.simpleSettingsController.loadIntegerSetting(SETTING_WAIT_ON_STOP_MS, ConfigurationPropertiesService.SimpleWorker.WAIT_ON_STOP_MS_DEFAULT);
+        this.simpleSettingsController.loadIntegerSetting(SETTING_WAIT_ON_RESTART_MS, ConfigurationPropertiesService.SimpleWorker.WAIT_ON_RESTART_MS_DEFAULT);
+        this.simpleSettingsController.loadIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS, ConfigurationPropertiesService.SimpleWorker.MIN_TIME_PER_ITERATION_MS_DEFAULT);
+        this.simpleSettingsController.loadIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS, ConfigurationPropertiesService.SimpleWorker.TIMEOUT_RUNNER_LIFE_MS_DEFAULT);
+        this.simpleSettingsController.loadIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS, ConfigurationPropertiesService.SimpleWorker.PRINT_STATISTICS_EVERY_MS_DEFAULT);
     }
 
     @Override

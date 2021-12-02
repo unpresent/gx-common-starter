@@ -11,12 +11,14 @@ import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static lombok.AccessLevel.*;
 
 /**
  * Базовая реализация контроллера настроек.
  */
+@SuppressWarnings("unused")
 @Slf4j
 public abstract class AbstractSettingsController implements SettingsController, ApplicationContextAware {
     /**
@@ -129,11 +131,21 @@ public abstract class AbstractSettingsController implements SettingsController, 
         setSetting(settingName, settingValue);
     }
 
+    public void loadStringSetting(@NotNull final String settingName, @NotNull final String defaultValue) {
+        final var settingValue = this.getEnvironment().getProperty(settingName);
+        setSetting(settingName, Objects.requireNonNullElse(settingValue, defaultValue));
+    }
+
     public void loadIntegerSetting(@NotNull String settingName) throws UnknownApplicationSettingException {
         final var settingValue = this.getEnvironment().getProperty(settingName);
         if (settingValue == null) {
             throw new UnknownApplicationSettingException(settingName);
         }
         setSetting(settingName, Integer.parseInt(settingValue));
+    }
+
+    public void loadIntegerSetting(@NotNull String settingName, @NotNull final Integer defaultValue) {
+        final var settingValue = this.getEnvironment().getProperty(settingName);
+        setSetting(settingName, settingValue == null ? defaultValue : Integer.parseInt(settingValue));
     }
 }

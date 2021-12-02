@@ -20,6 +20,22 @@ public class ConfigurationPropertiesService {
     @NestedConfigurationProperty
     private Events events = new Events();
 
+    @NestedConfigurationProperty
+    private Channels channels = new Channels();
+
+    @Getter
+    @Setter
+    public static class Channels {
+        @NestedConfigurationProperty
+        private ConfiguratorCaller configuratorCaller = new ConfiguratorCaller();
+    }
+
+    @Getter
+    @Setter
+    public static class ConfiguratorCaller {
+        private boolean enabled = true;
+    }
+
     @Getter
     @Setter
     public static class StandardSettingsController {
@@ -29,13 +45,20 @@ public class ConfigurationPropertiesService {
     @Getter
     @Setter
     public static class SimpleWorker {
+        public static final String NAME_DEFAULT = "simple-worker";
+        public static final int WAIT_ON_STOP_MS_DEFAULT = 3000;
+        public static final int WAIT_ON_RESTART_MS_DEFAULT = 30000;
+        public static final int MIN_TIME_PER_ITERATION_MS_DEFAULT = 1000;
+        public static final int TIMEOUT_RUNNER_LIFE_MS_DEFAULT = 20000;
+        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 1000;
+
         private boolean enabled = false;
-        private String name = "simple-worker";
-        private int waitOnStopMs = 3000;
-        private int waitOnRestartMs = 30000;
-        private int minTimePerIterationMs = 1000;
-        private int timeoutRunnerLifeMs = 20000;
-        private int printStatisticsEveryMs = 1000;
+        private String name = NAME_DEFAULT;
+        private int waitOnStopMs = WAIT_ON_STOP_MS_DEFAULT;
+        private int waitOnRestartMs = WAIT_ON_RESTART_MS_DEFAULT;
+        private int minTimePerIterationMs = MIN_TIME_PER_ITERATION_MS_DEFAULT;
+        private int timeoutRunnerLifeMs = TIMEOUT_RUNNER_LIFE_MS_DEFAULT;
+        private int printStatisticsEveryMs = PRINT_STATISTICS_EVERY_MS_DEFAULT;
     }
 
     @Getter
@@ -51,22 +74,34 @@ public class ConfigurationPropertiesService {
     @Getter
     @Setter
     public static class StandardExecutor {
-        private boolean enabled = true;
-        private String name = "std-events-executor";
-        private int waitOnStopMs = 3000;
-        private int waitOnRestartMs = 30000;
-        private int minTimePerIterationMs = 1000;
-        private int timeoutRunnerLifeMs = 20000;
-        private int printStatisticsEveryMs = 1000;
+        public static final String NAME_DEFAULT = "events-executor";
+        public static final int WAIT_ON_STOP_MS_DEFAULT = 3000;
+        public static final int WAIT_ON_RESTART_MS_DEFAULT = 30000;
+        public static final int MIN_TIME_PER_ITERATION_MS_DEFAULT = 1000;
+        public static final int TIMEOUT_RUNNER_LIFE_MS_DEFAULT = 20000;
+        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 1000;
+
+        private boolean enabled = false;
+        private String name = NAME_DEFAULT;
+        private int waitOnStopMs = WAIT_ON_STOP_MS_DEFAULT;
+        private int waitOnRestartMs = WAIT_ON_RESTART_MS_DEFAULT;
+        private int minTimePerIterationMs = MIN_TIME_PER_ITERATION_MS_DEFAULT;
+        private int timeoutRunnerLifeMs = TIMEOUT_RUNNER_LIFE_MS_DEFAULT;
+        private int printStatisticsEveryMs = PRINT_STATISTICS_EVERY_MS_DEFAULT;
     }
 
     @Getter
     @Setter
     public static class StandardQueue {
+        public static final String NAME_DEFAULT = "events-queue";
+        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 1000;
+        public static final int MAX_QUEUE_SIZE_DEFAULT = 10000;
+        public static final int PRIORITIES_COUNT_DEFAULT = 8;
+
         private boolean enabled = true;
-        private String name = "std-events-queue";
-        private int printStatisticsEveryMs = 1000;
-        private int maxQueueSize = 1000;
-        private int prioritiesCount = 8;
+        private String name = NAME_DEFAULT;
+        private int printStatisticsEveryMs = PRINT_STATISTICS_EVERY_MS_DEFAULT;
+        private int maxQueueSize = MAX_QUEUE_SIZE_DEFAULT;
+        private int prioritiesCount = PRIORITIES_COUNT_DEFAULT;
     }
 }

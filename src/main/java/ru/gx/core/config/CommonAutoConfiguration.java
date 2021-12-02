@@ -31,18 +31,12 @@ public class CommonAutoConfiguration {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
-    @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private ApplicationEventPublisher eventPublisher;
-
-    @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private MeterRegistry meterRegistry;
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="ChannelsConfiguratorCaller">
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(value = "service.channels.configurator-caller" + DOT_ENABLED, havingValue = "true")
     public ChannelsConfiguratorCaller channelsConfiguratorCaller() {
         return new ChannelsConfiguratorCaller();
     }
@@ -52,7 +46,7 @@ public class CommonAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(value = StandardSettingsController.STANDARD_SETTINGS_CONTROLLER_PREFIX + DOT_ENABLED, havingValue = "true")
-    public StandardSettingsController simpleSettingsController() {
+    public StandardSettingsController standardSettingsController() {
         return new StandardSettingsController();
     }
 
@@ -62,11 +56,13 @@ public class CommonAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(value = SimpleWorkerSettingsContainer.SIMPLE_WORKER_SETTINGS_PREFIX + DOT_ENABLED, havingValue = "true")
+    @Autowired
     public SimpleWorker simpleWorker(
             @Value("${" + SimpleWorkerSettingsContainer.SIMPLE_WORKER_SETTINGS_PREFIX + DOT_NAME + "}") @Nullable final String name,
-            @NotNull final SimpleWorkerSettingsContainer settingsContainer
+            @NotNull final SimpleWorkerSettingsContainer settingsContainer,
+            @NotNull final MeterRegistry meterRegistry
     ) {
-        return new SimpleWorker(StringUtils.hasLength(name) ? name : SimpleWorker.WORKER_DEFAULT_NAME, settingsContainer, this.meterRegistry);
+        return new SimpleWorker(StringUtils.hasLength(name) ? name : SimpleWorker.WORKER_DEFAULT_NAME, settingsContainer, meterRegistry);
     }
 
     @Bean
@@ -89,15 +85,18 @@ public class CommonAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(value = StandardEventsExecutorSettingsContainer.STANDARD_EVENTS_EXECUTOR_SETTINGS_PREFIX + DOT_ENABLED, havingValue = "true")
+    @Autowired
     public StandardEventsExecutor standardEventsExecutor(
             @Value("${" + StandardEventsExecutorSettingsContainer.STANDARD_EVENTS_EXECUTOR_SETTINGS_PREFIX + DOT_NAME + "}") String name,
-            @NotNull final StandardEventsExecutorSettingsContainer settingsContainer
+            @NotNull final StandardEventsExecutorSettingsContainer settingsContainer,
+            @NotNull final ApplicationEventPublisher eventPublisher,
+            @NotNull final MeterRegistry meterRegistry
     ) {
         return new StandardEventsExecutor(
                 StringUtils.hasLength(name) ? name : StandardEventsExecutor.WORKER_DEFAULT_NAME,
                 settingsContainer,
-                this.eventPublisher,
-                this.meterRegistry
+                eventPublisher,
+                meterRegistry
         );
     }
 
