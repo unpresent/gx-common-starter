@@ -8,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.security.InvalidParameterException;
 
+import static lombok.AccessLevel.PROTECTED;
+
 /**
  * Интерфейс описателя канала получения и обработки входящих данных.
  */
@@ -20,7 +22,7 @@ public abstract class AbstractChannelDescriptor implements ChannelDescriptor {
     /**
      * Конфигурация, которой принадлежит описатель.
      */
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     @NotNull
     private final ChannelsConfiguration owner;
 
