@@ -80,7 +80,7 @@ public abstract class AbstractIncomeChannelDescriptor<O extends DataObject, P ex
         if (this.dataLoadedEventClass == null) {
             throw new ChannelConfigurationException("DataLoadedEventClass does not defined!");
         }
-        this.dataEventConstructor = this.dataLoadedEventClass.getConstructor(Object.class);
+        this.dataEventConstructor = this.dataLoadedEventClass.getConstructor(Object.class, ChannelDescriptor.class);
         super.init();
         return this;
     }
@@ -160,7 +160,7 @@ public abstract class AbstractIncomeChannelDescriptor<O extends DataObject, P ex
         if (this.dataEventConstructor == null) {
             throw new ChannelConfigurationException("DataEventConstructor does not defined!");
         }
-        return this.dataEventConstructor.newInstance(source);
+        return this.dataEventConstructor.newInstance(source, this);
     }
 
     /**
