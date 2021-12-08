@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.context.ApplicationEvent;
+import ru.gx.core.channels.ChannelDescriptor;
 
 /**
  * События, требующие обработки.<br/>
@@ -20,6 +21,9 @@ import org.springframework.context.ApplicationEvent;
 @ToString
 public abstract class AbstractDataEvent extends ApplicationEvent implements DataEvent {
     @NotNull
+    private final ChannelDescriptor channelDescriptor;
+
+    @NotNull
     private final SimpleMetadataContainer metadataContainer;
 
     @Nullable
@@ -27,8 +31,9 @@ public abstract class AbstractDataEvent extends ApplicationEvent implements Data
     @Setter
     private Object data;
 
-    protected AbstractDataEvent(@NotNull final Object source) {
+    protected AbstractDataEvent(@NotNull final Object source, @NotNull final ChannelDescriptor channelDescriptor) {
         super(source);
+        this.channelDescriptor = channelDescriptor;
         this.metadataContainer = new SimpleMetadataContainer();
     }
 
