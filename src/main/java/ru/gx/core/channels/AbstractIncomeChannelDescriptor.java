@@ -69,9 +69,14 @@ public abstract class AbstractIncomeChannelDescriptor<O extends DataObject, P ex
     protected AbstractIncomeChannelDescriptor(
             @NotNull final ChannelsConfiguration owner,
             @NotNull final String name,
-            @Nullable final AbstractChannelDescriptorsDefaults defaults
+            @Nullable final IncomeChannelDescriptorsDefaults defaults
     ) {
         super(owner, name, ChannelDirection.In, defaults);
+        if (defaults != null) {
+            this
+                    .setProcessType(defaults.getProcessType())
+                    .setLoadingFiltrator(defaults.getLoadingFiltrator());
+        }
     }
 
     @SneakyThrows(NoSuchMethodException.class)

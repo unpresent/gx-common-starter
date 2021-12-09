@@ -41,7 +41,7 @@ public abstract class AbstractOutcomeChannelDescriptor<O extends DataObject, P e
     protected AbstractOutcomeChannelDescriptor(
             @NotNull final ChannelsConfiguration owner,
             @NotNull final String name,
-            @Nullable final AbstractChannelDescriptorsDefaults defaults) {
+            @Nullable final OutcomeChannelDescriptorsDefaults defaults) {
         super(owner, name, ChannelDirection.In, defaults);
         this.metadataContainer = new SimpleMetadataContainer();
     }

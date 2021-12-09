@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.channels.ChannelDescriptor;
 
-@SuppressWarnings("UnusedReturnValue")
+@SuppressWarnings({"UnusedReturnValue", "unused"})
 public interface DataEvent extends Event, MetadataGetter, MetadataSetter {
     /**
      * @return Описатель канала, по которому получены данные.

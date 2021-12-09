@@ -1,6 +1,5 @@
 package ru.gx.core.channels;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
