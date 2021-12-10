@@ -9,7 +9,7 @@ import ru.gx.core.events.DataEvent;
 /**
  * Интерфейс описателя канала получения и обработки входящих данных.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface IncomeChannelDescriptor<O extends DataObject, P extends DataPackage<O>> extends ChannelDescriptor {
 
     /**

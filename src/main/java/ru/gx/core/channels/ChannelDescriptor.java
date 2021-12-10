@@ -65,6 +65,19 @@ public interface ChannelDescriptor {
     ChannelDescriptor setSerializeMode(@NotNull final SerializeMode serializeMode);
 
     /**
+     * @return Включен ли данный канал.
+     */
+    boolean isEnabled();
+
+    /**
+     * Включение/отключение данного канала.
+     * @param enabled true - включить канал, false - выключить канал.
+     * @return this.
+     */
+    @NotNull
+    ChannelDescriptor setEnabled(final boolean enabled);
+
+    /**
      * Признак того, что описатель инициализирован.
      */
     boolean isInitialized();

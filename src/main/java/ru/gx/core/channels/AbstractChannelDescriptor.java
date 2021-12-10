@@ -51,6 +51,12 @@ public abstract class AbstractChannelDescriptor implements ChannelDescriptor {
     private SerializeMode serializeMode;
 
     /**
+     * Признак того, что данный канал включен.
+     */
+    @Getter
+    private boolean enabled = true;
+
+    /**
      * Признак того, что описатель инициализирован.
      */
     @Getter
@@ -142,6 +148,18 @@ public abstract class AbstractChannelDescriptor implements ChannelDescriptor {
     public AbstractChannelDescriptor setSerializeMode(@NotNull final SerializeMode serializeMode) {
         checkChangeable("serializeMode");
         this.serializeMode = serializeMode;
+        return this;
+    }
+
+    /**
+     * @param enabled режим включения/выключения канала.
+     * @return this.
+     */
+    @Override
+    @NotNull
+    public AbstractChannelDescriptor setEnabled(final boolean enabled) {
+        checkChangeable("enabled");
+        this.enabled = enabled;
         return this;
     }
     // </editor-fold>
