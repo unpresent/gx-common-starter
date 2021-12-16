@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.math.BigDecimal;
 
 /**
- * Вспомогательные утилиты для работы с BigDecimal
+ * Вспомогательные утилиты для работы с BigDecimal.
  */
 @SuppressWarnings("unused")
 public abstract class BigDecimalUtils {
@@ -22,7 +22,7 @@ public abstract class BigDecimalUtils {
     }
 
     /**
-     * @param mainValue возвращаемое занчение, если не совпадает с ifValue.
+     * @param mainValue возвращаемое значение, если не совпадает с ifValue.
      * @param ifValue значение, с которым сверяется mainValue.
      * @return null, если #mainValue.equals(ifValue). Иначе mainValue.
      */

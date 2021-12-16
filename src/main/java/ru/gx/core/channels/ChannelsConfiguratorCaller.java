@@ -16,6 +16,7 @@ import static lombok.AccessLevel.PROTECTED;
 /**
  * Задача данного Bean-а вызвать настройщиков конфигураций обработки входящих потоков.
  */
+@Deprecated
 @Slf4j
 public class ChannelsConfiguratorCaller {
 

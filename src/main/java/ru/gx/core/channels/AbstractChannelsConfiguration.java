@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.gx.core.messaging.Message;
+import ru.gx.core.messaging.MessageBody;
+import ru.gx.core.messaging.MessageHeader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidParameterException;
@@ -16,13 +19,13 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * Список описателей сгруппированные по приоритетам.
      */
     @NotNull
-    private final List<List<ChannelDescriptor>> priorities = new ArrayList<>();
+    private final List<List<ChannelHandleDescriptor<?>>> priorities = new ArrayList<>();
 
     /**
      * Список описателей с группировкой по топикам.
      */
     @NotNull
-    private final Map<String, ChannelDescriptor> channels = new HashMap<>();
+    private final Map<String, ChannelHandleDescriptor<?>> channels = new HashMap<>();
 
     @Getter
     @NotNull
@@ -68,10 +71,12 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @return Описатель канала.
      * @throws ChannelConfigurationException В случае отсутствия описателя канала с заданным именем бросается ошибка.
      */
+    @SuppressWarnings("unchecked")
     @Override
     @NotNull
-    public ChannelDescriptor get(@NotNull final String channelName) throws ChannelConfigurationException {
-        final var result = this.channels.get(channelName);
+    public <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    ChannelHandleDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException {
+        final var result = (ChannelHandleDescriptor<M>) this.channels.get(channelName);
         if (result == null) {
             throw new ChannelConfigurationException("Can't find description for channel " + channelName);
         }
@@ -84,16 +89,18 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param channelName Имя канала, для которого требуется получить описатель.
      * @return Описатель канала. Если не найден, то возвращается null.
      */
+    @SuppressWarnings("unchecked")
     @Override
     @Nullable
-    public ChannelDescriptor tryGet(@NotNull final String channelName) {
-        return this.channels.get(channelName);
+    public <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    ChannelHandleDescriptor<M> tryGet(@NotNull final String channelName) {
+        return (ChannelHandleDescriptor<M>) this.channels.get(channelName);
     }
 
     /**
-     * Создание описателя обработчика одной очереди.
+     * Создание описателя обработчика канала.
      *
-     * @param channelName     Имя канала, для которого создается описатель.
+     * @param channelApi      Описатель API канала.
      * @param descriptorClass Класс описателя.
      * @return this.
      */
@@ -101,10 +108,10 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @SneakyThrows({InstantiationException.class, IllegalAccessException.class, InvocationTargetException.class})
     @Override
     @NotNull
-    public <D extends ChannelDescriptor>
-    D newDescriptor(@NotNull final String channelName, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
-        if (contains(channelName)) {
-            throw new ChannelConfigurationException("Topic '" + channelName + "' already registered!");
+    public <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandleDescriptor<M>>
+    D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
+        if (contains(channelApi.getName())) {
+            throw new ChannelConfigurationException("Topic '" + channelApi.getName() + "' already registered!");
         }
         D result = null;
         if (allowCreateDescriptor(descriptorClass)) {
@@ -114,25 +121,25 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
                         final var paramsTypes = c.getParameterTypes();
                         return paramsTypes.length == 3
                                 && ChannelsConfiguration.class.isAssignableFrom(paramsTypes[0])
-                                && String.class.isAssignableFrom(paramsTypes[1])
+                                && AbstractChannelApiDescriptor.class.isAssignableFrom(paramsTypes[1])
                                 && AbstractChannelDescriptorsDefaults.class.isAssignableFrom(paramsTypes[2]);
                     })
                     .findFirst();
             if (constructor3.isPresent()) {
-                result = (D) constructor3.get().newInstance(this, channelName, this.getDescriptorsDefaults());
+                result = (D) constructor3.get().newInstance(this, channelApi, this.getDescriptorsDefaults());
             } else {
                 final var constructor4 = Arrays.stream(descriptorClass.getConstructors())
                         .filter(c -> {
                             final var paramsTypes = c.getParameterTypes();
                             return paramsTypes.length == 4
-                                    && paramsTypes[0].isAssignableFrom(ChannelsConfiguration.class)
-                                    && paramsTypes[1].isAssignableFrom(String.class)
-                                    && paramsTypes[2].isAssignableFrom(ChannelDirection.class)
-                                    && paramsTypes[3].isAssignableFrom(AbstractChannelDescriptorsDefaults.class);
+                                    && ChannelsConfiguration.class.isAssignableFrom(paramsTypes[0])
+                                    && AbstractChannelApiDescriptor.class.isAssignableFrom(paramsTypes[1])
+                                    && ChannelDirection.class.isAssignableFrom(paramsTypes[2])
+                                    && AbstractChannelDescriptorsDefaults.class.isAssignableFrom(paramsTypes[3]);
                         })
                         .findFirst();
                 if (constructor4.isPresent()) {
-                    result = (D) constructor4.get().newInstance(this, channelName, this.getDirection(), this.getDescriptorsDefaults());
+                    result = (D) constructor4.get().newInstance(this, channelApi, this.getDirection(), this.getDescriptorsDefaults());
                 }
             }
         }
@@ -144,11 +151,13 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
 
     /**
      * Проверка на допустимость создания экземпляра описателя канала указанного класса.
+     *
      * @param descriptorClass Класс создаваемого описателя.
      * @return True - создание описателя допустимо.
      */
-    abstract protected boolean allowCreateDescriptor(
-            @NotNull final Class<? extends ChannelDescriptor> descriptorClass
+    abstract protected <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandleDescriptor<M>>
+    boolean allowCreateDescriptor(
+            @NotNull final Class<D> descriptorClass
     );
 
     /**
@@ -157,12 +166,12 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptor Описатель топика, который надо зарегистрировать в списках описателей.
      */
     @Override
-    public void internalRegisterDescriptor(@NotNull final ChannelDescriptor descriptor) {
-        if (contains(descriptor.getName())) {
-            throw new ChannelConfigurationException("Channel '" + descriptor.getName() + "' already registered!");
+    public void internalRegisterDescriptor(@NotNull final ChannelHandleDescriptor<?> descriptor) {
+        if (contains(descriptor.getApi().getName())) {
+            throw new ChannelConfigurationException("Channel '" + descriptor.getApi().getName() + "' already registered!");
         }
         if (!descriptor.isInitialized()) {
-            throw new ChannelConfigurationException("Descriptor of channel '" + descriptor.getName() + "' doesn't initialized!");
+            throw new ChannelConfigurationException("Descriptor of channel '" + descriptor.getApi().getName() + "' doesn't initialized!");
         }
 
         final var priority = descriptor.getPriority();
@@ -172,7 +181,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
         final var itemsList = priorities.get(priority);
         itemsList.add(descriptor);
 
-        channels.put(descriptor.getName(), descriptor);
+        channels.put(descriptor.getApi().getName(), descriptor);
     }
 
     /**
@@ -181,8 +190,8 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptor Описатель топика очереди.
      */
     @Override
-    public void internalUnregisterDescriptor(@NotNull final ChannelDescriptor descriptor) {
-        final var channelName = descriptor.getName();
+    public void internalUnregisterDescriptor(@NotNull final ChannelHandleDescriptor<?> descriptor) {
+        final var channelName = descriptor.getApi().getName();
         if (!this.channels.containsValue(descriptor) || !this.channels.containsKey(channelName)) {
             throw new ChannelConfigurationException("Channel " + channelName + " not registered!");
         }
@@ -190,7 +199,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
             throw new ChannelConfigurationException("Descriptor by name " + channelName + " not equal descriptor by parameter!");
         }
 
-        this.channels.remove(descriptor.getName());
+        this.channels.remove(descriptor.getApi().getName());
         for (var pList : this.priorities) {
             if (pList.remove(descriptor)) {
                 descriptor.unInit();
@@ -215,7 +224,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      */
     @Override
     @Nullable
-    public Iterable<ChannelDescriptor> getByPriority(int priority) {
+    public Iterable<ChannelHandleDescriptor<?>> getByPriority(int priority) {
         return this.priorities.get(priority);
     }
 
@@ -224,7 +233,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      */
     @Override
     @NotNull
-    public Iterable<ChannelDescriptor> getAll() {
+    public Iterable<ChannelHandleDescriptor<?>> getAll() {
         return this.channels.values();
     }
     // </editor-fold>

@@ -25,9 +25,9 @@ public interface SettingsController {
     String getStringSetting(@NotNull final String settingName) throws ClassCastException;
 
     /**
-     * Установка новго значения настойки. Если значение изменяется, то бросается событие об изменении.
-     * @param settingName название настйроки
-     * @param value значение настройки
+     * Установка нового значения настойки. Если значение изменяется, то бросается событие об изменении.
+     * @param settingName название настройки.
+     * @param value значение настройки.
      */
     void setSetting(@NotNull final String settingName, @Nullable final Object value);
 }

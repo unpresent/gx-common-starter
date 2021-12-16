@@ -4,11 +4,11 @@ import java.nio.ByteBuffer;
 
 @SuppressWarnings("unused")
 public class BytesUtils {
-    private static ByteBuffer bufferLong = ByteBuffer.allocate(Long.BYTES);
-
     public static byte[] longToBytes(long x) {
-        bufferLong.putLong(0, x);
-        return bufferLong.array();
+        return ByteBuffer
+                .allocate(Long.BYTES)
+                .putLong(0, x)
+                .array();
     }
 
     public static long bytesToLong(byte[] bytes) {
@@ -16,8 +16,10 @@ public class BytesUtils {
     }
 
     public static byte[] intToBytes(int x) {
-        bufferLong.putInt(0, x);
-        return bufferLong.array();
+        return ByteBuffer
+                .allocate(Long.BYTES)
+                .putInt(0, x)
+                .array();
     }
 
     public static long bytesToInt(byte[] bytes) {

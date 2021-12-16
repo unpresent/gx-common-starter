@@ -18,23 +18,23 @@ public class ConfigurationPropertiesService {
     private SimpleWorker simpleWorker = new SimpleWorker();
 
     @NestedConfigurationProperty
-    private Events events = new Events();
+    private Messages messages = new Messages();
 
-    @NestedConfigurationProperty
-    private Channels channels = new Channels();
+    //    @NestedConfigurationProperty
+    //    private Channels channels = new Channels();
 
-    @Getter
-    @Setter
-    public static class Channels {
-        @NestedConfigurationProperty
-        private ConfiguratorCaller configuratorCaller = new ConfiguratorCaller();
-    }
+    //    @Getter
+    //    @Setter
+    //    public static class Channels {
+    //        @NestedConfigurationProperty
+    //        private ConfiguratorCaller configuratorCaller = new ConfiguratorCaller();
+    //    }
 
-    @Getter
-    @Setter
-    public static class ConfiguratorCaller {
-        private boolean enabled = true;
-    }
+    //    @Getter
+    //    @Setter
+    //    public static class ConfiguratorCaller {
+    //        private boolean enabled = true;
+    //    }
 
     @Getter
     @Setter
@@ -63,7 +63,7 @@ public class ConfigurationPropertiesService {
 
     @Getter
     @Setter
-    public static class Events {
+    public static class Messages {
         @NestedConfigurationProperty
         private StandardExecutor standardExecutor = new StandardExecutor();
 
@@ -74,7 +74,7 @@ public class ConfigurationPropertiesService {
     @Getter
     @Setter
     public static class StandardExecutor {
-        public static final String NAME_DEFAULT = "events-executor";
+        public static final String NAME_DEFAULT = "messages-executor";
         public static final int WAIT_ON_STOP_MS_DEFAULT = 3000;
         public static final int WAIT_ON_RESTART_MS_DEFAULT = 30000;
         public static final int MIN_TIME_PER_ITERATION_MS_DEFAULT = 1000;
@@ -93,7 +93,7 @@ public class ConfigurationPropertiesService {
     @Getter
     @Setter
     public static class StandardQueue {
-        public static final String NAME_DEFAULT = "events-queue";
+        public static final String NAME_DEFAULT = "messages-queue";
         public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 1000;
         public static final int MAX_QUEUE_SIZE_DEFAULT = 10000;
         public static final int PRIORITIES_COUNT_DEFAULT = 8;

@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static lombok.AccessLevel.*;
+import static lombok.AccessLevel.PROTECTED;
 
 /**
  * Базовая реализация контроллера настроек.
@@ -26,9 +26,11 @@ public abstract class AbstractSettingsController implements SettingsController, 
      */
     public static final String ALL = "*";
 
+    // TODO: заменить на ApplicationEventPublisher + @Setter с @Autowired
     @Getter
     private ApplicationContext applicationContext;
 
+    // TODO: попробовать заменить @Setter с @Autowired
     @Getter(PROTECTED)
     private Environment environment;
 

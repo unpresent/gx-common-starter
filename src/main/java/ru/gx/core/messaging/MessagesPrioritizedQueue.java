@@ -1,0 +1,66 @@
+package ru.gx.core.messaging;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
+
+/**
+ * Интерфейс контейнера приоритезированных очередей.
+ */
+@SuppressWarnings("unused")
+public interface MessagesPrioritizedQueue {
+
+    /**
+     * Проверка на возможность бросить событие в очередь.
+     * @return true - контейнер очередей готов принять событие.
+     */
+    boolean allowPush();
+
+    /**
+     * Отправка события в контейнер очередей.
+     * @param priority Приоритет события.
+     * @param message Событие.
+     * @return this.
+     */
+    MessagesPrioritizedQueue pushMessage(final int priority, @NotNull final Message<? extends MessageHeader, ? extends MessageBody> message);
+
+    /**
+     * Извлечение события из контейнера очередей. Будет предоставлено наиболее старое событие из очереди с наименьшим приоритетом.
+     * @return Событие, которое надо обработать.
+     */
+    @Nullable
+    Message<? extends MessageHeader, ? extends MessageBody> pollMessage();
+
+    /**
+     * Извлечение списка событий из контейнера очередей. Будут предоставлены наиболее старые события из очереди с наименьшим приоритетом.
+     * Далее в результирующую коллекцию будут добавляться события из очереди со следующим приоритетом.
+     * И так до тех пор, пока в результирующей коллекции не наберется заданное количество событий на обработку или пока не закончатся события в очередях.
+     * @param maxCount Сколько извлечь событий. Может быть предоставлено меньше событий (если они закончились в очереди).
+     * @return Коллекция событий, которые надо обработать.
+     */
+    @NotNull
+    Collection<Message<?, ?>> pollMessages(int maxCount);
+
+    /**
+     * @return Количество событий в контейнере очередей.
+     */
+    int queueSize();
+
+    /**
+     * @return Количество приоритетов - по сути, количество очередей.
+     */
+    int priorityCount();
+
+    /**
+     * Настройка. Ограничение на количество событий в контейнере. При достижении данного ограничения новые сообщения
+     * не будут приниматься контейнером, пока не будет освобожденно место путем извлечения событий.
+     * @return Допустимое количество событий в очереди.
+     */
+    int getQueueSizeLimit();
+
+    /**
+     * @return Название контейнера. Используется для вывода в логи.
+     */
+    String getName();
+}

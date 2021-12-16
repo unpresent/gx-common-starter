@@ -17,7 +17,7 @@ public class IntegerUtils {
     }
 
     /**
-     * @param mainValue возвращаемое занчение, если не совпадает с ifValue.
+     * @param mainValue возвращаемое значение, если не совпадает с ifValue.
      * @param ifValue значение, с которым сверяется mainValue.
      * @return null, если #mainValue.equals(ifValue). Иначе mainValue.
      */

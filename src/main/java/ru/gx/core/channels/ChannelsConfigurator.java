@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * Задача реализатора данного интерфейса заключается в конфигурировании каналов у указанной конфигурации.
  */
 @SuppressWarnings("unused")
+@Deprecated
 public interface ChannelsConfigurator {
     /**
      * Вызывается после настройки бинов.

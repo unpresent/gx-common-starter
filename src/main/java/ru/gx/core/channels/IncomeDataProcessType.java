@@ -12,5 +12,5 @@ public enum IncomeDataProcessType {
     /**
      * Отправить в очередь событий
      */
-    SendToEventsQueue
+    SendToMessagesQueue
 }

@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import ru.gx.core.events.Event;
 
 /**
  * Объект-событие.<br/>
@@ -12,7 +11,7 @@ import ru.gx.core.events.Event;
  * Слушателем данного является сам Worker.
  */
 @SuppressWarnings("unused")
-public class DoStopSimpleWorkerEvent extends ApplicationEvent implements Event {
+public class DoStopSimpleWorkerEvent extends ApplicationEvent {
     protected DoStopSimpleWorkerEvent(@NotNull final Object source) {
         super(source);
     }

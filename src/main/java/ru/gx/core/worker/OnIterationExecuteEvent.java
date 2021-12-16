@@ -1,12 +1,10 @@
 package ru.gx.core.worker;
 
-import ru.gx.core.events.Event;
-
 /**
  * Объект-событие.<br/>
  * Слушатель данного события получает управление каждую итерацию цикла Worker-а.
  */
-public interface OnIterationExecuteEvent extends Event {
+public interface OnIterationExecuteEvent {
     /**
      * Признак того, требуется ли перезапустить работу Исполнителя.
      * @see Worker
