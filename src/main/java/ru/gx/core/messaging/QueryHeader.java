@@ -22,6 +22,15 @@ public class QueryHeader extends AbstractMessageHeader {
         return MessageKind.Query;
     }
 
+    /**
+     * Конструктор заголовка запроса.
+     * @param id Идентификатор сообщения.
+     * @param kind Вид сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     */
     @SuppressWarnings("unused")
     @JsonCreator
     public QueryHeader(
@@ -35,6 +44,14 @@ public class QueryHeader extends AbstractMessageHeader {
         super(id, kind, type, sourceSystem, createdDateTime, version);
     }
 
+    /**
+     * Конструктор заголовка запроса.
+     * @param id Идентификатор сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     */
     public QueryHeader(
             @NotNull final String id,
             @NotNull final String type,

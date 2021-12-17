@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Интерфейс ответа на заявку.
  */
-public interface Response<H extends MessageHeader, B extends MessageBody>
-        extends Message<H, B> {
+public interface Response< B extends MessageBody>
+        extends Message<ResponseHeader, B> {
     /**
      * @return  Идентификатор заявки. @see {@link Request}
      */

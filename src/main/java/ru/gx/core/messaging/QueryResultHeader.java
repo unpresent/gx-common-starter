@@ -27,6 +27,16 @@ public class QueryResultHeader extends AbstractMessageHeader {
     @NotNull
     public final String queryId;
 
+    /**
+     * Конструктор заголовка ответа на запрос.
+     * @param id Идентификатор сообщения.
+     * @param kind Вид сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     * @param queryId Идентификатор исходного запроса, для которого сформирован данный ответ.
+     */
     @SuppressWarnings("unused")
     @JsonCreator
     public QueryResultHeader(
@@ -42,6 +52,15 @@ public class QueryResultHeader extends AbstractMessageHeader {
         this.queryId = queryId;
     }
 
+    /**
+     * Конструктор заголовка ответа на запрос.
+     * @param id Идентификатор сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     * @param queryId Идентификатор исходного запроса, для которого сформирован данный ответ.
+     */
     public QueryResultHeader(
             @NotNull final String id,
             @NotNull final String type,

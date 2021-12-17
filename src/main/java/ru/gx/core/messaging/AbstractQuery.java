@@ -14,24 +14,24 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public abstract class AbstractQuery<B extends AbstractMessageBody>
         extends AbstractMessage<QueryHeader, B>
-        implements Query<QueryHeader, B> {
+        implements Query<B> {
 
     @JsonCreator
     public AbstractQuery(
             @JsonProperty("header") @NotNull final QueryHeader header,
-            @JsonProperty("body") @Nullable final B body,
+            @JsonProperty("body") @NotNull final B body,
             @JsonProperty("correlation") @Nullable final MessageCorrelation correlation
     ) {
         super(header, body, correlation);
     }
 
-    public AbstractQuery(
+    protected AbstractQuery(
             @NotNull final String id,
             @NotNull final String type,
             @Nullable final String sourceSystem,
             @NotNull final LocalDateTime createdDateTime,
             final int version,
-            @Nullable final B body,
+            @NotNull final B body,
             @Nullable final MessageCorrelation correlation
     ) {
         super(new QueryHeader(id, type, sourceSystem, createdDateTime, version), body, correlation);

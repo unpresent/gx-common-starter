@@ -13,6 +13,9 @@ public abstract class AbstractMessagesProcessor implements MessagesProcessor {
     @NotNull
     private final ApplicationEventPublisher eventPublisher;
 
+    /**
+     * Накопитель статистики обработки.
+     */
     @NotNull
     private final StandardMessagesExecutorStatisticsInfo messagesStatisticsInfo;
 
@@ -38,6 +41,11 @@ public abstract class AbstractMessagesProcessor implements MessagesProcessor {
         return event;
     }
 
+    /**
+     * Обработка одного сообщения.
+     * @param message Сообщение, которое бросаем на обработку через this.eventPublisher.
+     * @return this.
+     */
     @Override
     @NotNull
     public AbstractMessagesProcessor processMessage(@NotNull Message<? extends MessageHeader, ? extends MessageBody> message) {

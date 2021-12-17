@@ -22,6 +22,15 @@ public class RequestHeader extends AbstractMessageHeader {
         return MessageKind.Request;
     }
 
+    /**
+     * Конструктор заголовка заявки.
+     * @param id Идентификатор сообщения.
+     * @param kind Вид сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     */
     @SuppressWarnings("unused")
     @JsonCreator
     public RequestHeader(
@@ -35,6 +44,14 @@ public class RequestHeader extends AbstractMessageHeader {
         super(id, kind, type, sourceSystem, createdDateTime, version);
     }
 
+    /**
+     * Конструктор заголовка заявки.
+     * @param id Идентификатор сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     */
     public RequestHeader(
             @NotNull final String id,
             @NotNull final String type,

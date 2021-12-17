@@ -51,6 +51,15 @@ public abstract class AbstractMessageHeader implements MessageHeader {
     @Getter
     private final int version;
 
+    /**
+     * Конструктор заголовка сообщения.
+     * @param id Идентификатор сообщения.
+     * @param kind Вид сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     */
     protected AbstractMessageHeader(
             @NotNull final String id,
             @NotNull final MessageKind kind,
@@ -63,6 +72,14 @@ public abstract class AbstractMessageHeader implements MessageHeader {
         checkMessageKind(kind, getKind());
     }
 
+    /**
+     * Конструктор заголовка сообщения.
+     * @param id Идентификатор сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     */
     protected AbstractMessageHeader(
             @NotNull final String id,
             @NotNull final String type,
@@ -77,6 +94,11 @@ public abstract class AbstractMessageHeader implements MessageHeader {
         this.version = version;
     }
 
+    /**
+     * Проверка на соответствие вида сообщения, которое передано извне (при десериализации), виду сообщения, который определяет наследник.
+     * @param kind Вид сообщения, которое передали извне.
+     * @param targetKind Вид сообщения, который определяет наследник.
+     */
     protected void checkMessageKind(@NotNull final MessageKind kind, @NotNull final MessageKind targetKind) {
         if (kind != targetKind) {
             throw new InvalidParameterException("Incorrect message kind " + kind + "! It should be " + targetKind);

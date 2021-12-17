@@ -29,7 +29,7 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
      */
     @Getter
     @Setter(AccessLevel.PROTECTED)
-    @Nullable
+    @NotNull
     private B body;
 
     /**
@@ -39,6 +39,10 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
     @Nullable
     private final MessageCorrelation correlation;
 
+    /**
+     * Описатель канала обработки сообщений, через который обрабатывается сообщение.
+     * При обработке сообщения можно понять, какой канал его отправил на обработку.
+     */
     @JsonIgnore
     @Getter
     @Setter
@@ -50,9 +54,16 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialize">
+
+    /**
+     * Конструктор сообщения.
+     * @param header Заголовок сообщения.
+     * @param body Тело сообщения.
+     * @param correlation Необрабатываемые данные.
+     */
     protected AbstractMessage(
             @NotNull final H header,
-            @Nullable final B body,
+            @NotNull final B body,
             @Nullable final MessageCorrelation correlation
     ) {
         this.header = header;
@@ -61,8 +72,11 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
         checkMessageType();
     }
 
+    /**
+     * Проверка на корректность (соответствие проверяемой тройки в регистрации) Вида, Типа и Класса сообщения.
+     */
     protected void checkMessageType() {
-        MessageTypesRegistrator.checkType(this.header.getType(), this.getClass());
+        MessageTypesRegistrator.checkType(this.header.getKind(), this.header.getType(), this.getClass());
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------

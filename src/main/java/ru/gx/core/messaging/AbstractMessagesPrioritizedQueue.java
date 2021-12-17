@@ -13,15 +13,28 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Accessors(chain = true)
 public abstract class AbstractMessagesPrioritizedQueue implements MessagesPrioritizedQueue {
+
+    /**
+     * Объект синхронизации.
+     */
     private final Object monitor = new Object();
 
+    /**
+     * Имя компонента. Используется при логировании.
+     */
     @Getter
     @NotNull
     private final String name;
 
+    /**
+     * Количество сообщения во всех очередях.
+     */
     @NotNull
     private final AtomicInteger size = new AtomicInteger(0);
 
+    /**
+     * Очереди для каждого из приоритетов.
+     */
     @NotNull
     private final List<Queue<Message<?, ?>>> priorities = new ArrayList<>();
 
@@ -41,6 +54,12 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
         this.name = name;
     }
 
+    /**
+     * Инициализации компонента: создаются очереди по количеству приоритетов.
+     * @param maxQueueSize Максимальное количество сообщений в очередях.
+     * @param prioritiesCount Количество приоритетов.
+     * @return this.
+     */
     public AbstractMessagesPrioritizedQueue init(final int maxQueueSize, final int prioritiesCount) {
         synchronized (this.monitor) {
             while (this.priorities.size() < prioritiesCount) {

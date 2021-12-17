@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
-import ru.gx.core.messaging.Message;
-import ru.gx.core.messaging.MessageBody;
-import ru.gx.core.messaging.MessageHeader;
+import ru.gx.core.messaging.*;
 
 /**
  * Описатель API канала передачи данных.
@@ -36,22 +34,41 @@ public abstract class AbstractChannelApiDescriptor<M extends Message<? extends M
     private final SerializeMode serializeMode;
 
     /**
-     * Признак того, что данный канал включен.
+     * Вид сообщений, которые передаются в данном канале.
+     */
+    @Getter
+    @NotNull
+    private final MessageKind messageKind;
+
+    /**
+     * Тип сообщений, которые передаются в данном канале.
+     */
+    @Getter
+    @NotNull
+    private final String messageType;
+
+    /**
+     * Класс сообщений, в экземпляры передаются в данном канале.
      */
     @Getter
     @NotNull
     private final Class<M> messageClass;
+
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialize">
     protected AbstractChannelApiDescriptor(
             @NotNull final String name,
             @NotNull final SerializeMode serializeMode,
-            @NotNull final Class<M> messageClass
-    ) {
+            @NotNull final Class<M> messageClass,
+            @NotNull final MessageKind messageKind,
+            @NotNull final String messageType) {
         this.name = name;
         this.serializeMode = serializeMode;
+        this.messageKind = messageKind;
+        this.messageType = messageType;
         this.messageClass = messageClass;
+        MessageTypesRegistrator.checkType(this.messageKind, this.messageType, this.messageClass);
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------

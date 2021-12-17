@@ -74,9 +74,6 @@ public abstract class AbstractChannelHandleDescriptor<M extends Message<? extend
         this.direction = direction;
 
         final var messageClass = this.getApi().getMessageClass();
-        if (messageClass == null) {
-            throw new ChannelConfigurationException("ChannelApiDescriptor " + api.getName() + " doesn't have messageClass!");
-        }
         final var constructor = Arrays.stream(messageClass.getConstructors())
                 .filter(c -> {
                     final var paramsTypes = c.getParameterTypes();

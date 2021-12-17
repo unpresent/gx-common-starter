@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Интерфейс ответа на запрос.
  */
-public interface QueryResult<H extends MessageHeader, B extends MessageBody>
-        extends Message<H, B> {
+public interface QueryResult<B extends MessageBody>
+        extends Message<QueryResultHeader, B> {
     @SuppressWarnings("unused")
     @NotNull
     String getQueryId();

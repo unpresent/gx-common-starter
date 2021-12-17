@@ -14,24 +14,24 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public abstract class AbstractEvent<B extends AbstractMessageBody>
         extends AbstractMessage<EventHeader, B>
-        implements Event<EventHeader, B> {
+        implements Event<B> {
 
     @JsonCreator
     public AbstractEvent(
             @JsonProperty("header") @NotNull final EventHeader header,
-            @JsonProperty("body") @Nullable final B body,
+            @JsonProperty("body") @NotNull final B body,
             @JsonProperty("correlation") @Nullable final MessageCorrelation correlation
     ) {
         super(header, body, correlation);
     }
 
-    public AbstractEvent(
+    protected AbstractEvent(
             @NotNull final String id,
             @NotNull final String type,
             @Nullable final String sourceSystem,
             @NotNull final LocalDateTime createdDateTime,
             final int version,
-            @Nullable final B body,
+            @NotNull final B body,
             @Nullable final MessageCorrelation correlation
     ) {
         super(new EventHeader(id, type, sourceSystem, createdDateTime, version), body, correlation);

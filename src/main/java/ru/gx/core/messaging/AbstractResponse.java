@@ -14,25 +14,25 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public abstract class AbstractResponse<B extends AbstractMessageBody>
         extends AbstractMessage<ResponseHeader, B>
-        implements Response<ResponseHeader, B> {
+        implements Response<B> {
 
     @JsonCreator
     public AbstractResponse(
             @JsonProperty("header") @NotNull final ResponseHeader header,
-            @JsonProperty("body") @Nullable final B body,
+            @JsonProperty("body") @NotNull final B body,
             @JsonProperty("correlation") @Nullable final MessageCorrelation correlation
     ) {
         super(header, body, correlation);
     }
 
-    public AbstractResponse(
+    protected AbstractResponse(
             @NotNull final String id,
             @NotNull final String type,
             @Nullable final String sourceSystem,
             @NotNull final LocalDateTime createdDateTime,
             final int version,
             @NotNull final String queryId,
-            @Nullable final B body,
+            @NotNull final B body,
             @Nullable final MessageCorrelation correlation
     ) {
         super(new ResponseHeader(id, type, sourceSystem, createdDateTime, version, queryId), body, correlation);

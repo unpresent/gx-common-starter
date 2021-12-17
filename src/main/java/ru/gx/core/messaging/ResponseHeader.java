@@ -27,6 +27,16 @@ public class ResponseHeader extends AbstractMessageHeader {
     @NotNull
     public final String requestId;
 
+    /**
+     * Конструктор заголовка ответа на заявку.
+     * @param id Идентификатор сообщения.
+     * @param kind Вид сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     * @param requestId Идентификатор исходной заявки, для которой сформирован данный ответ.
+     */
     @JsonCreator
     public ResponseHeader(
             @JsonProperty("id") @NotNull final String id,
@@ -41,6 +51,15 @@ public class ResponseHeader extends AbstractMessageHeader {
         this.requestId = requestId;
     }
 
+    /**
+     * Конструктор заголовка ответа на заявку.
+     * @param id Идентификатор сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
+     * @param requestId Идентификатор исходной заявки, для которой сформирован данный ответ.
+     */
     public ResponseHeader(
             @NotNull final String id,
             @NotNull final String type,

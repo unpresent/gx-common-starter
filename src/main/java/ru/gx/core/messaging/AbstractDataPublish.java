@@ -14,24 +14,24 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public abstract class AbstractDataPublish<B extends AbstractMessageBody>
         extends AbstractMessage<DataPublishHeader, B>
-        implements DataPublish<DataPublishHeader, B> {
+        implements DataPublish<B> {
 
     @JsonCreator
     public AbstractDataPublish(
             @JsonProperty("header") @NotNull final DataPublishHeader header,
-            @JsonProperty("body") @Nullable final B body,
+            @JsonProperty("body") @NotNull final B body,
             @JsonProperty("correlation") @Nullable final MessageCorrelation correlation
     ) {
         super(header, body, correlation);
     }
 
-    public AbstractDataPublish(
+    protected AbstractDataPublish(
             @NotNull final String id,
             @NotNull final String type,
             @Nullable final String sourceSystem,
             @NotNull final LocalDateTime createdDateTime,
             final int version,
-            @Nullable final B body,
+            @NotNull final B body,
             @Nullable final MessageCorrelation correlation
     ) {
         super(new DataPublishHeader(id, type, sourceSystem, createdDateTime, version), body, correlation);

@@ -1,10 +1,10 @@
 package ru.gx.core.channels;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
 import ru.gx.core.messaging.MessageHeader;
+import ru.gx.core.messaging.MessageKind;
 
 /**
  * Интерфейс API канала передачи данных.
@@ -32,8 +32,20 @@ public interface ChannelApiDescriptor<M extends Message<? extends MessageHeader,
     ChannelApiDescriptor<M> setSerializeMode(@NotNull final SerializeMode serializeMode);
 
     /**
+     * @return Вид сообщения, которые могут передаваться в канале.
+     */
+    @NotNull
+    MessageKind getMessageKind();
+
+    /**
+     * @return Тип сообщения, которые могут передаваться в канале.
+     */
+    @NotNull
+    String getMessageType();
+
+    /**
      * @return Класс сообщений, которые будут передаваться в канале.
      */
-    @Nullable
+    @NotNull
     Class<M> getMessageClass();
 }

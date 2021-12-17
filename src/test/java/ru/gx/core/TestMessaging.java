@@ -44,8 +44,6 @@ public class TestMessaging {
             }
             """;
 
-    public static final String MESSAGE_TYPE = "TEST:TEST";
-
     public static ObjectMapper newObjectMapper() {
         return new ObjectMapper().registerModule(new JavaTimeModule());
     }
@@ -54,7 +52,6 @@ public class TestMessaging {
     @Test
     public void doTestSerializeMessaging() {
         final var objectMapper = newObjectMapper();
-        MessageTypesRegistrator.registerType(MESSAGE_TYPE, TestRequest1.class);
 
         final var d1 = new TestDto("Code1", "Name1", BigDecimal.valueOf(42.0), (long) 11);
         final var correlation = new MessageCorrelation();
@@ -63,11 +60,9 @@ public class TestMessaging {
 
         final var m1 = new TestRequest1(
                 UUID.randomUUID().toString(),
-                MESSAGE_TYPE,
                 "TEST-SOURCE-SYSTEM",
                 LocalDateTime.now(),
-                1,
-                new TestRequest1.TestRequest1Body(d1),
+                d1,
                 correlation
         );
 
