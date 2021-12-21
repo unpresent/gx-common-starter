@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.core.channels.ChannelHandleDescriptor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @ToString
@@ -18,7 +16,7 @@ public class TestRequest1 extends AbstractRequest<TestRequest1.TestRequest1Body>
 
     static {
         // Здесь регистрируем тип. В конструкторе канала, который будет связан с данным типом сообщений
-        MessageTypesRegistrator.registerType(MessageKind.Request, MESSAGE_TYPE, TestRequest1.class);
+        MessageTypesRegistrator.registerType(MessageKind.Request, MESSAGE_TYPE, VERSION, TestRequest1.class, TestRequest1Body.class);
     }
 
     @JsonCreator
@@ -33,12 +31,12 @@ public class TestRequest1 extends AbstractRequest<TestRequest1.TestRequest1Body>
     public TestRequest1(
             @NotNull String id,
             @NotNull String sourceSystem,
-            @NotNull LocalDateTime createdDateTime,
+            @NotNull LocalDateTime createdDateTimeUtc,
             @NotNull TestDto testDto,
             @Nullable MessageCorrelation correlation
     ) {
         super(
-                new RequestHeader(id, MESSAGE_TYPE, sourceSystem, createdDateTime, VERSION),
+                new RequestHeader(id, null, MESSAGE_TYPE, VERSION, sourceSystem, createdDateTimeUtc),
                 new TestRequest1Body(testDto),
                 correlation
         );

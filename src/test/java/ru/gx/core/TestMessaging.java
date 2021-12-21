@@ -9,32 +9,34 @@ import ru.gx.core.messaging.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Testable
 public class TestMessaging {
     public static final String M1 = """
-            {
-                "header": {
-                    "id": "f9d9041a-edc5-4204-94cc-255ad9269c24",
-                    "type": "TEST:TEST",
-                    "sourceSystem": "FICS",
-                    "createdDateTime": "2021-12-13 12:50:05.587",
-                    "kind": "Request"
-                },
-                "body": {
-                    "testDto": {
-                        "code": "Code1",
-                        "name": "Name1",
-                        "price": 42.0,
-                        "number": 11
+                {
+                    "header": {
+                        "id": "0efa3fe6-1651-4d79-b554-4dd22308e9f7",
+                        "kind": "Request",
+                        "type": "TEST:TEST",
+                        "sourceSystem": "TEST-SOURCE-SYSTEM",
+                        "createdDateTimeUtc": "2021-12-19 09:36:49.456",
+                        "version": 1
+                    },
+                    "body": {
+                        "testDto": {
+                            "code": "Code1",
+                            "name": "Name1",
+                            "price": 42.0,
+                            "number": 11
+                        }
+                    },
+                    "correlation": {
+                        "k1": "v1",
+                        "k2": "v2"
                     }
-                },
-                "correlation": {
-                    "k1": "v1",
-                    "k2": "v2"
                 }
-            }
             """;
     public static final String M2 = """
             {
@@ -61,7 +63,7 @@ public class TestMessaging {
         final var m1 = new TestRequest1(
                 UUID.randomUUID().toString(),
                 "TEST-SOURCE-SYSTEM",
-                LocalDateTime.now(),
+                LocalDateTime.now(ZoneOffset.UTC),
                 d1,
                 correlation
         );

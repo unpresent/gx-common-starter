@@ -24,17 +24,4 @@ public abstract class AbstractResponse<B extends AbstractMessageBody>
     ) {
         super(header, body, correlation);
     }
-
-    protected AbstractResponse(
-            @NotNull final String id,
-            @NotNull final String type,
-            @Nullable final String sourceSystem,
-            @NotNull final LocalDateTime createdDateTime,
-            final int version,
-            @NotNull final String queryId,
-            @NotNull final B body,
-            @Nullable final MessageCorrelation correlation
-    ) {
-        super(new ResponseHeader(id, type, sourceSystem, createdDateTime, version, queryId), body, correlation);
-    }
 }

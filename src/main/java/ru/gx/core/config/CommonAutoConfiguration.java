@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 import ru.gx.core.channels.*;
+import ru.gx.core.messaging.DefaultMessagesFactory;
 import ru.gx.core.messaging.StandardMessagesExecutor;
 import ru.gx.core.messaging.StandardMessagesExecutorSettingsContainer;
 import ru.gx.core.messaging.StandardMessagesPrioritizedQueue;
@@ -26,6 +27,7 @@ public class CommonAutoConfiguration {
     // <editor-fold desc="Constants">
     private final static String DOT_ENABLED = ".enabled";
     private final static String DOT_NAME = ".name";
+
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
@@ -100,6 +102,16 @@ public class CommonAutoConfiguration {
         final var queue = new StandardMessagesPrioritizedQueue(StringUtils.hasLength(name) ? name : StandardMessagesPrioritizedQueue.DEFAULT_NAME);
         queue.init(executorSettings.maxQueueSize(), executorSettings.prioritiesCount());
         return queue;
+    }
+
+    // </editor-fold>
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Standard Settings Controller">
+    @Bean
+    @ConditionalOnMissingBean
+    @Autowired
+    public DefaultMessagesFactory defaultMessagesFactory(@Value("${service.name}") final String serviceName) {
+        return new DefaultMessagesFactory(serviceName);
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------

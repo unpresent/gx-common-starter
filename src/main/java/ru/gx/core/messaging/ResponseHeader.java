@@ -23,52 +23,46 @@ public class ResponseHeader extends AbstractMessageHeader {
         return MessageKind.Response;
     }
 
-    @Getter
-    @NotNull
-    public final String requestId;
-
     /**
      * Конструктор заголовка ответа на заявку.
      * @param id Идентификатор сообщения.
+     * @param parentId Идентификатор исходной заявки, для которой сформирован данный ответ.
      * @param kind Вид сообщения.
      * @param type Тип сообщения.
      * @param sourceSystem Система-источник.
-     * @param createdDateTime Дата и время создания сообщения.
+     * @param createdDateTimeUtc Дата и время создания сообщения.
      * @param version Версия сообщения.
-     * @param requestId Идентификатор исходной заявки, для которой сформирован данный ответ.
      */
     @JsonCreator
     public ResponseHeader(
             @JsonProperty("id") @NotNull final String id,
+            @JsonProperty("parentId") @NotNull final String parentId,
             @JsonProperty("kind") @NotNull final MessageKind kind,
             @JsonProperty("type") @NotNull final String type,
-            @JsonProperty("systemSource") @Nullable final String sourceSystem,
-            @JsonProperty("createdDateTime") @NotNull final LocalDateTime createdDateTime,
             @JsonProperty("version") final int version,
-            @JsonProperty("requestId") @NotNull final String requestId
+            @JsonProperty("systemSource") @Nullable final String sourceSystem,
+            @JsonProperty("createdDateTime") @NotNull final LocalDateTime createdDateTimeUtc
     ) {
-        super(id, kind, type, sourceSystem, createdDateTime, version);
-        this.requestId = requestId;
+        super(id, parentId, kind, type, version, sourceSystem, createdDateTimeUtc);
     }
 
     /**
      * Конструктор заголовка ответа на заявку.
      * @param id Идентификатор сообщения.
+     * @param parentId Идентификатор исходной заявки, для которой сформирован данный ответ.
      * @param type Тип сообщения.
      * @param sourceSystem Система-источник.
-     * @param createdDateTime Дата и время создания сообщения.
+     * @param createdDateTimeUtc Дата и время создания сообщения.
      * @param version Версия сообщения.
-     * @param requestId Идентификатор исходной заявки, для которой сформирован данный ответ.
      */
     public ResponseHeader(
             @NotNull final String id,
+            @NotNull final String parentId,
             @NotNull final String type,
-            @Nullable final String sourceSystem,
-            @NotNull final LocalDateTime createdDateTime,
             final int version,
-            @NotNull final String requestId
+            @Nullable final String sourceSystem,
+            @NotNull final LocalDateTime createdDateTimeUtc
     ) {
-        super(id, type, sourceSystem, createdDateTime, version);
-        this.requestId = requestId;
+        super(id, parentId, type, version, sourceSystem, createdDateTimeUtc);
     }
 }

@@ -16,6 +16,12 @@ public interface MessageHeader {
     String getId();
 
     /**
+     * @return Идентификатор вышестоящего сообщения (при обработке которого родилось данное сообщение).
+     */
+    @Nullable
+    String getParentId();
+
+    /**
      * @return Вид сообщения. @see {@link MessageKind}
      */
     @NotNull
@@ -38,7 +44,7 @@ public interface MessageHeader {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     @Nullable
-    LocalDateTime getCreatedDateTime();
+    LocalDateTime getCreatedDateTimeUtc();
 
     /**
      * @return Версия формата сообщения.

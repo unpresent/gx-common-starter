@@ -121,7 +121,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
                         final var paramsTypes = c.getParameterTypes();
                         return paramsTypes.length == 3
                                 && ChannelsConfiguration.class.isAssignableFrom(paramsTypes[0])
-                                && AbstractChannelApiDescriptor.class.isAssignableFrom(paramsTypes[1])
+                                && ChannelApiDescriptor.class.isAssignableFrom(paramsTypes[1])
                                 && AbstractChannelDescriptorsDefaults.class.isAssignableFrom(paramsTypes[2]);
                     })
                     .findFirst();
@@ -133,7 +133,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
                             final var paramsTypes = c.getParameterTypes();
                             return paramsTypes.length == 4
                                     && ChannelsConfiguration.class.isAssignableFrom(paramsTypes[0])
-                                    && AbstractChannelApiDescriptor.class.isAssignableFrom(paramsTypes[1])
+                                    && ChannelApiDescriptor.class.isAssignableFrom(paramsTypes[1])
                                     && ChannelDirection.class.isAssignableFrom(paramsTypes[2])
                                     && AbstractChannelDescriptorsDefaults.class.isAssignableFrom(paramsTypes[3]);
                         })

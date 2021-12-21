@@ -22,6 +22,13 @@ public abstract class AbstractMessageHeader implements MessageHeader {
     private final String id;
 
     /**
+     * Идентификатор вышестоящего сообщения (при обработке которого родилось данное сообщение).
+     */
+    @Getter
+    @Nullable
+    private final String parentId;
+
+    /**
      * Вид сообщения. @see MessageKind.
      */
     @NotNull
@@ -46,7 +53,7 @@ public abstract class AbstractMessageHeader implements MessageHeader {
      */
     @Getter
     @NotNull
-    private final LocalDateTime createdDateTime;
+    private final LocalDateTime createdDateTimeUtc;
 
     @Getter
     private final int version;
@@ -57,18 +64,19 @@ public abstract class AbstractMessageHeader implements MessageHeader {
      * @param kind Вид сообщения.
      * @param type Тип сообщения.
      * @param sourceSystem Система-источник.
-     * @param createdDateTime Дата и время создания сообщения.
+     * @param createdDateTimeUtc Дата и время создания сообщения.
      * @param version Версия сообщения.
      */
     protected AbstractMessageHeader(
             @NotNull final String id,
+            @Nullable final String parentId,
             @NotNull final MessageKind kind,
             @NotNull final String type,
+            final int version,
             @Nullable final String sourceSystem,
-            @NotNull final LocalDateTime createdDateTime,
-            final int version
+            @NotNull final LocalDateTime createdDateTimeUtc
     ) {
-        this(id, type, sourceSystem, createdDateTime, version);
+        this(id, parentId, type, version, sourceSystem, createdDateTimeUtc);
         checkMessageKind(kind, getKind());
     }
 
@@ -77,21 +85,23 @@ public abstract class AbstractMessageHeader implements MessageHeader {
      * @param id Идентификатор сообщения.
      * @param type Тип сообщения.
      * @param sourceSystem Система-источник.
-     * @param createdDateTime Дата и время создания сообщения.
+     * @param createdDateTimeUtc Дата и время создания сообщения.
      * @param version Версия сообщения.
      */
     protected AbstractMessageHeader(
             @NotNull final String id,
+            @Nullable final String parentId,
             @NotNull final String type,
+            final int version,
             @Nullable final String sourceSystem,
-            @NotNull final LocalDateTime createdDateTime,
-            final int version
+            @NotNull final LocalDateTime createdDateTimeUtc
     ) {
         this.id = id;
+        this.parentId = parentId;
         this.type = type;
-        this.sourceSystem = sourceSystem;
-        this.createdDateTime = createdDateTime;
         this.version = version;
+        this.sourceSystem = sourceSystem;
+        this.createdDateTimeUtc = createdDateTimeUtc;
     }
 
     /**

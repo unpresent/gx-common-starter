@@ -47,6 +47,9 @@ public abstract class AbstractChannelApiDescriptor<M extends Message<? extends M
     @NotNull
     private final String messageType;
 
+    @Getter
+    private final int version;
+
     /**
      * Класс сообщений, в экземпляры передаются в данном канале.
      */
@@ -62,13 +65,16 @@ public abstract class AbstractChannelApiDescriptor<M extends Message<? extends M
             @NotNull final SerializeMode serializeMode,
             @NotNull final Class<M> messageClass,
             @NotNull final MessageKind messageKind,
-            @NotNull final String messageType) {
+            @NotNull final String messageType,
+            final int version
+    ) {
         this.name = name;
         this.serializeMode = serializeMode;
         this.messageKind = messageKind;
         this.messageType = messageType;
+        this.version = version;
         this.messageClass = messageClass;
-        MessageTypesRegistrator.checkType(this.messageKind, this.messageType, this.messageClass);
+        MessageTypesRegistrator.checkType(this.messageKind, this.messageType, this.version, this.messageClass);
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------

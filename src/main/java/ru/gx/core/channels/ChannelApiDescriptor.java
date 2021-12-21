@@ -25,23 +25,21 @@ public interface ChannelApiDescriptor<M extends Message<? extends MessageHeader,
     SerializeMode getSerializeMode();
 
     /**
-     * @param serializeMode Режим сериализации: Json-строки или Байты.
-     * @return this.
-     */
-    @NotNull
-    ChannelApiDescriptor<M> setSerializeMode(@NotNull final SerializeMode serializeMode);
-
-    /**
-     * @return Вид сообщения, которые могут передаваться в канале.
+     * @return Вид сообщений, которые могут передаваться в канале.
      */
     @NotNull
     MessageKind getMessageKind();
 
     /**
-     * @return Тип сообщения, которые могут передаваться в канале.
+     * @return Тип сообщений, которые могут передаваться в канале.
      */
     @NotNull
     String getMessageType();
+
+    /**
+     * @return Версия типа сообщений, которые могут передаваться в данном канале.
+     */
+    int getVersion();
 
     /**
      * @return Класс сообщений, которые будут передаваться в канале.

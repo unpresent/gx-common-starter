@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 @Accessors(chain = true)
@@ -23,17 +24,5 @@ public abstract class AbstractRequest<B extends AbstractMessageBody>
             @JsonProperty("correlation") @Nullable final MessageCorrelation correlation
     ) {
         super(header, body, correlation);
-    }
-
-    protected AbstractRequest(
-            @NotNull final String id,
-            @NotNull final String type,
-            @Nullable final String sourceSystem,
-            @NotNull final LocalDateTime createdDateTime,
-            final int version,
-            @NotNull final B body,
-            @Nullable final MessageCorrelation correlation
-    ) {
-        super(new RequestHeader(id, type, sourceSystem, createdDateTime, version), body, correlation);
     }
 }

@@ -24,16 +24,4 @@ public abstract class AbstractDataPublish<B extends AbstractMessageBody>
     ) {
         super(header, body, correlation);
     }
-
-    protected AbstractDataPublish(
-            @NotNull final String id,
-            @NotNull final String type,
-            @Nullable final String sourceSystem,
-            @NotNull final LocalDateTime createdDateTime,
-            final int version,
-            @NotNull final B body,
-            @Nullable final MessageCorrelation correlation
-    ) {
-        super(new DataPublishHeader(id, type, sourceSystem, createdDateTime, version), body, correlation);
-    }
 }

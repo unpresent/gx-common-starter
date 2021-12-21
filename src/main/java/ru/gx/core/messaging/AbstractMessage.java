@@ -76,7 +76,7 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
      * Проверка на корректность (соответствие проверяемой тройки в регистрации) Вида, Типа и Класса сообщения.
      */
     protected void checkMessageType() {
-        MessageTypesRegistrator.checkType(this.header.getKind(), this.header.getType(), this.getClass());
+        MessageTypesRegistrator.checkType(this.getHeader().getKind(), this.getHeader().getType(), this.getHeader().getVersion(), this.getClass(), this.getBody().getClass());
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------

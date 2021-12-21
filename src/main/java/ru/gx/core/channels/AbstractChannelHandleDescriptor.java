@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
+import ru.gx.core.messaging.MessageCreatingParams;
 import ru.gx.core.messaging.MessageHeader;
 
 import java.lang.reflect.Constructor;
@@ -56,6 +57,7 @@ public abstract class AbstractChannelHandleDescriptor<M extends Message<? extend
     @Getter
     private boolean initialized = false;
 
+    // TODO: WTF?
     @NotNull
     private final Constructor<M> messageConstructor;
     // </editor-fold>
@@ -143,27 +145,6 @@ public abstract class AbstractChannelHandleDescriptor<M extends Message<? extend
         checkMutable("enabled");
         this.enabled = enabled;
         return this;
-    }
-    // </editor-fold>
-    // -----------------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="createMessage">
-
-    /**
-     * Создание экземпляра сообщения.
-     *
-     * @param header      Заголовок.
-     * @param body        Тело сообщения.
-     * @param correlation Correlation-данные.
-     * @return Экземпляр сообщения.
-     */
-    @Override
-    @NotNull
-    public M createMessage(
-            @NotNull final MessageHeader header,
-            @Nullable final MessageBody body,
-            @Nullable Map<String, Object> correlation
-    ) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        return this.messageConstructor.newInstance(header, body, correlation);
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------

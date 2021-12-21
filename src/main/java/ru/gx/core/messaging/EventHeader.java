@@ -29,19 +29,20 @@ public class EventHeader extends AbstractMessageHeader {
      * @param kind Вид сообщения.
      * @param type Тип сообщения.
      * @param sourceSystem Система-источник.
-     * @param createdDateTime Дата и время создания сообщения.
+     * @param createdDateTimeUtc Дата и время создания сообщения.
      * @param version Версия сообщения.
      */
     @JsonCreator
     public EventHeader(
             @JsonProperty("id") @NotNull final String id,
+            @JsonProperty("parentId") @Nullable final String parentId,
             @JsonProperty("kind") @NotNull final MessageKind kind,
             @JsonProperty("type") @NotNull final String type,
+            @JsonProperty("version") final int version,
             @JsonProperty("systemSource") @Nullable final String sourceSystem,
-            @JsonProperty("createdDateTime") @NotNull final LocalDateTime createdDateTime,
-            @JsonProperty("version") final int version
+            @JsonProperty("createdDateTime") @NotNull final LocalDateTime createdDateTimeUtc
     ) {
-        super(id, kind, type, sourceSystem, createdDateTime, version);
+        super(id, parentId, kind, type, version, sourceSystem, createdDateTimeUtc);
     }
 
     /**
@@ -49,16 +50,17 @@ public class EventHeader extends AbstractMessageHeader {
      * @param id Идентификатор сообщения.
      * @param type Тип сообщения.
      * @param sourceSystem Система-источник.
-     * @param createdDateTime Дата и время создания сообщения.
+     * @param createdDateTimeUtc Дата и время создания сообщения.
      * @param version Версия сообщения.
      */
     public EventHeader(
             @NotNull final String id,
+            @Nullable final String parentId,
             @NotNull final String type,
+            final int version,
             @Nullable final String sourceSystem,
-            @NotNull final LocalDateTime createdDateTime,
-            final int version
+            @NotNull final LocalDateTime createdDateTimeUtc
     ) {
-        super(id, type, sourceSystem, createdDateTime, version);
+        super(id, parentId, type, version, sourceSystem, createdDateTimeUtc);
     }
 }

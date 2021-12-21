@@ -1,9 +1,9 @@
 package ru.gx.core.channels;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
+import ru.gx.core.messaging.MessageCreatingParams;
 import ru.gx.core.messaging.MessageHeader;
 
 import java.lang.reflect.InvocationTargetException;
@@ -74,18 +74,4 @@ public interface ChannelHandleDescriptor<M extends Message<? extends MessageHead
      * @return this.
      */
     ChannelHandleDescriptor<M> unInit();
-
-    /**
-     * Создание экземпляра сообщения.
-     * @param header Заголовок.
-     * @param body Тело сообщения.
-     * @param correlation Correlation-данные.
-     * @return Экземпляр сообщения.
-     */
-    @NotNull
-    M createMessage(
-            @NotNull final MessageHeader header,
-            @Nullable final MessageBody body,
-            @Nullable Map<String, Object> correlation
-    ) throws InvocationTargetException, InstantiationException, IllegalAccessException;
 }

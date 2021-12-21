@@ -11,7 +11,8 @@ import java.util.Collection;
  * @param <O> тип Data Objects, которые обрабатывает данные репозиторий
  */
 @SuppressWarnings("unused")
-public interface DataMemoryRepository<O extends DataObject, P extends DataPackage<O>> extends Iterable<O> {
+public interface DataMemoryRepository<O extends DataObject, P extends DataPackage<O>>
+        extends Iterable<O>, DataObjectKeyExtractor<O> {
     /**
      * @return Количество объектов в Репозитории.
      */
