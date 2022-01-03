@@ -8,8 +8,8 @@ import ru.gx.core.data.DataPackage;
 import ru.gx.core.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -314,7 +314,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
                 UUID.randomUUID().toString(),
                 parentId,
                 this.serviceName,
-                LocalDateTime.now(ZoneOffset.UTC)
+                ZonedDateTime.now()
         );
     }
 
@@ -330,9 +330,9 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
             @NotNull final MessageTypesRegistrator.MessageTypeRegistration reg,
             @NotNull final Map<MessageCreatingParams, Object> creatingParams
     ) {
-        var created = (LocalDateTime) creatingParams.get(MessageCreatingParams.CreatedDateTimeUtc);
+        var created = (ZonedDateTime) creatingParams.get(MessageCreatingParams.CreatedDateTimeUtc);
         if (created == null) {
-            created = LocalDateTime.now(ZoneOffset.UTC);
+            created = ZonedDateTime.now(ZoneOffset.UTC);
         }
 
         return internalCreateHeader(
@@ -356,70 +356,20 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
             @NotNull final String id,
             @Nullable final String parentId,
             @NotNull final String sourceSystem,
-            @NotNull final LocalDateTime createdDateTimeUtc
+            @NotNull final ZonedDateTime createdDateTime
     ) {
-        if (reg.getKind() == MessageKind.Request) {
-            return new RequestHeader(
-                    id,
-                    parentId,
-                    reg.getType(),
-                    reg.getVersion(),
-                    sourceSystem,
-                    createdDateTimeUtc
-            );
-        } else if (reg.getKind() == MessageKind.Response) {
-            if (parentId == null) {
-                throw new NullPointerException("Parameter parentId should be not null!");
-            }
-            return new ResponseHeader(
-                    id,
-                    parentId,
-                    reg.getType(),
-                    reg.getVersion(),
-                    sourceSystem,
-                    createdDateTimeUtc
-            );
-        } else if (reg.getKind() == MessageKind.Query) {
-            return new QueryHeader(
-                    id,
-                    parentId,
-                    reg.getType(),
-                    reg.getVersion(),
-                    sourceSystem,
-                    createdDateTimeUtc
-            );
-        } else if (reg.getKind() == MessageKind.QueryResult) {
-            if (parentId == null) {
-                throw new NullPointerException("Parameter parentId should be not null!");
-            }
-            return new QueryResultHeader(
-                    id,
-                    parentId,
-                    reg.getType(),
-                    reg.getVersion(),
-                    sourceSystem,
-                    createdDateTimeUtc
-            );
-        } else if (reg.getKind() == MessageKind.Event) {
-            return new EventHeader(
-                    id,
-                    parentId,
-                    reg.getType(),
-                    reg.getVersion(),
-                    sourceSystem,
-                    createdDateTimeUtc
-            );
-        } else if (reg.getKind() == MessageKind.DataPublish) {
-            return new DataPublishHeader(
-                    id,
-                    parentId,
-                    reg.getType(),
-                    reg.getVersion(),
-                    sourceSystem,
-                    createdDateTimeUtc
-            );
+        if (parentId == null && (reg.getKind() == MessageKind.Response || reg.getKind() == MessageKind.QueryResult)) {
+            throw new NullPointerException("Parameter parentId should be not null!");
         }
-        throw new MessagingConfigurationException("Unknown kind " + reg.getKind() + " of message!");
+        return new StandardMessageHeader(
+                id,
+                parentId,
+                reg.getKind(),
+                reg.getType(),
+                reg.getVersion(),
+                sourceSystem,
+                createdDateTime
+        );
     }
 
     protected boolean checkParamsIsOnly(@NotNull final Map<MessageCreatingParams, Object> creatingParams, @NotNull final Set<MessageCreatingParams> onlyParams) {

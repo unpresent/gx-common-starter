@@ -8,12 +8,12 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.core.channels.ChannelHandleDescriptor;
+import ru.gx.core.channels.ChannelHandlerDescriptor;
 
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false, of = "header")
-public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends AbstractMessageBody>
-        implements Message<H, B> {
+public abstract class AbstractMessage<B extends MessageBody>
+        implements Message<StandardMessageHeader, B> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields & Getters of Message">
 
@@ -22,7 +22,7 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
      */
     @Getter
     @NotNull
-    private final H header;
+    private final StandardMessageHeader header;
 
     /**
      * Тело сообщения.
@@ -47,7 +47,7 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
     @Getter
     @Setter
     @NotNull
-    private ChannelHandleDescriptor<? extends Message<H, B>> channelDescriptor;
+    private ChannelHandlerDescriptor<? extends Message<StandardMessageHeader, B>> channelDescriptor;
 
     @NotNull
     private final SimpleMetadataContainer metadataContainer = new SimpleMetadataContainer();
@@ -62,7 +62,7 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
      * @param correlation Необрабатываемые данные.
      */
     protected AbstractMessage(
-            @NotNull final H header,
+            @NotNull final StandardMessageHeader header,
             @NotNull final B body,
             @Nullable final MessageCorrelation correlation
     ) {
@@ -130,7 +130,7 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
      */
     @JsonIgnore
     @Override
-    public AbstractMessage<H, B> putMetadata(@NotNull final Object key, @Nullable final Object value) {
+    public AbstractMessage<B> putMetadata(@NotNull final Object key, @Nullable final Object value) {
         this.metadataContainer.putMetadata(key, value);
         return this;
     }
@@ -142,7 +142,7 @@ public abstract class AbstractMessage<H extends AbstractMessageHeader, B extends
      */
     @JsonIgnore
     @Override
-    public AbstractMessage<H, B> setMetadata(@Nullable final Iterable<Metadata> source) {
+    public AbstractMessage<B> setMetadata(@Nullable final Iterable<Metadata> source) {
         this.metadataContainer.setMetadata(source);
         return this;
     }

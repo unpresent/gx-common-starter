@@ -10,9 +10,9 @@ import ru.gx.core.messaging.*;
  */
 @Accessors(chain = true)
 @SuppressWarnings("unused")
-public abstract class AbstractOutcomeChannelHandleDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
-        extends AbstractChannelHandleDescriptor<M>
-        implements OutcomeChannelHandleDescriptor<M> {
+public abstract class AbstractOutcomeChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+        extends AbstractChannelHandlerDescriptor<M>
+        implements OutcomeChannelHandlerDescriptor<M> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
     private final SimpleMetadataContainer metadataContainer;
@@ -20,7 +20,7 @@ public abstract class AbstractOutcomeChannelHandleDescriptor<M extends Message<?
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialize">
-    protected AbstractOutcomeChannelHandleDescriptor(
+    protected AbstractOutcomeChannelHandlerDescriptor(
             @NotNull final ChannelsConfiguration owner,
             @NotNull ChannelApiDescriptor<M> api,
             @Nullable final OutcomeChannelDescriptorsDefaults defaults
@@ -52,13 +52,13 @@ public abstract class AbstractOutcomeChannelHandleDescriptor<M extends Message<?
     }
 
     @Override
-    public AbstractOutcomeChannelHandleDescriptor<M> putMetadata(@NotNull final Object key, @Nullable final Object value) {
+    public AbstractOutcomeChannelHandlerDescriptor<M> putMetadata(@NotNull final Object key, @Nullable final Object value) {
         this.metadataContainer.putMetadata(key, value);
         return this;
     }
 
     @Override
-    public AbstractOutcomeChannelHandleDescriptor<M> setMetadata(@Nullable Iterable<Metadata> source) {
+    public AbstractOutcomeChannelHandlerDescriptor<M> setMetadata(@Nullable Iterable<Metadata> source) {
         this.metadataContainer.setMetadata(source);
         return this;
     }

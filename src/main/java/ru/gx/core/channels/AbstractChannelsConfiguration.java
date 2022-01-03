@@ -19,13 +19,13 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * Список описателей сгруппированные по приоритетам.
      */
     @NotNull
-    private final List<List<ChannelHandleDescriptor<?>>> priorities = new ArrayList<>();
+    private final List<List<ChannelHandlerDescriptor<?>>> priorities = new ArrayList<>();
 
     /**
      * Список описателей с группировкой по топикам.
      */
     @NotNull
-    private final Map<String, ChannelHandleDescriptor<?>> channels = new HashMap<>();
+    private final Map<String, ChannelHandlerDescriptor<?>> channels = new HashMap<>();
 
     @Getter
     @NotNull
@@ -75,8 +75,8 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @Override
     @NotNull
     public <M extends Message<? extends MessageHeader, ? extends MessageBody>>
-    ChannelHandleDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException {
-        final var result = (ChannelHandleDescriptor<M>) this.channels.get(channelName);
+    ChannelHandlerDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException {
+        final var result = (ChannelHandlerDescriptor<M>) this.channels.get(channelName);
         if (result == null) {
             throw new ChannelConfigurationException("Can't find description for channel " + channelName);
         }
@@ -93,8 +93,8 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @Override
     @Nullable
     public <M extends Message<? extends MessageHeader, ? extends MessageBody>>
-    ChannelHandleDescriptor<M> tryGet(@NotNull final String channelName) {
-        return (ChannelHandleDescriptor<M>) this.channels.get(channelName);
+    ChannelHandlerDescriptor<M> tryGet(@NotNull final String channelName) {
+        return (ChannelHandlerDescriptor<M>) this.channels.get(channelName);
     }
 
     /**
@@ -108,7 +108,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @SneakyThrows({InstantiationException.class, IllegalAccessException.class, InvocationTargetException.class})
     @Override
     @NotNull
-    public <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandleDescriptor<M>>
+    public <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
     D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
         if (contains(channelApi.getName())) {
             throw new ChannelConfigurationException("Topic '" + channelApi.getName() + "' already registered!");
@@ -155,7 +155,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptorClass Класс создаваемого описателя.
      * @return True - создание описателя допустимо.
      */
-    abstract protected <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandleDescriptor<M>>
+    abstract protected <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
     boolean allowCreateDescriptor(
             @NotNull final Class<D> descriptorClass
     );
@@ -166,7 +166,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptor Описатель топика, который надо зарегистрировать в списках описателей.
      */
     @Override
-    public void internalRegisterDescriptor(@NotNull final ChannelHandleDescriptor<?> descriptor) {
+    public void internalRegisterDescriptor(@NotNull final ChannelHandlerDescriptor<?> descriptor) {
         if (contains(descriptor.getApi().getName())) {
             throw new ChannelConfigurationException("Channel '" + descriptor.getApi().getName() + "' already registered!");
         }
@@ -190,7 +190,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptor Описатель топика очереди.
      */
     @Override
-    public void internalUnregisterDescriptor(@NotNull final ChannelHandleDescriptor<?> descriptor) {
+    public void internalUnregisterDescriptor(@NotNull final ChannelHandlerDescriptor<?> descriptor) {
         final var channelName = descriptor.getApi().getName();
         if (!this.channels.containsValue(descriptor) || !this.channels.containsKey(channelName)) {
             throw new ChannelConfigurationException("Channel " + channelName + " not registered!");
@@ -224,7 +224,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      */
     @Override
     @Nullable
-    public Iterable<ChannelHandleDescriptor<?>> getByPriority(int priority) {
+    public Iterable<ChannelHandlerDescriptor<?>> getByPriority(int priority) {
         return this.priorities.get(priority);
     }
 
@@ -233,7 +233,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      */
     @Override
     @NotNull
-    public Iterable<ChannelHandleDescriptor<?>> getAll() {
+    public Iterable<ChannelHandlerDescriptor<?>> getAll() {
         return this.channels.values();
     }
     // </editor-fold>

@@ -7,10 +7,8 @@ import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.LocalDateTime;
-
 @ToString
-public class TestRequest1 extends AbstractRequest<TestRequest1.TestRequest1Body> {
+public class TestRequest1 extends AbstractMessage<TestRequest1.TestRequest1Body> {
     public static final String MESSAGE_TYPE = "TEST:TEST";
     public static final int VERSION = 1;
 
@@ -21,29 +19,15 @@ public class TestRequest1 extends AbstractRequest<TestRequest1.TestRequest1Body>
 
     @JsonCreator
     public TestRequest1(
-            @JsonProperty("header") @NotNull final RequestHeader header,
+            @JsonProperty("header") @NotNull final StandardMessageHeader header,
             @JsonProperty("body") @NotNull final TestRequest1Body body,
             @JsonProperty("correlation") @Nullable final MessageCorrelation correlation
     ) {
         super(header, body, correlation);
     }
 
-    public TestRequest1(
-            @NotNull String id,
-            @NotNull String sourceSystem,
-            @NotNull LocalDateTime createdDateTimeUtc,
-            @NotNull TestDto testDto,
-            @Nullable MessageCorrelation correlation
-    ) {
-        super(
-                new RequestHeader(id, null, MESSAGE_TYPE, VERSION, sourceSystem, createdDateTimeUtc),
-                new TestRequest1Body(testDto),
-                correlation
-        );
-    }
-
     @ToString
-    public static class TestRequest1Body extends AbstractMessageBody {
+    public static class TestRequest1Body implements MessageBody {
         @Getter
         private final TestDto testDto;
 

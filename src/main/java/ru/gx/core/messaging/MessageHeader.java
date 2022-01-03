@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @SuppressWarnings("unused")
 public interface MessageHeader {
@@ -44,7 +44,7 @@ public interface MessageHeader {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     @Nullable
-    LocalDateTime getCreatedDateTimeUtc();
+    ZonedDateTime getCreatedDateTime();
 
     /**
      * @return Версия формата сообщения.

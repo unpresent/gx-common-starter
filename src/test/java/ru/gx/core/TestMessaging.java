@@ -8,8 +8,7 @@ import org.junit.platform.commons.annotation.Testable;
 import ru.gx.core.messaging.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Testable
@@ -61,19 +60,13 @@ public class TestMessaging {
         correlation.put("k2", "v2");
 
         final var m1 = new TestRequest1(
-                UUID.randomUUID().toString(),
-                "TEST-SOURCE-SYSTEM",
-                LocalDateTime.now(ZoneOffset.UTC),
-                d1,
+                new StandardMessageHeader(UUID.randomUUID().toString(), null, MessageKind.Request, TestRequest1.MESSAGE_TYPE, TestRequest1.VERSION,"TEST-SOURCE-SYSTEM", ZonedDateTime.now()),
+                new TestRequest1.TestRequest1Body(d1),
                 correlation
         );
 
         final var s = objectMapper.writeValueAsString(m1);
         System.out.println(s);
-
-        //        final var m2 = objectMapper.readValue(M2, TestDes2.class);
-        //        System.out.println("m2:");
-        //        System.out.println(m2);
 
         final var m3 = objectMapper.readValue(s, TestRequest1.class);
         System.out.println("m3:");

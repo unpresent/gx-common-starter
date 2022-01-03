@@ -6,11 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
-import ru.gx.core.messaging.MessageCreatingParams;
 import ru.gx.core.messaging.MessageHeader;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Map;
@@ -22,8 +20,8 @@ import static lombok.AccessLevel.PROTECTED;
  */
 @Accessors(chain = true)
 @SuppressWarnings("unused")
-public abstract class AbstractChannelHandleDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
-        implements ChannelHandleDescriptor<M> {
+public abstract class AbstractChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+        implements ChannelHandlerDescriptor<M> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
 
@@ -65,7 +63,7 @@ public abstract class AbstractChannelHandleDescriptor<M extends Message<? extend
     // <editor-fold desc="Initialize">
 
     @SuppressWarnings("unchecked")
-    protected AbstractChannelHandleDescriptor(
+    protected AbstractChannelHandlerDescriptor(
             @NotNull final ChannelsConfiguration owner,
             @NotNull final ChannelApiDescriptor<M> api,
             @NotNull final ChannelDirection direction,
@@ -98,7 +96,7 @@ public abstract class AbstractChannelHandleDescriptor<M extends Message<? extend
      */
     @Override
     @NotNull
-    public AbstractChannelHandleDescriptor<M> init() throws InvalidParameterException {
+    public AbstractChannelHandlerDescriptor<M> init() throws InvalidParameterException {
         this.initialized = true;
         this.owner.internalRegisterDescriptor(this);
         return this;
@@ -106,7 +104,7 @@ public abstract class AbstractChannelHandleDescriptor<M extends Message<? extend
 
     @Override
     @NotNull
-    public AbstractChannelHandleDescriptor<M> unInit() {
+    public AbstractChannelHandlerDescriptor<M> unInit() {
         this.initialized = false;
         this.owner.internalUnregisterDescriptor(this);
         return this;
@@ -129,7 +127,7 @@ public abstract class AbstractChannelHandleDescriptor<M extends Message<? extend
      */
     @Override
     @NotNull
-    public AbstractChannelHandleDescriptor<M> setPriority(final int priority) {
+    public AbstractChannelHandlerDescriptor<M> setPriority(final int priority) {
         checkMutable("priority");
         this.priority = priority;
         return this;
@@ -141,7 +139,7 @@ public abstract class AbstractChannelHandleDescriptor<M extends Message<? extend
      */
     @Override
     @NotNull
-    public AbstractChannelHandleDescriptor<M> setEnabled(final boolean enabled) {
+    public AbstractChannelHandlerDescriptor<M> setEnabled(final boolean enabled) {
         checkMutable("enabled");
         this.enabled = enabled;
         return this;

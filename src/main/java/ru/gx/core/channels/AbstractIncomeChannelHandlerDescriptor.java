@@ -13,9 +13,9 @@ import ru.gx.core.messaging.MessageHeader;
  */
 @Accessors(chain = true)
 @SuppressWarnings("unused")
-public abstract class AbstractIncomeChannelHandleDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
-        extends AbstractChannelHandleDescriptor<M>
-        implements IncomeChannelHandleDescriptor<M> {
+public abstract class AbstractIncomeChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+        extends AbstractChannelHandlerDescriptor<M>
+        implements IncomeChannelHandlerDescriptor<M> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
     /**
@@ -35,7 +35,7 @@ public abstract class AbstractIncomeChannelHandleDescriptor<M extends Message<? 
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialize">
-    protected AbstractIncomeChannelHandleDescriptor(
+    protected AbstractIncomeChannelHandlerDescriptor(
             @NotNull final ChannelsConfiguration owner,
             @NotNull ChannelApiDescriptor<M> api,
             @Nullable final IncomeChannelDescriptorsDefaults defaults
@@ -60,7 +60,7 @@ public abstract class AbstractIncomeChannelHandleDescriptor<M extends Message<? 
      */
     @Override
     @NotNull
-    public AbstractIncomeChannelHandleDescriptor<M> setLoadingFiltrator(final LoadingFiltrator loadingFiltrator) {
+    public AbstractIncomeChannelHandlerDescriptor<M> setLoadingFiltrator(final LoadingFiltrator loadingFiltrator) {
         checkMutable("loadingFiltrator");
         this.loadingFiltrator = loadingFiltrator;
         return this;
@@ -71,7 +71,7 @@ public abstract class AbstractIncomeChannelHandleDescriptor<M extends Message<? 
      */
     @Override
     @NotNull
-    public AbstractIncomeChannelHandleDescriptor<M> setProcessType(@Nullable final IncomeDataProcessType processType) {
+    public AbstractIncomeChannelHandlerDescriptor<M> setProcessType(@Nullable final IncomeDataProcessType processType) {
         checkMutable("processType");
         this.processType = processType;
         return this;

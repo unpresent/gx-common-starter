@@ -1,12 +1,11 @@
 package ru.gx.core.messaging;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import ru.gx.core.data.DataObject;
 import ru.gx.core.data.DataPackage;
 
-public abstract class AbstractMessageBodyDataPackage<P extends DataPackage<? extends DataObject>> extends AbstractMessageBody {
+public abstract class AbstractMessageBodyDataPackage<P extends DataPackage<? extends DataObject>> implements MessageBody {
     @Getter
     @NotNull
     private final P dataPackage;

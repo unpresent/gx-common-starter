@@ -3,18 +3,15 @@ package ru.gx.core.channels;
 import org.jetbrains.annotations.NotNull;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
-import ru.gx.core.messaging.MessageCreatingParams;
 import ru.gx.core.messaging.MessageHeader;
 
-import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidParameterException;
-import java.util.Map;
 
 /**
  * Интерфейс обработчика канала передачи данных.
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface ChannelHandleDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>> {
+public interface ChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>> {
 
     /**
      * @return Описатель API-канала передачи данных.
@@ -41,7 +38,7 @@ public interface ChannelHandleDescriptor<M extends Message<? extends MessageHead
      * @return this.
      */
     @NotNull
-    ChannelHandleDescriptor<M> setPriority(int priority);
+    ChannelHandlerDescriptor<M> setPriority(int priority);
 
     /**
      * @return Включен ли данный канал.
@@ -54,7 +51,7 @@ public interface ChannelHandleDescriptor<M extends Message<? extends MessageHead
      * @return this.
      */
     @NotNull
-    ChannelHandleDescriptor<M> setEnabled(final boolean enabled);
+    ChannelHandlerDescriptor<M> setEnabled(final boolean enabled);
 
     /**
      * Признак того, что описатель инициализирован.
@@ -67,11 +64,11 @@ public interface ChannelHandleDescriptor<M extends Message<? extends MessageHead
      * @return this.
      */
     @NotNull
-    ChannelHandleDescriptor<M> init() throws InvalidParameterException;
+    ChannelHandlerDescriptor<M> init() throws InvalidParameterException;
 
     /**
      * Деинициализация - перевод в режим редактирования описателя. Правка заканчивается вызовом init().
      * @return this.
      */
-    ChannelHandleDescriptor<M> unInit();
+    ChannelHandlerDescriptor<M> unInit();
 }

@@ -3,7 +3,7 @@ package ru.gx.core.messaging;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.core.channels.ChannelHandleDescriptor;
+import ru.gx.core.channels.ChannelHandlerDescriptor;
 
 /**
  * Базовый интерфейс для разных видов сообщений.
@@ -34,7 +34,7 @@ public interface Message<H extends MessageHeader, B extends MessageBody> extends
      */
     @JsonIgnore
     @NotNull
-    ChannelHandleDescriptor<? extends Message<H, B>> getChannelDescriptor();
+    ChannelHandlerDescriptor<? extends Message<H, B>> getChannelDescriptor();
 
     /**
      * Установка описателя канала
@@ -42,5 +42,5 @@ public interface Message<H extends MessageHeader, B extends MessageBody> extends
      */
     @JsonIgnore
     @NotNull
-    Message<H, B> setChannelDescriptor(@NotNull final ChannelHandleDescriptor<? extends Message<H, B>> channelDescriptor);
+    Message<H, B> setChannelDescriptor(@NotNull final ChannelHandlerDescriptor<? extends Message<H, B>> channelDescriptor);
 }

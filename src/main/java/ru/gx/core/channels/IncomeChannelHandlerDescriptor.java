@@ -10,8 +10,8 @@ import ru.gx.core.messaging.MessageHeader;
  * Интерфейс описателя канала получения и обработки входящих данных.
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface IncomeChannelHandleDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
-        extends ChannelHandleDescriptor<M> {
+public interface IncomeChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+        extends ChannelHandlerDescriptor<M> {
 
     /**
      * @return Фильтровальщик, который определяет, требуется ли обрабатывать данные.
@@ -26,7 +26,7 @@ public interface IncomeChannelHandleDescriptor<M extends Message<? extends Messa
      * @return this.
      */
     @NotNull
-    IncomeChannelHandleDescriptor<M> setLoadingFiltrator(@Nullable final LoadingFiltrator loadingFiltrator);
+    IncomeChannelHandlerDescriptor<M> setLoadingFiltrator(@Nullable final LoadingFiltrator loadingFiltrator);
 
     /**
      * Способ обработки события о получении данных
@@ -38,5 +38,5 @@ public interface IncomeChannelHandleDescriptor<M extends Message<? extends Messa
      * Установка способа обработки события о получении данных
      */
     @NotNull
-    IncomeChannelHandleDescriptor<M> setProcessType(@Nullable final IncomeDataProcessType processType);
+    IncomeChannelHandlerDescriptor<M> setProcessType(@Nullable final IncomeDataProcessType processType);
 }

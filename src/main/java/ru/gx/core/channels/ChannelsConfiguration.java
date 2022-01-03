@@ -28,7 +28,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      */
     @NotNull
     <M extends Message<? extends MessageHeader, ? extends MessageBody>>
-    ChannelHandleDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException;
+    ChannelHandlerDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException;
 
     /**
      * Получение описателя канала по имени.
@@ -38,7 +38,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      */
     @Nullable
     <M extends Message<? extends MessageHeader, ? extends MessageBody>>
-    ChannelHandleDescriptor<M> tryGet(@NotNull final String channelName);
+    ChannelHandlerDescriptor<M> tryGet(@NotNull final String channelName);
 
     /**
      * Регистрация описателя обработчика канала.
@@ -48,7 +48,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @return this.
      */
     @NotNull
-    <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandleDescriptor<M>>
+    <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
     D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException;
 
     /**
@@ -69,11 +69,11 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @return Список описателей обработчиков.
      */
     @Nullable
-    Iterable<ChannelHandleDescriptor<?>> getByPriority(int priority);
+    Iterable<ChannelHandlerDescriptor<?>> getByPriority(int priority);
 
     /**
      * @return Список всех описателей обработчиков очередей.
      */
     @NotNull
-    Iterable<ChannelHandleDescriptor<?>> getAll();
+    Iterable<ChannelHandlerDescriptor<?>> getAll();
 }
