@@ -110,12 +110,4 @@ public class TestJson {
     public static ObjectMapper getObjectMapper() {
         return new ObjectMapper().registerModule(new JavaTimeModule());
     }
-
-    @SneakyThrows(JsonProcessingException.class)
-    @Test
-    public void testParseOnlyHeaderPackage() {
-        // final var objectMapper = getObjectMapper();
-        // final var pack = objectMapper.readValue(testJsonPackage, TestJsonPackage.class);
-        // System.out.println(pack);
-    }
 }

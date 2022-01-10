@@ -24,7 +24,7 @@ public class TestMessaging {
                         "kind": "Request",
                         "type": "TEST:TEST",
                         "sourceSystem": "TEST-SOURCE-SYSTEM",
-                        "createdDateTime": "2021-12-19T09:36:49.456+0315",
+                        "createdDateTime": "2021-12-19T09:36:49.456+0300",
                         "version": 1
                     },
                     "body": {
