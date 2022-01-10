@@ -1,14 +1,18 @@
 package ru.gx.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import ru.gx.core.messaging.*;
+import ru.gx.core.utils.ZonedDateTimeDeserializer;
+import ru.gx.core.utils.ZonedDateTimeSerializer;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.TimeZone;
 import java.util.UUID;
 
 @Testable
@@ -20,7 +24,7 @@ public class TestMessaging {
                         "kind": "Request",
                         "type": "TEST:TEST",
                         "sourceSystem": "TEST-SOURCE-SYSTEM",
-                        "createdDateTimeUtc": "2021-12-19 09:36:49.456",
+                        "createdDateTime": "2021-12-19T09:36:49.456+0315",
                         "version": 1
                     },
                     "body": {
@@ -37,16 +41,18 @@ public class TestMessaging {
                     }
                 }
             """;
-    public static final String M2 = """
-            {
-                "header": {
-                    "id": "f9d9041a-edc5-4204-94cc-255ad9269c24"
-                }
-            }
-            """;
+
 
     public static ObjectMapper newObjectMapper() {
-        return new ObjectMapper().registerModule(new JavaTimeModule());
+        final var objectMapper = new ObjectMapper();
+        objectMapper.setTimeZone(TimeZone.getDefault());
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        final var javaTimeModule = new JavaTimeModule();
+        javaTimeModule.addSerializer(ZonedDateTime.class, ZonedDateTimeSerializer.INSTANCE);
+        javaTimeModule.addDeserializer(ZonedDateTime.class, ZonedDateTimeDeserializer.INSTANCE);
+        objectMapper.registerModule(javaTimeModule);
+        return objectMapper;
     }
 
     @SneakyThrows
@@ -68,11 +74,9 @@ public class TestMessaging {
         final var s = objectMapper.writeValueAsString(m1);
         System.out.println(s);
 
-        final var m3 = objectMapper.readValue(s, TestRequest1.class);
+        final var m3 = objectMapper.readValue(M1, TestRequest1.class);
         System.out.println("m3:");
         System.out.println(m3);
-        System.out.println("m3.getBody():");
-        System.out.println(m3.getBody());
 
     }
 }

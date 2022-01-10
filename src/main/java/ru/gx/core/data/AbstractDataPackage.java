@@ -52,4 +52,9 @@ public abstract class AbstractDataPackage<T extends AbstractDataObject> implemen
     public int size() {
         return getListObjects().size();
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() + "(size=" + size() + ")";
+    }
 }

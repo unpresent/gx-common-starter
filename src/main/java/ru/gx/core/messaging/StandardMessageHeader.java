@@ -2,12 +2,14 @@ package ru.gx.core.messaging;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.gx.core.utils.ZonedDateTimeSerializer;
 
 import java.time.ZonedDateTime;
 
@@ -53,6 +55,9 @@ public class StandardMessageHeader implements MessageHeader {
     /**
      * Дата создания сообщения.
      */
+    @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss.SSS Z", timezone = "UTC")
+    // @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Getter
     @NotNull
     private final ZonedDateTime createdDateTime;

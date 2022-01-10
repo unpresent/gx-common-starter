@@ -1,10 +1,7 @@
 package ru.gx.core.messaging;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +9,7 @@ import ru.gx.core.channels.ChannelHandlerDescriptor;
 
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false, of = "header")
+@ToString
 public abstract class AbstractMessage<B extends MessageBody>
         implements Message<StandardMessageHeader, B> {
     // -----------------------------------------------------------------------------------------------------------------
@@ -46,7 +44,7 @@ public abstract class AbstractMessage<B extends MessageBody>
     @JsonIgnore
     @Getter
     @Setter
-    @NotNull
+    @Nullable
     private ChannelHandlerDescriptor<? extends Message<StandardMessageHeader, B>> channelDescriptor;
 
     @NotNull

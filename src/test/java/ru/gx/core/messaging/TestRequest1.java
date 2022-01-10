@@ -7,7 +7,7 @@ import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@ToString
+@ToString(callSuper = true)
 public class TestRequest1 extends AbstractMessage<TestRequest1.TestRequest1Body> {
     public static final String MESSAGE_TYPE = "TEST:TEST";
     public static final int VERSION = 1;
