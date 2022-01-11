@@ -1,6 +1,11 @@
 package ru.gx.core.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +24,13 @@ import ru.gx.core.messaging.StandardMessagesExecutorSettingsContainer;
 import ru.gx.core.messaging.StandardMessagesPrioritizedQueue;
 import ru.gx.core.settings.*;
 import ru.gx.core.simpleworker.*;
+import ru.gx.core.utils.ZonedDateTimeDeserializer;
+import ru.gx.core.utils.ZonedDateTimeSerializer;
+
+import java.time.ZonedDateTime;
+import java.util.TimeZone;
+
+import static lombok.AccessLevel.PROTECTED;
 
 @Configuration
 @EnableConfigurationProperties(ConfigurationPropertiesService.class)
@@ -30,7 +42,27 @@ public class CommonAutoConfiguration {
 
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="Fields">
+    // <editor-fold desc="ObjectMapper">
+    @Getter(PROTECTED)
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    protected void setObjectMapper(@NotNull final ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+
+        this.objectMapper.setTimeZone(TimeZone.getDefault());
+
+        final var javaTimeModule = new JavaTimeModule();
+        javaTimeModule.addSerializer(ZonedDateTime.class, ZonedDateTimeSerializer.INSTANCE);
+        javaTimeModule.addDeserializer(ZonedDateTime.class, ZonedDateTimeDeserializer.INSTANCE);
+        this.objectMapper.registerModule(javaTimeModule);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Standard Settings Controller">

@@ -24,7 +24,7 @@ public class TestMessaging {
                         "kind": "Request",
                         "type": "TEST:TEST",
                         "sourceSystem": "TEST-SOURCE-SYSTEM",
-                        "createdDateTime": "2021-12-19T09:36:49.456+0300",
+                        "createdDateTime": "2022-01-11T08:46:44.345+03",
                         "version": 1
                     },
                     "body": {
@@ -46,7 +46,7 @@ public class TestMessaging {
     public static ObjectMapper newObjectMapper() {
         final var objectMapper = new ObjectMapper();
         objectMapper.setTimeZone(TimeZone.getDefault());
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        // objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         final var javaTimeModule = new JavaTimeModule();
         javaTimeModule.addSerializer(ZonedDateTime.class, ZonedDateTimeSerializer.INSTANCE);
