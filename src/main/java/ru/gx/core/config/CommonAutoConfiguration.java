@@ -81,11 +81,11 @@ public class CommonAutoConfiguration {
     @ConditionalOnProperty(value = SimpleWorkerSettingsContainer.SIMPLE_WORKER_SETTINGS_PREFIX + DOT_ENABLED, havingValue = "true")
     @Autowired
     public SimpleWorker simpleWorker(
-            @Value("${" + SimpleWorkerSettingsContainer.SIMPLE_WORKER_SETTINGS_PREFIX + DOT_NAME + "}") @Nullable final String name,
+            @Value("${" + SimpleWorkerSettingsContainer.SIMPLE_WORKER_SETTINGS_PREFIX + DOT_NAME + ":" + SimpleWorker.WORKER_DEFAULT_NAME + "}") final String name,
             @NotNull final SimpleWorkerSettingsContainer settingsContainer,
             @NotNull final MeterRegistry meterRegistry
     ) {
-        return new SimpleWorker(StringUtils.hasLength(name) ? name : SimpleWorker.WORKER_DEFAULT_NAME, settingsContainer, meterRegistry);
+        return new SimpleWorker(name, settingsContainer, meterRegistry);
     }
 
     @Bean
@@ -110,13 +110,13 @@ public class CommonAutoConfiguration {
     @ConditionalOnProperty(value = StandardMessagesExecutorSettingsContainer.STANDARD_EVENTS_EXECUTOR_SETTINGS_PREFIX + DOT_ENABLED, havingValue = "true")
     @Autowired
     public StandardMessagesExecutor standardEventsExecutor(
-            @Value("${" + StandardMessagesExecutorSettingsContainer.STANDARD_EVENTS_EXECUTOR_SETTINGS_PREFIX + DOT_NAME + "}") String name,
+            @Value("${" + StandardMessagesExecutorSettingsContainer.STANDARD_EVENTS_EXECUTOR_SETTINGS_PREFIX + DOT_NAME + ":" + StandardMessagesExecutor.WORKER_DEFAULT_NAME + "}") String name,
             @NotNull final StandardMessagesExecutorSettingsContainer settingsContainer,
             @NotNull final ApplicationEventPublisher eventPublisher,
             @NotNull final MeterRegistry meterRegistry
     ) {
         return new StandardMessagesExecutor(
-                StringUtils.hasLength(name) ? name : StandardMessagesExecutor.WORKER_DEFAULT_NAME,
+                name,
                 settingsContainer,
                 eventPublisher,
                 meterRegistry
@@ -128,10 +128,10 @@ public class CommonAutoConfiguration {
     @ConditionalOnProperty(value = StandardMessagesExecutorSettingsContainer.STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + DOT_ENABLED, havingValue = "true")
     @Autowired
     public StandardMessagesPrioritizedQueue standardEventsPrioritizedQueue(
-            @Value("${" + StandardMessagesExecutorSettingsContainer.STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + DOT_NAME + "}") final String name,
+            @Value("${" + StandardMessagesExecutorSettingsContainer.STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + DOT_NAME + ":" + StandardMessagesPrioritizedQueue.DEFAULT_NAME + "}") final String name,
             @NotNull final StandardMessagesExecutorSettingsContainer executorSettings
     ) {
-        final var queue = new StandardMessagesPrioritizedQueue(StringUtils.hasLength(name) ? name : StandardMessagesPrioritizedQueue.DEFAULT_NAME);
+        final var queue = new StandardMessagesPrioritizedQueue(name);
         queue.init(executorSettings.maxQueueSize(), executorSettings.prioritiesCount());
         return queue;
     }

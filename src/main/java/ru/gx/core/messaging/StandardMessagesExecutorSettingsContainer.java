@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.gx.core.config.ConfigurationPropertiesService;
 import ru.gx.core.settings.StandardSettingsController;
 import ru.gx.core.settings.UnknownApplicationSettingException;
 import ru.gx.core.worker.AbstractWorkerSettingsContainer;
@@ -11,6 +12,7 @@ import ru.gx.core.worker.AbstractWorkerSettingsContainer;
 import javax.annotation.PostConstruct;
 
 import static lombok.AccessLevel.PROTECTED;
+import static ru.gx.core.config.ConfigurationPropertiesService.*;
 
 @SuppressWarnings("unused")
 public class StandardMessagesExecutorSettingsContainer extends AbstractWorkerSettingsContainer {
@@ -23,62 +25,62 @@ public class StandardMessagesExecutorSettingsContainer extends AbstractWorkerSet
     private final static String SETTING_TIMOUT_RUNNER_LIFE_MS = STANDARD_EVENTS_EXECUTOR_SETTINGS_PREFIX + "." + AbstractWorkerSettingsContainer.TIMEOUT_RUNNER_LIFE_MS;
     private final static String SETTING_PRINT_STATISTICS_EVERY_MS = STANDARD_EVENTS_EXECUTOR_SETTINGS_PREFIX + "." + AbstractWorkerSettingsContainer.PRINT_STATISTICS_EVERY_MS;
 
-    private final static String SETTING_PRINT_STATISTICS_EVEY_MS = STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + ".print-statistics-every-ms";
+    private final static String SETTING_PRINT_QUEUE_STATISTICS_EVERY_MS = STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + ".print-statistics-every-ms";
     private final static String SETTING_MAX_QUEUE_SIZE = STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + ".max-queue-size";
     private final static String SETTING_PRIORITIES_COUNT = STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + ".priorities-count";
 
     @Getter(PROTECTED)
     @Setter(value = PROTECTED, onMethod_ = @Autowired)
     @NotNull
-    private StandardSettingsController simpleSettingsController;
+    private StandardSettingsController standardSettingsController;
 
     @PostConstruct
     public void init() throws UnknownApplicationSettingException {
-        this.simpleSettingsController.loadIntegerSetting(SETTING_WAIT_ON_STOP_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_WAIT_ON_RESTART_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS);
+        this.standardSettingsController.loadIntegerSetting(SETTING_WAIT_ON_STOP_MS, StandardExecutor.WAIT_ON_STOP_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_WAIT_ON_RESTART_MS, StandardExecutor.WAIT_ON_RESTART_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS, StandardExecutor.MIN_TIME_PER_ITERATION_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS, StandardExecutor.TIMEOUT_RUNNER_LIFE_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS, StandardExecutor.PRINT_STATISTICS_EVERY_MS_DEFAULT);
 
-        this.simpleSettingsController.loadIntegerSetting(SETTING_PRINT_STATISTICS_EVEY_MS);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_MAX_QUEUE_SIZE);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_PRIORITIES_COUNT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_PRINT_QUEUE_STATISTICS_EVERY_MS, StandardQueue.PRINT_STATISTICS_EVERY_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_MAX_QUEUE_SIZE, StandardQueue.MAX_QUEUE_SIZE_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_PRIORITIES_COUNT, StandardQueue.PRIORITIES_COUNT_DEFAULT);
     }
 
     public int printStatisticsEveryMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_PRINT_STATISTICS_EVEY_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_PRINT_QUEUE_STATISTICS_EVERY_MS);
     }
 
     public int maxQueueSize() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_MAX_QUEUE_SIZE);
+        return this.standardSettingsController.getIntegerSetting(SETTING_MAX_QUEUE_SIZE);
     }
 
     public int prioritiesCount() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_PRIORITIES_COUNT);
+        return this.standardSettingsController.getIntegerSetting(SETTING_PRIORITIES_COUNT);
     }
 
     @Override
     public int getWaitOnStopMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_WAIT_ON_STOP_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_WAIT_ON_STOP_MS);
     }
 
     @Override
     public int getWaitOnRestartMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_WAIT_ON_RESTART_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_WAIT_ON_RESTART_MS);
     }
 
     @Override
     public int getMinTimePerIterationMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS);
     }
 
     @Override
     public int getTimeoutRunnerLifeMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS);
     }
 
     @Override
     public int getPrintStatisticsEveryMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS);
     }
 }
