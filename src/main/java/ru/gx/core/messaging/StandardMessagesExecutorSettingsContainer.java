@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.gx.core.config.ConfigurationPropertiesService;
 import ru.gx.core.settings.StandardSettingsController;
 import ru.gx.core.settings.UnknownApplicationSettingException;
 import ru.gx.core.worker.AbstractWorkerSettingsContainer;
@@ -12,7 +11,8 @@ import ru.gx.core.worker.AbstractWorkerSettingsContainer;
 import javax.annotation.PostConstruct;
 
 import static lombok.AccessLevel.PROTECTED;
-import static ru.gx.core.config.ConfigurationPropertiesService.*;
+import static ru.gx.core.config.ConfigurationPropertiesService.StandardExecutor;
+import static ru.gx.core.config.ConfigurationPropertiesService.StandardQueue;
 
 @SuppressWarnings("unused")
 public class StandardMessagesExecutorSettingsContainer extends AbstractWorkerSettingsContainer {

@@ -8,10 +8,7 @@ import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
 import ru.gx.core.messaging.MessageHeader;
 
-import java.lang.reflect.Constructor;
 import java.security.InvalidParameterException;
-import java.util.Arrays;
-import java.util.Map;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -55,14 +52,9 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
     @Getter
     private boolean initialized = false;
 
-    // TODO: WTF?
-    @NotNull
-    private final Constructor<M> messageConstructor;
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialize">
-
-    @SuppressWarnings("unchecked")
     protected AbstractChannelHandlerDescriptor(
             @NotNull final ChannelsConfiguration owner,
             @NotNull final ChannelApiDescriptor<M> api,
@@ -72,21 +64,6 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
         this.owner = owner;
         this.api = api;
         this.direction = direction;
-
-        final var messageClass = this.getApi().getMessageClass();
-        final var constructor = Arrays.stream(messageClass.getConstructors())
-                .filter(c -> {
-                    final var paramsTypes = c.getParameterTypes();
-                    return paramsTypes.length == 3
-                            && MessageHeader.class.isAssignableFrom(paramsTypes[0])
-                            && MessageBody.class.isAssignableFrom(paramsTypes[1])
-                            && Map.class.isAssignableFrom(paramsTypes[2]);
-                })
-                .findFirst();
-        if (constructor.isEmpty()) {
-            throw new ChannelConfigurationException("Can't find constructor(MessageHeader, MessageBody, Map) for class: " + messageClass.getName());
-        }
-        this.messageConstructor = (Constructor<M>) constructor.get();
     }
 
     /**

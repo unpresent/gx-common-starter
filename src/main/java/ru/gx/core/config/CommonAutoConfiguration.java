@@ -1,13 +1,10 @@
 package ru.gx.core.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -16,14 +13,13 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
-import ru.gx.core.channels.*;
 import ru.gx.core.messaging.DefaultMessagesFactory;
 import ru.gx.core.messaging.StandardMessagesExecutor;
 import ru.gx.core.messaging.StandardMessagesExecutorSettingsContainer;
 import ru.gx.core.messaging.StandardMessagesPrioritizedQueue;
-import ru.gx.core.settings.*;
-import ru.gx.core.simpleworker.*;
+import ru.gx.core.settings.StandardSettingsController;
+import ru.gx.core.simpleworker.SimpleWorker;
+import ru.gx.core.simpleworker.SimpleWorkerSettingsContainer;
 import ru.gx.core.utils.ZonedDateTimeDeserializer;
 import ru.gx.core.utils.ZonedDateTimeSerializer;
 

@@ -1,12 +1,12 @@
 package ru.gx.core.settings;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
@@ -20,25 +20,20 @@ import static lombok.AccessLevel.PROTECTED;
  */
 @SuppressWarnings("unused")
 @Slf4j
-public abstract class AbstractSettingsController implements SettingsController, ApplicationContextAware {
+public abstract class AbstractSettingsController implements SettingsController {
     /**
      * Передается в поле settingName объекта-события об изменении настройки, если поменялось слишком много настроек.
      */
     public static final String ALL = "*";
 
-    // TODO: заменить на ApplicationEventPublisher + @Setter с @Autowired
     @Getter
-    private ApplicationContext applicationContext;
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    private ApplicationEventPublisher eventPublisher;
 
     // TODO: попробовать заменить @Setter с @Autowired
     @Getter(PROTECTED)
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
     private Environment environment;
-
-    @Override
-    public void setApplicationContext(@NotNull final ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-        this.environment = applicationContext.getEnvironment();
-    }
 
     /**
      * Список настроек со значениями
@@ -121,7 +116,7 @@ public abstract class AbstractSettingsController implements SettingsController, 
             log.info("setSetting({}, {})", settingName, value);
             this.settings.put(settingName, value);
             log.info("publishEvent(SettingsChangedEvent({}))", settingName);
-            this.applicationContext.publishEvent(this.settingsChangedEvent.reset(settingName));
+            this.eventPublisher.publishEvent(this.settingsChangedEvent.reset(settingName));
         }
     }
 

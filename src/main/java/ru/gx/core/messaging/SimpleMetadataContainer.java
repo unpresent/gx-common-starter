@@ -79,6 +79,7 @@ public class SimpleMetadataContainer implements MetadataGetter, MetadataSetter {
         return this;
     }
 
+    @SuppressWarnings("ClassCanBeRecord")
     private static class MetadataImpl implements Metadata {
         @Getter
         private final Object key;

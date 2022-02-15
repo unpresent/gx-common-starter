@@ -5,6 +5,7 @@ import ru.gx.core.periodic.PeriodicData;
 import java.time.LocalDate;
 import java.util.Objects;
 
+@SuppressWarnings("unused")
 public class PeriodicDataUtils {
     public static Object getPrevObject(PeriodicData<?> data, LocalDate date) {
         var maxDate = data.keySet().stream().filter(d -> d.isBefore(date) || d.isEqual(date)).max(LocalDate::compareTo).orElse(null);

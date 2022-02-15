@@ -30,9 +30,9 @@ public class IntegerUtils {
     }
 
     /**
-     * @param fromString Исходная строка, которую парсим.
+     * @param fromString Исходная строка, которую преобразуем.
      * @return Число из строки, если строка не null. Null, если строка null.
-     * @throws NumberFormatException Ошибка при парсинге строки.
+     * @throws NumberFormatException Ошибка при преобразовании строки.
      */
     @Nullable
     public static Integer parseNullableInt(@Nullable final String fromString) throws NumberFormatException  {

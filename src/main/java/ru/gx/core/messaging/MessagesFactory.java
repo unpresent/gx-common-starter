@@ -8,6 +8,7 @@ import ru.gx.core.data.DataPackage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public interface MessagesFactory {
 
     /**

@@ -82,6 +82,7 @@ public abstract class MessageTypesRegistrator {
         return reg;
     }
 
+    @SuppressWarnings("unused")
     public static boolean contains(@NotNull final String type, final int version) {
         final var verRegs = types.get(type);
         if (verRegs != null) {

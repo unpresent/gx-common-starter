@@ -20,22 +20,6 @@ public class ConfigurationPropertiesService {
     @NestedConfigurationProperty
     private Messages messages = new Messages();
 
-    //    @NestedConfigurationProperty
-    //    private Channels channels = new Channels();
-
-    //    @Getter
-    //    @Setter
-    //    public static class Channels {
-    //        @NestedConfigurationProperty
-    //        private ConfiguratorCaller configuratorCaller = new ConfiguratorCaller();
-    //    }
-
-    //    @Getter
-    //    @Setter
-    //    public static class ConfiguratorCaller {
-    //        private boolean enabled = true;
-    //    }
-
     @Getter
     @Setter
     public static class StandardSettingsController {
