@@ -1,13 +1,11 @@
 package ru.gx.core.simpleworker;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import ru.gx.core.config.ConfigurationPropertiesService;
-import ru.gx.core.worker.AbstractWorkerSettingsContainer;
 import ru.gx.core.settings.StandardSettingsController;
+import ru.gx.core.worker.AbstractWorkerSettingsContainer;
 import ru.gx.core.settings.UnknownApplicationSettingException;
+import ru.gx.core.worker.CommonWorkerSettingsDefaults;
 
 import javax.annotation.PostConstruct;
 
@@ -23,41 +21,44 @@ public class SimpleWorkerSettingsContainer extends AbstractWorkerSettingsContain
     private final static String SETTING_PRINT_STATISTICS_EVERY_MS = SIMPLE_WORKER_SETTINGS_PREFIX + "." + AbstractWorkerSettingsContainer.PRINT_STATISTICS_EVERY_MS;
 
     @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
     @NotNull
-    private StandardSettingsController simpleSettingsController;
+    private final StandardSettingsController standardSettingsController;
+
+    public SimpleWorkerSettingsContainer(@NotNull final StandardSettingsController standardSettingsController) {
+        this.standardSettingsController = standardSettingsController;
+    }
 
     @PostConstruct
     public void init() throws UnknownApplicationSettingException {
-        this.simpleSettingsController.loadIntegerSetting(SETTING_WAIT_ON_STOP_MS, ConfigurationPropertiesService.SimpleWorker.WAIT_ON_STOP_MS_DEFAULT);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_WAIT_ON_RESTART_MS, ConfigurationPropertiesService.SimpleWorker.WAIT_ON_RESTART_MS_DEFAULT);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS, ConfigurationPropertiesService.SimpleWorker.MIN_TIME_PER_ITERATION_MS_DEFAULT);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS, ConfigurationPropertiesService.SimpleWorker.TIMEOUT_RUNNER_LIFE_MS_DEFAULT);
-        this.simpleSettingsController.loadIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS, ConfigurationPropertiesService.SimpleWorker.PRINT_STATISTICS_EVERY_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_WAIT_ON_STOP_MS, CommonWorkerSettingsDefaults.WAIT_ON_STOP_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_WAIT_ON_RESTART_MS, CommonWorkerSettingsDefaults.WAIT_ON_RESTART_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS, CommonWorkerSettingsDefaults.MIN_TIME_PER_ITERATION_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS, CommonWorkerSettingsDefaults.TIMEOUT_RUNNER_LIFE_MS_DEFAULT);
+        this.standardSettingsController.loadIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS, CommonWorkerSettingsDefaults.PRINT_STATISTICS_EVERY_MS_DEFAULT);
     }
 
     @Override
     public int getWaitOnStopMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_WAIT_ON_STOP_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_WAIT_ON_STOP_MS);
     }
 
     @Override
     public int getWaitOnRestartMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_WAIT_ON_RESTART_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_WAIT_ON_RESTART_MS);
     }
 
     @Override
     public int getMinTimePerIterationMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_MIN_TIME_PER_ITERATION_MS);
     }
 
     @Override
     public int getTimeoutRunnerLifeMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_TIMOUT_RUNNER_LIFE_MS);
     }
 
     @Override
     public int getPrintStatisticsEveryMs() {
-        return this.simpleSettingsController.getIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS);
+        return this.standardSettingsController.getIntegerSetting(SETTING_PRINT_STATISTICS_EVERY_MS);
     }
 }

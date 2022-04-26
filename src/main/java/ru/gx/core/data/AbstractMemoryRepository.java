@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.ObjectIdResolver;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.ParameterizedType;
@@ -49,6 +47,17 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
     @NotNull
     private static final Map<Class<? extends AbstractDataObject>, AbstractMemoryRepository<?, ?>> instancesByObjectsClass = new HashMap<>();
 
+    @Getter(PROTECTED)
+    private final ObjectMapper objectMapper;
+
+    @Getter(PROTECTED)
+    @NotNull
+    private final Map<Object, O> objects = new HashMap<>();
+
+    private Class<O> objectsClass;
+
+    private Class<P> packagesClass;
+
     @NotNull
     protected static AbstractMemoryRepository<?, ?> getRepositoryByClass(@NotNull final Class<? extends AbstractMemoryRepository<?, ?>> repositoryClass) {
         final var result = instancesByRepositoryClass.get(repositoryClass);
@@ -67,23 +76,14 @@ public abstract class AbstractMemoryRepository<O extends AbstractDataObject, P e
         }
         return result;
     }
-
-    @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private ObjectMapper objectMapper;
-
-    @Getter(PROTECTED)
-    @NotNull
-    private final Map<Object, O> objects = new HashMap<>();
-
-    private Class<O> objectsClass;
-
-    private Class<P> packagesClass;
-
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
-    @SuppressWarnings({"unchecked"})
+    protected AbstractMemoryRepository(@NotNull final ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    @SuppressWarnings("unchecked")
     @PostConstruct
     public void init() throws SingletonInstanceAlreadyExistsException, InvalidParameterException {
         final Class<? extends AbstractMemoryRepository<?, ?>> thisClass = (Class<? extends AbstractMemoryRepository<?, ?>>)this.getClass();

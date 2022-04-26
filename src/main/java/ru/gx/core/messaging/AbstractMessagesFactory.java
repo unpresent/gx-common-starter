@@ -3,9 +3,9 @@ package ru.gx.core.messaging;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.gx.core.utils.StringUtils;
 import ru.gx.core.data.DataObject;
 import ru.gx.core.data.DataPackage;
-import ru.gx.core.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.ZoneOffset;

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import ru.gx.core.worker.CommonWorkerSettingsDefaults;
 
 @ConfigurationProperties(prefix = "service")
 @Getter
@@ -30,19 +31,14 @@ public class ConfigurationPropertiesService {
     @Setter
     public static class SimpleWorker {
         public static final String NAME_DEFAULT = "simple-worker";
-        public static final int WAIT_ON_STOP_MS_DEFAULT = 3000;
-        public static final int WAIT_ON_RESTART_MS_DEFAULT = 30000;
-        public static final int MIN_TIME_PER_ITERATION_MS_DEFAULT = 1000;
-        public static final int TIMEOUT_RUNNER_LIFE_MS_DEFAULT = 20000;
-        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 1000;
 
         private boolean enabled = false;
         private String name = NAME_DEFAULT;
-        private int waitOnStopMs = WAIT_ON_STOP_MS_DEFAULT;
-        private int waitOnRestartMs = WAIT_ON_RESTART_MS_DEFAULT;
-        private int minTimePerIterationMs = MIN_TIME_PER_ITERATION_MS_DEFAULT;
-        private int timeoutRunnerLifeMs = TIMEOUT_RUNNER_LIFE_MS_DEFAULT;
-        private int printStatisticsEveryMs = PRINT_STATISTICS_EVERY_MS_DEFAULT;
+        private int waitOnStopMs = CommonWorkerSettingsDefaults.WAIT_ON_STOP_MS_DEFAULT;
+        private int waitOnRestartMs = CommonWorkerSettingsDefaults.WAIT_ON_RESTART_MS_DEFAULT;
+        private int minTimePerIterationMs = CommonWorkerSettingsDefaults.MIN_TIME_PER_ITERATION_MS_DEFAULT;
+        private int timeoutRunnerLifeMs = CommonWorkerSettingsDefaults.TIMEOUT_RUNNER_LIFE_MS_DEFAULT;
+        private int printStatisticsEveryMs = CommonWorkerSettingsDefaults.PRINT_STATISTICS_EVERY_MS_DEFAULT;
     }
 
     @Getter

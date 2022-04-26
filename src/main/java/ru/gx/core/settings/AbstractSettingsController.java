@@ -1,11 +1,9 @@
 package ru.gx.core.settings;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
 
@@ -27,13 +25,12 @@ public abstract class AbstractSettingsController implements SettingsController {
     public static final String ALL = "*";
 
     @Getter
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     // TODO: попробовать заменить @Setter с @Autowired
     @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private Environment environment;
+    @NotNull
+    private final Environment environment;
 
     /**
      * Список настроек со значениями
@@ -49,8 +46,10 @@ public abstract class AbstractSettingsController implements SettingsController {
     @NotNull
     private final SettingsChangedEvent settingsChangedEvent;
 
-    protected AbstractSettingsController() {
+    protected AbstractSettingsController(@NotNull final ApplicationEventPublisher eventPublisher, @NotNull final Environment environment) {
         super();
+        this.eventPublisher = eventPublisher;
+        this.environment = environment;
         this.settings = new HashMap<>();
         this.settingsChangedEvent = createSettingsChangedEvent();
     }

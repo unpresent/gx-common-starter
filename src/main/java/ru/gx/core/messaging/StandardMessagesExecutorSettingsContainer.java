@@ -11,8 +11,7 @@ import ru.gx.core.worker.AbstractWorkerSettingsContainer;
 import javax.annotation.PostConstruct;
 
 import static lombok.AccessLevel.PROTECTED;
-import static ru.gx.core.config.ConfigurationPropertiesService.StandardExecutor;
-import static ru.gx.core.config.ConfigurationPropertiesService.StandardQueue;
+import static ru.gx.core.config.ConfigurationPropertiesService.*;
 
 @SuppressWarnings("unused")
 public class StandardMessagesExecutorSettingsContainer extends AbstractWorkerSettingsContainer {
@@ -30,9 +29,12 @@ public class StandardMessagesExecutorSettingsContainer extends AbstractWorkerSet
     private final static String SETTING_PRIORITIES_COUNT = STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + ".priorities-count";
 
     @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
     @NotNull
-    private StandardSettingsController standardSettingsController;
+    private final StandardSettingsController standardSettingsController;
+
+    public StandardMessagesExecutorSettingsContainer(@NotNull final StandardSettingsController standardSettingsController) {
+        this.standardSettingsController = standardSettingsController;
+    }
 
     @PostConstruct
     public void init() throws UnknownApplicationSettingException {

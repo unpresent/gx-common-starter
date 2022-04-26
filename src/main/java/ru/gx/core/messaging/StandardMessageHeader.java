@@ -10,8 +10,8 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.core.utils.ZonedDateTimeDeserializer;
 import ru.gx.core.utils.ZonedDateTimeSerializer;
+import ru.gx.core.utils.ZonedDateTimeDeserializer;
 
 import java.time.ZonedDateTime;
 
@@ -45,7 +45,7 @@ public class StandardMessageHeader implements MessageHeader {
      */
     @Getter
     @NotNull
-    public String type;
+    public final String type;
 
     /**
      * Источник формирования сообщения.

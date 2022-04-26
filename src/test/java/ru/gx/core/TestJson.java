@@ -11,6 +11,19 @@ import org.junit.platform.commons.annotation.Testable;
 public class TestJson {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Constants">
+    private final static String testJson = """
+                {
+                "bbb": 111,
+                "aaa": {
+                        "id": "MICEX:4534426269",
+                        "rowIndex": 488350,
+                        "tradeNum": "4534426269",
+                        "direction": "B",
+                        "value": 107.34
+                        },
+                "fp": "12312321"}
+                """;
+
     private final static String testJsonPackage = """
                 {
                 "allCount": 4047673,
@@ -109,5 +122,15 @@ public class TestJson {
 
     public static ObjectMapper getObjectMapper() {
         return new ObjectMapper().registerModule(new JavaTimeModule());
+    }
+
+    @SneakyThrows
+    @Test
+    public void testDeser() {
+        var objectMapper = new ObjectMapper();
+
+        var rootNode = objectMapper.readTree(testJson);
+        System.out.println(rootNode.toString());
+
     }
 }

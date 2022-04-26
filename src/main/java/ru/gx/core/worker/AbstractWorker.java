@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 
 import javax.annotation.PostConstruct;
@@ -14,7 +13,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static lombok.AccessLevel.*;
+import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PROTECTED;
 
 /**
  * Класс исполнителя.<br/>
@@ -31,7 +31,7 @@ public abstract class AbstractWorker implements Worker {
     // <editor-fold desc="Constants">
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="Fields & Settings">
+    // <editor-fold desc="Fields">
     @Getter(PROTECTED)
     @NotNull
     private final MeterRegistry meterRegistry;
@@ -51,8 +51,8 @@ public abstract class AbstractWorker implements Worker {
      * ApplicationEventPublisher используется для бросания событий
      */
     @Getter(PROTECTED)
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private ApplicationEventPublisher applicationEventPublisher;
+    @NotNull
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Признак того, что исполнителя требуется перезапускать автоматически, если он остановлен по каким-либо причинам
@@ -117,15 +117,16 @@ public abstract class AbstractWorker implements Worker {
 
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="Init">
+    // <editor-fold desc="Initialization">
     protected AbstractWorker(
             @NotNull final String workerName,
             @NotNull final WorkerSettingsContainer settingsContainer,
-            @NotNull final MeterRegistry meterRegistry
-    ) {
+            @NotNull final MeterRegistry meterRegistry,
+            @NotNull final ApplicationEventPublisher applicationEventPublisher) {
         this.workerName = workerName;
         this.settingsContainer = settingsContainer;
         this.meterRegistry = meterRegistry;
+        this.applicationEventPublisher = applicationEventPublisher;
         this.statisticsInfo = createStatisticsInfo();
     }
 
@@ -431,7 +432,8 @@ public abstract class AbstractWorker implements Worker {
          * Выполняет одну итерацию цикла обработки.
          */
         protected void doIteration() {
-            final var iterationStarted = System.currentTimeMillis();
+            final var stat = getStatisticsInfo();
+            stat.iterationStarted();
             log.debug("Starting doIteration()");
             try {
                 final var event = AbstractWorker.this.getIterationExecuteEvent();
@@ -444,8 +446,7 @@ public abstract class AbstractWorker implements Worker {
                         + "; iterationExecuteEvent.isNeedRestart() == " + event.isNeedRestart());
             } finally {
                 // Фиксируем в статистику факт выполнения итерации
-                final var stat = getStatisticsInfo();
-                stat.iterationExecuted(iterationStarted);
+                stat.iterationExecuted();
                 if (getSettingsContainer().getPrintStatisticsEveryMs() < stat.lastResetMsAgo()) {
                     log.info(stat.getPrintableInfo());
                     stat.reset();

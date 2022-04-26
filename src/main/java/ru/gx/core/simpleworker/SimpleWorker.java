@@ -3,6 +3,7 @@ package ru.gx.core.simpleworker;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import ru.gx.core.worker.AbstractWorker;
 import ru.gx.core.worker.AbstractWorkerStatisticsInfo;
@@ -14,9 +15,10 @@ public class SimpleWorker extends AbstractWorker {
     public SimpleWorker(
             @NotNull final String name,
             @NotNull final SimpleWorkerSettingsContainer settingsContainer,
-            @NotNull final MeterRegistry meterRegistry
+            @NotNull final MeterRegistry meterRegistry,
+            @NotNull final ApplicationEventPublisher eventPublisher
     ) {
-        super(name, settingsContainer, meterRegistry);
+        super(name, settingsContainer, meterRegistry, eventPublisher);
         this.iterationExecuteEvent = new SimpleWorkerOnIterationExecuteEvent(this);
         this.startingExecuteEvent = new SimpleWorkerOnStartingExecuteEvent(this);
         this.stoppingExecuteEvent = new SimpleWorkerOnStoppingExecuteEvent(this);

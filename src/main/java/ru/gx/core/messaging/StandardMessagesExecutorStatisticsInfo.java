@@ -1,59 +1,77 @@
 package ru.gx.core.messaging;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.*;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import ru.gx.core.worker.AbstractWorkerStatisticsInfo;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static lombok.AccessLevel.PROTECTED;
 
 @SuppressWarnings("rawtypes")
 public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatisticsInfo {
-    public static final String METRIC_EVENT_TIMER = "message-time";
-    public static final String METRIC_EVENT_COUNTER = "message-count";
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Constants">
+    /**
+     * Размер очереди соощбщений
+     */
+    public static final String METRIC_EVENT_QUEUE_SIZE = "messages.queue.size";
+    // </editor-fold">
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Fields">
 
-    public static final String METRIC_TAG_NAME_EVENT_CLASS = "message-class";
+    /**
+     * Метрика: Текущее количество сообщений в очереди сообщений.
+     */
+    @Getter(PROTECTED)
+    @NotNull
+    private final Gauge metricMessagesQueueSize;
 
-    @Getter
-    private volatile long lastResetMs;
-
-    @Getter
-    private long eventStartedMs;
-
+    /**
+     * Статистики исполнения сообщений для каждого класса сообщений.
+     */
     @Getter
     private final Map<Class<? extends Message>, MessagesExecuteStatistics> messagesStats;
 
-    public StandardMessagesExecutorStatisticsInfo(@NotNull final StandardMessagesExecutor worker, @NotNull final MeterRegistry meterRegistry) {
+    // </editor-fold">
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Initialization">
+    public StandardMessagesExecutorStatisticsInfo(
+            @NotNull final StandardMessagesExecutor worker,
+            @NotNull final MeterRegistry meterRegistry
+    ) {
         super(worker, meterRegistry);
         this.messagesStats = new HashMap<>();
-        this.privateClear();
+        this.metricMessagesQueueSize = Gauge.builder(METRIC_EVENT_QUEUE_SIZE, this::getMessagesQueueSize)
+                .tags(this.getMetricsTags())
+                .register(this.getMeterRegistry());
+        this.internalReset();
     }
 
-    public void messageExecuteStarting() {
-        this.eventStartedMs = System.currentTimeMillis();
+    // </editor-fold">
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Getters">
+    @Override
+    protected @NotNull StandardMessagesExecutor getOwner() {
+        return (StandardMessagesExecutor) super.getOwner();
     }
 
-    public void messagesExecuteFinished(@NotNull final Message message) {
-        final var eventClass = message.getClass();
-        var curEventStat = this.messagesStats.get(eventClass);
-        if (curEventStat == null) {
-            curEventStat = new MessagesExecuteStatistics(this.getMeterRegistry(), eventClass);
-            this.messagesStats.put(eventClass, curEventStat);
-        }
-        curEventStat.setMessageExecuted(System.currentTimeMillis() - this.eventStartedMs);
+    private int getMessagesQueueSize() {
+        return this.getOwner()
+                .getMessagesQueue()
+                .queueSize(); // Не переживаем, внутри  живет AtomicInteger:
     }
 
     @Override
     public String getPrintableInfo() {
+        final var size = getMessagesQueueSize();
         final var str = new StringBuilder(super.getPrintableInfo());
         str.append('\n');
         str.append("Events queue.size = ");
-        str.append(((StandardMessagesExecutor)this.getWorker()).getMessagesQueue().queueSize());
+        str.append(size);
         str.append("; Events stat is: {");
         var isFirst = true;
         for (var eventClass : this.messagesStats.keySet()) {
@@ -61,6 +79,7 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
             if (eStat.isEmpty) {
                 continue;
             }
+
             if (!isFirst) {
                 str.append("; ");
             }
@@ -69,8 +88,6 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
             str.append(eStat.getCount());
             str.append(", totalMs = ");
             str.append(eStat.getTotalTimeMs());
-            str.append(", minTime = ");
-            str.append(eStat.getMinTimeMsPerEvent());
             str.append(", maxTime = ");
             str.append(eStat.getMaxTimeMsPerEvent());
             str.append(", avgTime = ");
@@ -80,23 +97,53 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
         str.append("}");
         return str.toString();
     }
+    // </editor-fold">
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Logic">
 
-    @Override
-    public void reset() {
-        privateClear();
-        super.reset();
+    /**
+     * Фиксируется факт обработки сообщения.
+     *
+     * @param message сообщение, которое было обработано.
+     */
+    public void messagesExecuteFinished(@NotNull final Message message) {
+        final var eventClass = message.getClass();
+        var curEventStat = this.messagesStats.get(eventClass);
+        if (curEventStat == null) {
+            curEventStat = new MessagesExecuteStatistics(eventClass, this.getOwner(), this.getMeterRegistry());
+            this.messagesStats.put(eventClass, curEventStat);
+        }
+        curEventStat.setMessageExecuted(System.currentTimeMillis() - getLastIterationStartedMs());
     }
 
     /**
-     * Чтобы никто не переопределял. Вызывается в конструкторе!
+     * Собственно сброс метрик. <br/>
+     * Вызывается в т.ч. и в конструкторе!
      */
-    private void privateClear() {
+    @Override
+    protected void internalReset() {
+        super.internalReset();
         this.messagesStats.values().forEach(MessagesExecuteStatistics::reset);
-        this.lastResetMs = System.currentTimeMillis();
     }
+    // </editor-fold">
+    // -----------------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="static class MessagesExecuteStatistics">
 
     @Getter
     public static class MessagesExecuteStatistics {
+
+        public static final String METRIC_EVENT_MESSAGE_COUNT = "messages.count";
+        public static final String METRIC_EVENT_MESSAGE_TIME_MS = "messages.time";
+
+        public static final String METRIC_TAG_NAME_EVENT_CLASS = "message_class";
+        public static final String METRIC_TAG_EXECUTOR = "executor";
+
+        @NotNull
+        private final StandardMessagesExecutor owner;
+
+        @NotNull
+        private final MeterRegistry meterRegistry;
+
         /**
          * Количество исполнений с момента последнего сброса.
          */
@@ -106,11 +153,6 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
          * Общее время затраченное на обработку событий с момента последнего сброса.
          */
         private long totalTimeMs;
-
-        /**
-         * Минимальное время на исполнение одного события с момента последнего сброса.
-         */
-        private long minTimeMsPerEvent;
 
         /**
          * Максимальное время на исполнение одного события с момента последнего сброса.
@@ -123,24 +165,44 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
         private boolean isEmpty;
 
         /**
-         * Накопитель времен исполнений для отчета через actuator.
-         * Не сбрасывается при reset().
+         * Общие для всех метрик ярлыки.
          */
         @Getter(PROTECTED)
-        private final Timer iterationTimer;
+        private final List<Tag> metricsTags;
 
         /**
-         * Накопитель количества исполнений для отчета через actuator.
-         * Не сбрасывается при reset().
+         * Метрика: количество исполнений с момента запуска.
          */
         @Getter(PROTECTED)
-        private final Counter iterationCounter;
+        @NotNull
+        private final Counter metricExecutionsCount;
 
-        public MessagesExecuteStatistics(@NotNull final MeterRegistry meterRegistry, @NotNull final Class<? extends Message> messageClass) {
+        /**
+         * Метрика: общее время на исполнения с момента запуска.
+         */
+        @Getter(PROTECTED)
+        @NotNull
+        private final Timer metricExecutionsTime;
+
+        public MessagesExecuteStatistics(
+                @NotNull final Class<? extends Message> messageClass,
+                @NotNull final StandardMessagesExecutor executor,
+                @NotNull final MeterRegistry meterRegistry
+        ) {
             super();
-            this.iterationCounter = meterRegistry.counter(METRIC_EVENT_COUNTER, METRIC_TAG_NAME_EVENT_CLASS, messageClass.getSimpleName());
-            this.iterationTimer = meterRegistry.timer(METRIC_EVENT_TIMER, METRIC_TAG_NAME_EVENT_CLASS, messageClass.getSimpleName());
-            reset();
+            this.owner = executor;
+            this.meterRegistry = meterRegistry;
+            this.metricsTags = List.of(
+                    Tag.of(METRIC_TAG_EXECUTOR, executor.getWorkerName()),
+                    Tag.of(METRIC_TAG_NAME_EVENT_CLASS, messageClass.getSimpleName())
+            );
+            this.metricExecutionsCount = Counter.builder(METRIC_EXECUTIONS_COUNT)
+                    .tags(this.metricsTags)
+                    .register(this.meterRegistry);
+            this.metricExecutionsTime = Timer.builder(METRIC_EXECUTIONS_TIME)
+                    .tags(this.metricsTags)
+                    .register(this.meterRegistry);
+            internalReset();
         }
 
         /**
@@ -151,9 +213,6 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
         public void setMessageExecuted(long timeMs) {
             this.count++;
             this.totalTimeMs += timeMs;
-            if (this.minTimeMsPerEvent < 0 || timeMs < this.minTimeMsPerEvent) {
-                this.minTimeMsPerEvent = timeMs;
-            }
             if (timeMs > this.maxTimeMsPerEvent) {
                 this.maxTimeMsPerEvent = timeMs;
             }
@@ -161,11 +220,16 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
         }
 
         public void reset() {
+            internalReset();
+        }
+
+        protected void internalReset() {
             this.isEmpty = true;
             this.count = 0;
             this.totalTimeMs = 0;
-            this.minTimeMsPerEvent = -1;
             this.maxTimeMsPerEvent = 0;
         }
     }
+    // </editor-fold">
+    // -----------------------------------------------------------------------------------------------------------------
 }

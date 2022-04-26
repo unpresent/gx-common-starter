@@ -10,7 +10,7 @@ public interface StatisticsInfo {
     String getPrintableInfo();
 
     /**
-     * Сброс статистических параметров.
+     * Актуализация метрик и сброс статистических параметров.
      */
     void reset();
 

@@ -6,8 +6,8 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import ru.gx.core.data.TestDataObject;
-import ru.gx.core.data.TestObjectsRepository;
 import ru.gx.core.data.TestDictionaryObject;
+import ru.gx.core.data.TestObjectsRepository;
 import ru.gx.core.data.TestDictionaryRepository;
 
 @SuppressWarnings("unused")
@@ -19,13 +19,11 @@ public class TestData {
         // Должно создаваться в Config-ах приложения
         final var objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-        final var testDictRepo = new TestDictionaryRepository();
+        final var testDictRepo = new TestDictionaryRepository(objectMapper);
         testDictRepo.init();
-        testDictRepo.setObjectMapper(objectMapper);
 
-        final var testMemRepo = new TestObjectsRepository();
+        final var testMemRepo = new TestObjectsRepository(objectMapper);
         testMemRepo.init();
-        testMemRepo.setObjectMapper(objectMapper);
 
         final var c = TestDataObject.class;
 

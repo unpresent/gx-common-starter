@@ -5,24 +5,24 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.gx.core</groupId>
-    <artifactId>gx-starter</artifactId>
-    <version>1.4.3</version>
+    <artifactId>gx-root-starter</artifactId>
+    <version>1.4.11</version>
 
     <properties>
         <encoding>UTF-8</encoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <spring-boot-maven-plugin.version>2.6.2</spring-boot-maven-plugin.version>
-        <gx-core-dependencies.version>1.4.3</gx-core-dependencies.version>
+        <maven-compiler-plugin.version>3.10.0</maven-compiler-plugin.version>
+        <spring-boot-maven-plugin.version>2.6.6</spring-boot-maven-plugin.version>
+        <core-dependencies.version>1.4.11</core-dependencies.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>ru.gx.core</groupId>
-                <artifactId>gx-core-dependencies</artifactId>
-                <version>${gx-core-dependencies.version}</version>
+                <artifactId>core-dependencies</artifactId>
+                <version>${core-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -34,6 +34,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
         <dependency>
@@ -96,11 +101,13 @@
                     <encoding>${encoding}</encoding>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot-maven-plugin.version}</version>
             </plugin>
+
         </plugins>
     </build>
 
