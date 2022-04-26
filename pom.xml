@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.gx.core</groupId>
-    <artifactId>gx-root-starter</artifactId>
+    <artifactId>gx-core-root-starter</artifactId>
     <version>1.4.11</version>
 
     <properties>
@@ -13,16 +13,16 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven-compiler-plugin.version>3.10.0</maven-compiler-plugin.version>
-        <spring-boot-maven-plugin.version>2.6.6</spring-boot-maven-plugin.version>
-        <core-dependencies.version>1.4.11</core-dependencies.version>
+        <spring-boot-maven-plugin.version>2.6.7</spring-boot-maven-plugin.version>
+        <gx-core-dependencies.version>1.4.11</gx-core-dependencies.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>ru.gx.core</groupId>
-                <artifactId>core-dependencies</artifactId>
-                <version>${core-dependencies.version}</version>
+                <artifactId>gx-core-dependencies</artifactId>
+                <version>${gx-core-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
