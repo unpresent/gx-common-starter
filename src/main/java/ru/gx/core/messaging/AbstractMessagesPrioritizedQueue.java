@@ -56,7 +56,8 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
 
     /**
      * Инициализации компонента: создаются очереди по количеству приоритетов.
-     * @param maxQueueSize Максимальное количество сообщений в очередях.
+     *
+     * @param maxQueueSize    Максимальное количество сообщений в очередях.
      * @param prioritiesCount Количество приоритетов.
      * @return this.
      */
@@ -90,7 +91,7 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      * Отправка события в контейнер очередей.
      *
      * @param priority Приоритет события.
-     * @param message    Событие.
+     * @param message  Событие.
      * @return this.
      */
     @Override
