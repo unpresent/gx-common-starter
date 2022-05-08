@@ -7,12 +7,11 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import ru.gx.core.messaging.*;
-import ru.gx.core.utils.ZonedDateTimeDeserializer;
-import ru.gx.core.utils.ZonedDateTimeSerializer;
+import ru.gx.core.utils.OffsetDateTimeDeserializer;
+import ru.gx.core.utils.OffsetDateTimeSerializer;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -25,11 +24,11 @@ public class TestMessaging {
                         "kind": "Request",
                         "type": "TEST:TEST",
                         "sourceSystem": "TEST-SOURCE-SYSTEM",
-                        "createdDateTime": "2021-12-19T09:36:49.456+03",
+                        "createdDateTime": "2021-12-19T09:36:49.456+0300",
                         "version": 1
                     },
                     "body": {
-                        "testDto": {
+                        "data": {
                             "code": "Code1",
                             "name": "Name1",
                             "price": 42.0,
@@ -50,8 +49,8 @@ public class TestMessaging {
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         final var javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(ZonedDateTime.class, ZonedDateTimeSerializer.INSTANCE);
-        javaTimeModule.addDeserializer(ZonedDateTime.class, ZonedDateTimeDeserializer.INSTANCE);
+        javaTimeModule.addSerializer(OffsetDateTime.class, OffsetDateTimeSerializer.INSTANCE);
+        javaTimeModule.addDeserializer(OffsetDateTime.class, OffsetDateTimeDeserializer.INSTANCE);
         objectMapper.registerModule(javaTimeModule);
         return objectMapper;
     }

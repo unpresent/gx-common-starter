@@ -19,9 +19,10 @@ import ru.gx.core.metrics.MetricsInitializer;
 import ru.gx.core.settings.StandardSettingsController;
 import ru.gx.core.simpleworker.SimpleWorker;
 import ru.gx.core.simpleworker.SimpleWorkerSettingsContainer;
-import ru.gx.core.utils.ZonedDateTimeDeserializer;
-import ru.gx.core.utils.ZonedDateTimeSerializer;
+import ru.gx.core.utils.OffsetDateTimeDeserializer;
+import ru.gx.core.utils.OffsetDateTimeSerializer;
 
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.TimeZone;
 
@@ -49,8 +50,8 @@ public class CommonAutoConfiguration {
         this.objectMapper.setTimeZone(TimeZone.getDefault());
 
         final var javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(ZonedDateTime.class, ZonedDateTimeSerializer.INSTANCE);
-        javaTimeModule.addDeserializer(ZonedDateTime.class, ZonedDateTimeDeserializer.INSTANCE);
+        javaTimeModule.addSerializer(OffsetDateTime.class, OffsetDateTimeSerializer.INSTANCE);
+        javaTimeModule.addDeserializer(OffsetDateTime.class, OffsetDateTimeDeserializer.INSTANCE);
         this.objectMapper.registerModule(javaTimeModule);
     }
 

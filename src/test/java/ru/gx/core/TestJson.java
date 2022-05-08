@@ -1,6 +1,5 @@
 package ru.gx.core;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
@@ -24,6 +23,7 @@ public class TestJson {
                 "fp": "12312321"}
                 """;
 
+    @SuppressWarnings("unused")
     private final static String testJsonPackage = """
                 {
                 "allCount": 4047673,
@@ -120,6 +120,7 @@ public class TestJson {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
 
+    @SuppressWarnings("unused")
     public static ObjectMapper getObjectMapper() {
         return new ObjectMapper().registerModule(new JavaTimeModule());
     }

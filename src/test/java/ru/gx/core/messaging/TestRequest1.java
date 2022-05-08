@@ -32,7 +32,7 @@ public class TestRequest1 extends AbstractMessage<TestRequest1.TestRequest1Body>
     public static class TestRequest1Body extends AbstractMessageBodyDataObject<TestDto> {
         @JsonCreator
         public TestRequest1Body(
-                @JsonProperty("testDto") @NotNull final TestDto testDto
+                @JsonProperty("data") @NotNull final TestDto testDto
         ) throws UnsupportedDataTypeException {
             super(testDto);
         }

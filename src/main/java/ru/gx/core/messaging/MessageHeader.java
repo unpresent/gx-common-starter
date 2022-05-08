@@ -11,11 +11,10 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.core.utils.ZonedDateTimeDeserializer;
-import ru.gx.core.utils.ZonedDateTimeSerializer;
+import ru.gx.core.utils.OffsetDateTimeDeserializer;
+import ru.gx.core.utils.OffsetDateTimeSerializer;
 
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 
 @SuppressWarnings("unused")
 @Accessors(chain = true)
@@ -60,9 +59,10 @@ public class MessageHeader {
     /**
      * Дата создания сообщения.
      */
-    // @JsonSerialize(using = ZonedDateTimeSerializer.class)
-    // @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss.SSSxx")
+    @JsonSerialize(using = OffsetDateTimeSerializer.class)
+    @JsonDeserialize(using = OffsetDateTimeDeserializer.class)
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss.SSSxx")
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss.SSSxx")
     @Getter
     @NotNull
     private final OffsetDateTime createdDateTime;

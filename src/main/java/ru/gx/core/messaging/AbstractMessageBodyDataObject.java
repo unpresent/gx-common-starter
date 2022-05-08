@@ -11,10 +11,13 @@ import java.lang.reflect.ParameterizedType;
 
 @ToString
 public abstract class AbstractMessageBodyDataObject<O extends DataObject>
-        implements MessageBody {
+        implements MessageSimpleBody {
+    /**
+     * Объект данных, содержащийся в теле сообщения
+     */
     @Getter
     @NotNull
-    private final O dataObject;
+    private final O data;
 
     /**
      * Класс данных в dataObject
@@ -25,7 +28,7 @@ public abstract class AbstractMessageBodyDataObject<O extends DataObject>
 
     @SuppressWarnings("unchecked")
     protected AbstractMessageBodyDataObject(@NotNull final O dataObject) throws UnsupportedDataTypeException {
-        this.dataObject = dataObject;
+        this.data = dataObject;
         final var thisClass = this.getClass();
         final var superClass = thisClass.getGenericSuperclass();
         if (superClass != null) {
