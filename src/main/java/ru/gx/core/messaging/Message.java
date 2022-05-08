@@ -24,7 +24,7 @@ public interface Message<B extends MessageBody> extends MetadataGetter, Metadata
     B getBody();
 
     /**
-     * @return Не используемые данные, которые надо проигнорировать.
+     * @return Неиспользуемые данные, которые надо проигнорировать.
      */
     @Nullable
     MessageCorrelation getCorrelation();

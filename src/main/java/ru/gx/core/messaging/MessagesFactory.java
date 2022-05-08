@@ -12,6 +12,8 @@ import java.util.Map;
 public interface MessagesFactory {
 
     /**
+     * @param messageType Тип сообщения.
+     * @param version     Версия сообщения.
      * @return Возможно ли создание сообщения по параметрам.
      */
     boolean isSupportedCreateByParams(@NotNull final String messageType, final int version);
@@ -20,12 +22,16 @@ public interface MessagesFactory {
      * Создание экземпляра сообщения.
      *
      * @param creatingParams Параметры для создания сообщения.
+     * @param messageType    Тип сообщения.
+     * @param version        Версия сообщения.
      * @return Экземпляр сообщения.
      */
     @NotNull <M extends Message<? extends MessageBody>>
     M createByParams(@NotNull final Map<MessageCreatingParams, Object> creatingParams, @NotNull final String messageType, final int version) throws InvocationTargetException, InstantiationException, IllegalAccessException;
 
     /**
+     * @param messageType Тип сообщения.
+     * @param version     Версия сообщения.
      * @return Возможно ли создание сообщения только с указанием одного DTO, все остальное автоматом.
      */
     <M extends Message<? extends MessageBody>>
@@ -34,7 +40,11 @@ public interface MessagesFactory {
     /**
      * Создание экземпляра сообщения только по одному параметру. Все остальные автоматом.
      *
-     * @param dataObject DTO, который должен быть упакован в данное сообщение.
+     * @param parentId    Идентификатор родительского сообщения.
+     * @param messageType Тип сообщения.
+     * @param version     Версия сообщения.
+     * @param dataObject  DTO, который должен быть упакован в данное сообщение.
+     * @param correlation Неиспользуемые данные, которые надо проигнорировать.
      * @return Экземпляр сообщения.
      */
     @NotNull <M extends Message<? extends MessageBody>>
@@ -55,7 +65,11 @@ public interface MessagesFactory {
     /**
      * Создание экземпляра сообщения только по одному параметру. Все остальные автоматом.
      *
-     * @param dataPackage пакет DTOs, который должен быть упакован в данное сообщение.
+     * @param parentId Идентификатор родительского сообщения.
+     * @param messageType Тип сообщения.
+     * @param version Версия сообщения.
+     * @param dataPackage Пакет DTO, который должен быть упакован в данное сообщение.
+     * @param correlation Неиспользуемые данные, которые надо проигнорировать.
      * @return Экземпляр сообщения.
      */
     @NotNull <M extends Message<? extends MessageBody>, O extends DataObject>
