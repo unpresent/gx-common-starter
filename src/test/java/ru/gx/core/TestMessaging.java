@@ -11,6 +11,7 @@ import ru.gx.core.utils.ZonedDateTimeDeserializer;
 import ru.gx.core.utils.ZonedDateTimeSerializer;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -66,7 +67,7 @@ public class TestMessaging {
         correlation.put("k2", "v2");
 
         final var m1 = new TestRequest1(
-                new StandardMessageHeader(UUID.randomUUID().toString(), null, MessageKind.Request, TestRequest1.MESSAGE_TYPE, TestRequest1.VERSION,"TEST-SOURCE-SYSTEM", ZonedDateTime.now()),
+                new MessageHeader(UUID.randomUUID().toString(), null, MessageKind.Request, TestRequest1.MESSAGE_TYPE, TestRequest1.VERSION,"TEST-SOURCE-SYSTEM", OffsetDateTime.now()),
                 new TestRequest1.TestRequest1Body(d1),
                 correlation
         );

@@ -7,6 +7,8 @@ import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.activation.UnsupportedDataTypeException;
+
 @ToString(callSuper = true)
 public class TestRequest1 extends AbstractMessage<TestRequest1.TestRequest1Body> {
     public static final String MESSAGE_TYPE = "TEST:TEST";
@@ -19,7 +21,7 @@ public class TestRequest1 extends AbstractMessage<TestRequest1.TestRequest1Body>
 
     @JsonCreator
     public TestRequest1(
-            @JsonProperty("header") @NotNull final StandardMessageHeader header,
+            @JsonProperty("header") @NotNull final MessageHeader header,
             @JsonProperty("body") @NotNull final TestRequest1Body body,
             @JsonProperty("correlation") @Nullable final MessageCorrelation correlation
     ) {
@@ -27,15 +29,12 @@ public class TestRequest1 extends AbstractMessage<TestRequest1.TestRequest1Body>
     }
 
     @ToString
-    public static class TestRequest1Body implements MessageBody {
-        @Getter
-        private final TestDto testDto;
-
+    public static class TestRequest1Body extends AbstractMessageBodyDataObject<TestDto> {
         @JsonCreator
         public TestRequest1Body(
                 @JsonProperty("testDto") @NotNull final TestDto testDto
-        ) {
-            this.testDto = testDto;
+        ) throws UnsupportedDataTypeException {
+            super(testDto);
         }
     }
 }

@@ -22,13 +22,13 @@ public interface MessagesFactory {
      * @param creatingParams Параметры для создания сообщения.
      * @return Экземпляр сообщения.
      */
-    @NotNull <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    @NotNull <M extends Message<? extends MessageBody>>
     M createByParams(@NotNull final Map<MessageCreatingParams, Object> creatingParams, @NotNull final String messageType, final int version) throws InvocationTargetException, InstantiationException, IllegalAccessException;
 
     /**
      * @return Возможно ли создание сообщения только с указанием одного DTO, все остальное автоматом.
      */
-    <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    <M extends Message<? extends MessageBody>>
     boolean isSupportedCreateByDataObject(@NotNull final String messageType, final int version);
 
     /**
@@ -37,7 +37,7 @@ public interface MessagesFactory {
      * @param dataObject DTO, который должен быть упакован в данное сообщение.
      * @return Экземпляр сообщения.
      */
-    @NotNull <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    @NotNull <M extends Message<? extends MessageBody>>
     M createByDataObject(
             @Nullable final String parentId,
             @NotNull final String messageType,
@@ -49,7 +49,7 @@ public interface MessagesFactory {
     /**
      * @return Возможно ли создание сообщения только с указанием одного пакета объектов, все остальное автоматом.
      */
-    <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    <M extends Message<? extends MessageBody>>
     boolean isSupportedCreateByDataPackage(@NotNull final String messageType, final int version);
 
     /**
@@ -58,7 +58,7 @@ public interface MessagesFactory {
      * @param dataPackage пакет DTOs, который должен быть упакован в данное сообщение.
      * @return Экземпляр сообщения.
      */
-    @NotNull <M extends Message<? extends MessageHeader, ? extends MessageBody>, O extends DataObject>
+    @NotNull <M extends Message<? extends MessageBody>, O extends DataObject>
     M createByDataPackage(
             @Nullable final String parentId,
             @NotNull final String messageType,

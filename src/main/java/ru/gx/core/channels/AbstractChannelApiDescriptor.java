@@ -14,7 +14,7 @@ import ru.gx.core.messaging.*;
 @EqualsAndHashCode(callSuper = false, of = "name")
 @ToString
 @SuppressWarnings("unused")
-public abstract class AbstractChannelApiDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+public abstract class AbstractChannelApiDescriptor<M extends Message<? extends MessageBody>>
         implements ChannelApiDescriptor<M> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">

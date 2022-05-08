@@ -9,13 +9,13 @@ import ru.gx.core.channels.ChannelHandlerDescriptor;
  * Базовый интерфейс для разных видов сообщений.
  */
 @SuppressWarnings("unused")
-public interface Message<H extends MessageHeader, B extends MessageBody> extends MetadataGetter, MetadataSetter {
+public interface Message<B extends MessageBody> extends MetadataGetter, MetadataSetter {
 
     /**
      * @return Заголовок сообщения.
      */
     @NotNull
-    H getHeader();
+    MessageHeader getHeader();
 
     /**
      * @return Тело сообщения.
@@ -34,7 +34,7 @@ public interface Message<H extends MessageHeader, B extends MessageBody> extends
      */
     @JsonIgnore
     @NotNull
-    ChannelHandlerDescriptor<? extends Message<H, B>> getChannelDescriptor();
+    ChannelHandlerDescriptor<? extends Message<B>> getChannelDescriptor();
 
     /**
      * Установка описателя канала
@@ -42,5 +42,5 @@ public interface Message<H extends MessageHeader, B extends MessageBody> extends
      */
     @JsonIgnore
     @NotNull
-    Message<H, B> setChannelDescriptor(@NotNull final ChannelHandlerDescriptor<? extends Message<H, B>> channelDescriptor);
+    Message<B> setChannelDescriptor(@NotNull final ChannelHandlerDescriptor<? extends Message<B>> channelDescriptor);
 }

@@ -27,7 +27,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @throws ChannelConfigurationException В случае отсутствия описателя канала с заданным именем бросается ошибка.
      */
     @NotNull
-    <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    <M extends Message<? extends MessageBody>>
     ChannelHandlerDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException;
 
     /**
@@ -37,7 +37,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @return Описатель канала. Если не найден, то возвращается null.
      */
     @Nullable
-    <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    <M extends Message<? extends MessageBody>>
     ChannelHandlerDescriptor<M> tryGet(@NotNull final String channelName);
 
     /**
@@ -48,7 +48,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @return this.
      */
     @NotNull
-    <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
+    <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
     D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException;
 
     /**

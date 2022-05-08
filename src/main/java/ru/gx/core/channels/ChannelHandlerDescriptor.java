@@ -11,7 +11,7 @@ import java.security.InvalidParameterException;
  * Интерфейс обработчика канала передачи данных.
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface ChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>> {
+public interface ChannelHandlerDescriptor<M extends Message<? extends MessageBody>> {
 
     /**
      * @return Описатель API-канала передачи данных.

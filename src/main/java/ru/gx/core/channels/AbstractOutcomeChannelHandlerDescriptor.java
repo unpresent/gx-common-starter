@@ -10,7 +10,7 @@ import ru.gx.core.messaging.*;
  */
 @Accessors(chain = true)
 @SuppressWarnings("unused")
-public abstract class AbstractOutcomeChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+public abstract class AbstractOutcomeChannelHandlerDescriptor<M extends Message<? extends MessageBody>>
         extends AbstractChannelHandlerDescriptor<M>
         implements OutcomeChannelHandlerDescriptor<M> {
     // -----------------------------------------------------------------------------------------------------------------

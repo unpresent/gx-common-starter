@@ -10,7 +10,7 @@ import ru.gx.core.messaging.MessageKind;
  * Интерфейс API канала передачи данных.
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface ChannelApiDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>> {
+public interface ChannelApiDescriptor<M extends Message<? extends MessageBody>> {
 
     /**
      * Имя канала передачи данных.

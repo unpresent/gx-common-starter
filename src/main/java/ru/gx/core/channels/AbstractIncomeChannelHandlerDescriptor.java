@@ -13,7 +13,7 @@ import ru.gx.core.messaging.MessageHeader;
  */
 @Accessors(chain = true)
 @SuppressWarnings("unused")
-public abstract class AbstractIncomeChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+public abstract class AbstractIncomeChannelHandlerDescriptor<M extends Message<? extends MessageBody>>
         extends AbstractChannelHandlerDescriptor<M>
         implements IncomeChannelHandlerDescriptor<M> {
     // -----------------------------------------------------------------------------------------------------------------

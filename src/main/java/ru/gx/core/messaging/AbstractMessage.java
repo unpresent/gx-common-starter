@@ -11,7 +11,7 @@ import ru.gx.core.channels.ChannelHandlerDescriptor;
 @EqualsAndHashCode(callSuper = false, of = "header")
 @ToString
 public abstract class AbstractMessage<B extends MessageBody>
-        implements Message<StandardMessageHeader, B> {
+        implements Message<B> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields & Getters of Message">
 
@@ -20,7 +20,7 @@ public abstract class AbstractMessage<B extends MessageBody>
      */
     @Getter
     @NotNull
-    private final StandardMessageHeader header;
+    private final MessageHeader header;
 
     /**
      * Тело сообщения.
@@ -45,7 +45,7 @@ public abstract class AbstractMessage<B extends MessageBody>
     @Getter
     @Setter
     @Nullable
-    private ChannelHandlerDescriptor<? extends Message<StandardMessageHeader, B>> channelDescriptor;
+    private ChannelHandlerDescriptor<? extends Message<B>> channelDescriptor;
 
     @NotNull
     private final SimpleMetadataContainer metadataContainer = new SimpleMetadataContainer();
@@ -60,7 +60,7 @@ public abstract class AbstractMessage<B extends MessageBody>
      * @param correlation Необрабатываемые данные.
      */
     protected AbstractMessage(
-            @NotNull final StandardMessageHeader header,
+            @NotNull final MessageHeader header,
             @NotNull final B body,
             @Nullable final MessageCorrelation correlation
     ) {

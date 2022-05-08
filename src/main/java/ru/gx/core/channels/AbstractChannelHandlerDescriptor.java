@@ -17,7 +17,7 @@ import static lombok.AccessLevel.PROTECTED;
  */
 @Accessors(chain = true)
 @SuppressWarnings("unused")
-public abstract class AbstractChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+public abstract class AbstractChannelHandlerDescriptor<M extends Message<? extends MessageBody>>
         implements ChannelHandlerDescriptor<M> {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">

@@ -23,14 +23,14 @@ public interface MessagesPrioritizedQueue {
      * @param message Событие.
      * @return this.
      */
-    MessagesPrioritizedQueue pushMessage(final int priority, @NotNull final Message<? extends MessageHeader, ? extends MessageBody> message);
+    MessagesPrioritizedQueue pushMessage(final int priority, @NotNull final Message<? extends MessageBody> message);
 
     /**
      * Извлечение события из контейнера очередей. Будет предоставлено наиболее старое событие из очереди с наименьшим приоритетом.
      * @return Событие, которое надо обработать.
      */
     @Nullable
-    Message<? extends MessageHeader, ? extends MessageBody> pollMessage();
+    Message<? extends MessageBody> pollMessage();
 
     /**
      * Извлечение списка событий из контейнера очередей. Будут предоставлены наиболее старые события из очереди с наименьшим приоритетом.
@@ -40,7 +40,7 @@ public interface MessagesPrioritizedQueue {
      * @return Коллекция событий, которые надо обработать.
      */
     @NotNull
-    Collection<Message<?, ?>> pollMessages(int maxCount);
+    Collection<Message<?>> pollMessages(int maxCount);
 
     /**
      * @return Количество событий в контейнере очередей.

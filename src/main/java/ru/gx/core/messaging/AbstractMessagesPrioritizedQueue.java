@@ -36,7 +36,7 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      * Очереди для каждого из приоритетов.
      */
     @NotNull
-    private final List<Queue<Message<?, ?>>> priorities = new ArrayList<>();
+    private final List<Queue<Message<?>>> priorities = new ArrayList<>();
 
     /**
      * Максимальное количество сообщений, которое допускается в очереди.
@@ -95,7 +95,7 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      * @return this.
      */
     @Override
-    public AbstractMessagesPrioritizedQueue pushMessage(final int priority, @NotNull Message<? extends MessageHeader, ? extends MessageBody> message) {
+    public AbstractMessagesPrioritizedQueue pushMessage(final int priority, @NotNull Message<? extends MessageBody> message) {
         synchronized (this.monitor) {
             if (priority < 0) {
                 throw new InvalidParameterException("Priority can't be less 0!");
@@ -116,7 +116,7 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      * @return Событие, которое надо обработать.
      */
     @Override
-    public Message<? extends MessageHeader, ? extends MessageBody> pollMessage() {
+    public Message<? extends MessageBody> pollMessage() {
         if (this.size.get() <= 0) {
             return null;
         }
@@ -144,8 +144,8 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      */
     @Override
     @NotNull
-    public Collection<Message<?, ?>> pollMessages(final int maxCount) {
-        final var result = new ArrayList<Message<?, ?>>();
+    public Collection<Message<?>> pollMessages(final int maxCount) {
+        final var result = new ArrayList<Message<?>>();
         if (this.size.get() <= 0) {
             return result;
         }

@@ -116,7 +116,7 @@ public class StandardMessagesExecutor extends AbstractWorker{
      * @param queue Контейнер очередей.
      * @return True - событие было извлечено и обработано. False - нет событий в очереди.
      */
-    protected Message<? extends MessageHeader, ? extends MessageBody> internalPollMessage(@NotNull MessagesPrioritizedQueue queue) {
+    protected Message<? extends MessageBody> internalPollMessage(@NotNull MessagesPrioritizedQueue queue) {
         final var event = queue.pollMessage();
         if (event == null) {
             log.debug("No messages in queue {}", queue.getName());
@@ -130,7 +130,7 @@ public class StandardMessagesExecutor extends AbstractWorker{
      * Обработка одного сообщения.
      * @param message Сообщение, которое бросаем на обработку через this.eventPublisher.
      */
-    protected void internalProcessMessage(@NotNull Message<? extends MessageHeader, ? extends MessageBody> message) {
+    protected void internalProcessMessage(@NotNull Message<? extends MessageBody> message) {
         try {
             this.getApplicationEventPublisher().publishEvent(message);
         } finally {

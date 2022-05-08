@@ -3,13 +3,12 @@ package ru.gx.core.messaging;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.core.utils.StringUtils;
 import ru.gx.core.data.DataObject;
 import ru.gx.core.data.DataPackage;
+import ru.gx.core.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +54,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    public <M extends Message<? extends MessageBody>>
     @NotNull M createByParams(
             @NotNull final Map<MessageCreatingParams, Object> creatingParams,
             @NotNull final String messageType,
@@ -111,7 +110,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
     @SuppressWarnings("unchecked")
     @Override
     @NotNull
-    public <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    public <M extends Message<? extends MessageBody>>
     M createByDataObject(
             @Nullable final String parentId,
             @NotNull final String messageType,
@@ -132,7 +131,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
     @SuppressWarnings("unchecked")
     @Override
     @NotNull
-    public <M extends Message<? extends MessageHeader, ? extends MessageBody>, O extends DataObject>
+    public <M extends Message<? extends MessageBody>, O extends DataObject>
     M createByDataPackage(
             @Nullable final String parentId,
             @NotNull final String messageType,
@@ -163,7 +162,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
      */
     @SuppressWarnings("unchecked")
     @NotNull
-    protected <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    protected <M extends Message<? extends MessageBody>>
     M internalCreateMessageByHeaderBody(
             @NotNull final MessageTypesRegistrator.MessageTypeRegistration reg,
             @NotNull final MessageHeader header,
@@ -191,7 +190,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
      */
     @SuppressWarnings("unchecked")
     @NotNull
-    protected <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    protected <M extends Message<? extends MessageBody>>
     M internalCreateMessageByParams(
             @NotNull final MessageTypesRegistrator.MessageTypeRegistration reg,
             @NotNull final Map<MessageCreatingParams, Object> creatingParams
@@ -217,7 +216,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
      * @throws IllegalAccessException    Ошибки при отсутствии доступа к конструктору сообщения.
      */
     @NotNull
-    protected Message<? extends MessageHeader, ? extends MessageBody>
+    protected Message<? extends MessageBody>
     internalCreateMessageByDataObject(
             @NotNull final MessageTypesRegistrator.MessageTypeRegistration reg,
             @Nullable final String parentId,
@@ -242,7 +241,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
      * @throws IllegalAccessException    Ошибки при отсутствии доступа к конструктору сообщения.
      */
     @NotNull
-    protected Message<? extends MessageHeader, ? extends MessageBody>
+    protected Message<? extends MessageBody>
     internalCreateMessageByDataPackage(
             @NotNull final MessageTypesRegistrator.MessageTypeRegistration reg,
             @Nullable final String parentId,
@@ -314,7 +313,7 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
                 UUID.randomUUID().toString(),
                 parentId,
                 this.serviceName,
-                ZonedDateTime.now()
+                OffsetDateTime.now()
         );
     }
 
@@ -330,9 +329,9 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
             @NotNull final MessageTypesRegistrator.MessageTypeRegistration reg,
             @NotNull final Map<MessageCreatingParams, Object> creatingParams
     ) {
-        var created = (ZonedDateTime) creatingParams.get(MessageCreatingParams.CreatedDateTimeUtc);
+        var created = (OffsetDateTime) creatingParams.get(MessageCreatingParams.CreatedDateTimeUtc);
         if (created == null) {
-            created = ZonedDateTime.now(ZoneOffset.UTC);
+            created = OffsetDateTime.now(); // ZoneOffset.UTC
         }
 
         return internalCreateHeader(
@@ -356,12 +355,12 @@ public abstract class AbstractMessagesFactory implements MessagesFactory {
             @NotNull final String id,
             @Nullable final String parentId,
             @NotNull final String sourceSystem,
-            @NotNull final ZonedDateTime createdDateTime
+            @NotNull final OffsetDateTime createdDateTime
     ) {
         if (parentId == null && (reg.getKind() == MessageKind.Response || reg.getKind() == MessageKind.QueryResult)) {
             throw new NullPointerException("Parameter parentId should be not null!");
         }
-        return new StandardMessageHeader(
+        return new MessageHeader(
                 id,
                 parentId,
                 reg.getKind(),

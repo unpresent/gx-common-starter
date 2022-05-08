@@ -74,7 +74,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @SuppressWarnings("unchecked")
     @Override
     @NotNull
-    public <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    public <M extends Message<? extends MessageBody>>
     ChannelHandlerDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException {
         final var result = (ChannelHandlerDescriptor<M>) this.channels.get(channelName);
         if (result == null) {
@@ -92,7 +92,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @SuppressWarnings("unchecked")
     @Override
     @Nullable
-    public <M extends Message<? extends MessageHeader, ? extends MessageBody>>
+    public <M extends Message<? extends MessageBody>>
     ChannelHandlerDescriptor<M> tryGet(@NotNull final String channelName) {
         return (ChannelHandlerDescriptor<M>) this.channels.get(channelName);
     }
@@ -108,7 +108,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @SneakyThrows({InstantiationException.class, IllegalAccessException.class, InvocationTargetException.class})
     @Override
     @NotNull
-    public <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
+    public <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
     D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
         if (contains(channelApi.getName())) {
             throw new ChannelConfigurationException("Topic '" + channelApi.getName() + "' already registered!");
@@ -155,7 +155,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptorClass Класс создаваемого описателя.
      * @return True - создание описателя допустимо.
      */
-    abstract protected <M extends Message<? extends MessageHeader, ? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
+    abstract protected <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
     boolean allowCreateDescriptor(
             @NotNull final Class<D> descriptorClass
     );

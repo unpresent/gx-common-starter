@@ -1,53 +1,100 @@
 package ru.gx.core.messaging;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.gx.core.utils.ZonedDateTimeDeserializer;
+import ru.gx.core.utils.ZonedDateTimeSerializer;
 
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
 @SuppressWarnings("unused")
-public interface MessageHeader {
-
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = false, of = "id")
+@ToString
+public class MessageHeader {
     /**
-     * @return Идентификатор сообщения.
+     * Идентификатор сообщения.
      */
+    @Getter
     @NotNull
-    String getId();
+    private final String id;
 
     /**
-     * @return Идентификатор вышестоящего сообщения (при обработке которого родилось данное сообщение).
+     * Идентификатор вышестоящего сообщения (при обработке которого родилось данное сообщение).
      */
+    @Getter
     @Nullable
-    String getParentId();
+    private final String parentId;
 
     /**
-     * @return Вид сообщения. @see {@link MessageKind}
+     * Вид сообщения. @see MessageKind.
      */
+    @Getter
     @NotNull
-    MessageKind getKind();
+    public final MessageKind kind;
 
     /**
-     * @return Код типа сообщения.
+     * Код типа сообщения.
      */
+    @Getter
     @NotNull
-    String getType();
+    public final String type;
 
     /**
-     * @return Система-источник формирования сообщения.
+     * Источник формирования сообщения.
      */
+    @Getter
     @Nullable
-    String getSourceSystem();
+    private final String sourceSystem;
 
     /**
-     * @return Дата создания сообщения.
+     * Дата создания сообщения.
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
-    @Nullable
-    ZonedDateTime getCreatedDateTime();
+    // @JsonSerialize(using = ZonedDateTimeSerializer.class)
+    // @JsonDeserialize(using = ZonedDateTimeDeserializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss.SSSxx")
+    @Getter
+    @NotNull
+    private final OffsetDateTime createdDateTime;
+
+    @Getter
+    private final int version;
 
     /**
-     * @return Версия формата сообщения.
+     * Конструктор заголовка сообщения.
+     * @param id Идентификатор сообщения.
+     * @param kind Вид сообщения.
+     * @param type Тип сообщения.
+     * @param sourceSystem Система-источник.
+     * @param createdDateTime Дата и время создания сообщения.
+     * @param version Версия сообщения.
      */
-    int getVersion();
+    @JsonCreator
+    public MessageHeader(
+            @JsonProperty("id") @NotNull final String id,
+            @JsonProperty("parentId") @Nullable final String parentId,
+            @JsonProperty("kind") @NotNull final MessageKind kind,
+            @JsonProperty("type") @NotNull final String type,
+            @JsonProperty("version") final int version,
+            @JsonProperty("systemSource") @Nullable final String sourceSystem,
+            @JsonProperty("createdDateTime") @NotNull final OffsetDateTime createdDateTime
+    ) {
+        this.id = id;
+        this.kind = kind;
+        this.parentId = parentId;
+        this.type = type;
+        this.version = version;
+        this.sourceSystem = sourceSystem;
+        this.createdDateTime = createdDateTime;
+    }
 }

@@ -10,7 +10,7 @@ import ru.gx.core.messaging.MessageHeader;
  * Интерфейс описателя канала получения и обработки входящих данных.
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface IncomeChannelHandlerDescriptor<M extends Message<? extends MessageHeader, ? extends MessageBody>>
+public interface IncomeChannelHandlerDescriptor<M extends Message<? extends MessageBody>>
         extends ChannelHandlerDescriptor<M> {
 
     /**
