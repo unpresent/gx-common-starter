@@ -96,10 +96,10 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      */
     @Override
     public AbstractMessagesPrioritizedQueue pushMessage(final int priority, @NotNull Message<? extends MessageBody> message) {
+        if (priority < 0) {
+            throw new InvalidParameterException("Priority can't be less 0!");
+        }
         synchronized (this.monitor) {
-            if (priority < 0) {
-                throw new InvalidParameterException("Priority can't be less 0!");
-            }
             if (priority > priorities.size()) {
                 throw new InvalidParameterException("Priority can't be more count of priorities!");
             }
