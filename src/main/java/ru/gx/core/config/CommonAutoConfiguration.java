@@ -135,7 +135,7 @@ public class CommonAutoConfiguration {
             havingValue = "true"
     )
     @Autowired
-    public StandardMessagesExecutor standardEventsExecutor(
+    public StandardMessagesExecutor standardMessagesExecutor(
             @Value("${"
                     + StandardMessagesExecutorSettingsContainer.STANDARD_EVENTS_EXECUTOR_SETTINGS_PREFIX + DOT_NAME
                     + ":" + StandardMessagesExecutor.WORKER_DEFAULT_NAME + "}"
@@ -162,7 +162,7 @@ public class CommonAutoConfiguration {
             havingValue = "true"
     )
     @Autowired
-    public StandardMessagesPrioritizedQueue standardEventsPrioritizedQueue(
+    public StandardMessagesPrioritizedQueue standardMessagesPrioritizedQueue(
             @Value("${" +
                     StandardMessagesExecutorSettingsContainer.STANDARD_EVENTS_QUEUE_SETTINGS_PREFIX + DOT_NAME
                     + ":" + StandardMessagesPrioritizedQueue.DEFAULT_NAME + "}"

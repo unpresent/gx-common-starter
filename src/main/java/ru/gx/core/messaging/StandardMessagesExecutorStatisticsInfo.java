@@ -34,7 +34,7 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
      * Статистики исполнения сообщений для каждого класса сообщений.
      */
     @Getter
-    private final Map<Class<? extends Message>, MessagesExecuteStatistics> messagesStats;
+    private final Map<Class<? extends Message>, MessagesExecuteStatistics> messagesStats = new HashMap<>();
 
     // </editor-fold">
     // -----------------------------------------------------------------------------------------------------------------
@@ -44,11 +44,10 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
             @NotNull final MeterRegistry meterRegistry
     ) {
         super(worker, meterRegistry);
-        this.messagesStats = new HashMap<>();
         this.metricMessagesQueueSize = Gauge.builder(METRIC_EVENT_QUEUE_SIZE, this::getMessagesQueueSize)
                 .tags(this.getMetricsTags())
                 .register(this.getMeterRegistry());
-        this.internalReset();
+        privateReset();
     }
 
     // </editor-fold">
@@ -120,10 +119,14 @@ public class StandardMessagesExecutorStatisticsInfo extends AbstractWorkerStatis
      * Собственно сброс метрик. <br/>
      * Вызывается в т.ч. и в конструкторе!
      */
+    private void privateReset() {
+        this.messagesStats.values().forEach(MessagesExecuteStatistics::reset);
+    }
+
     @Override
     protected void internalReset() {
         super.internalReset();
-        this.messagesStats.values().forEach(MessagesExecuteStatistics::reset);
+        privateReset();
     }
     // </editor-fold">
     // -----------------------------------------------------------------------------------------------------------------

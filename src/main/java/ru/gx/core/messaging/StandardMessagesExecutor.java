@@ -59,7 +59,7 @@ public class StandardMessagesExecutor extends AbstractWorker{
     }
 
     @Override
-    protected AbstractWorkerStatisticsInfo createStatisticsInfo() {
+    protected StandardMessagesExecutorStatisticsInfo createStatisticsInfo() {
         return new StandardMessagesExecutorStatisticsInfo(this, this.getMeterRegistry());
     }
     // </editor-fold>

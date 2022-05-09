@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -94,6 +96,9 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
 
     @Getter
     private volatile long lastResetMs;
+
+    @Getter(PROTECTED)
+    private AtomicInteger internalResetLocksCount;
     // </editor-fold">
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
@@ -111,7 +116,7 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
         this.metricExecutionsTime = Timer.builder(METRIC_EXECUTIONS_TIME)
                 .tags(this.metricsTags)
                 .register(this.meterRegistry);
-        this.internalReset();
+        this.privateReset();
     }
 
     // </editor-fold">
@@ -162,13 +167,17 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
      * Собственно сброс метрик. <br/>
      * Вызывается в т.ч. и в конструкторе!
      */
-    protected void internalReset() {
+    private void privateReset() {
         this.isEmpty = true;
         this.executionsCount = 0;
         this.executionsTotalTimeMs = 0;
         this.executionMaxTimePerIterationMs = 0;
         this.lastIterationStartedMs = 0;
         this.lastResetMs = System.currentTimeMillis();
+    }
+
+    protected void internalReset() {
+        privateReset();
     }
 
     /**
