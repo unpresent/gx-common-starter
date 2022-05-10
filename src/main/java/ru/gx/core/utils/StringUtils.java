@@ -1,9 +1,11 @@
 package ru.gx.core.utils;
 
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
+@UtilityClass
 public class StringUtils {
 
     /**
@@ -12,8 +14,19 @@ public class StringUtils {
      * @param defaultValue значение, которое будет возращено, если value == null.
      * @return value, если value не null. Иначе defaultValue.
      */
+    @Nullable
+    public static String isNullObject(@Nullable final Object value, @Nullable final String defaultValue) {
+        return value == null ? defaultValue : value.toString();
+    }
+
+    /**
+     *
+     * @param value значение, проверяемое на null.
+     * @param defaultValue значение, которое будет возращено, если value == null.
+     * @return value, если value не null. Иначе defaultValue.
+     */
     @NotNull
-    public static String isNullObject(@Nullable final Object value, @NotNull final String defaultValue) {
+    public static String isNullObjectStrong(@Nullable final Object value, @NotNull final String defaultValue) {
         return value == null ? defaultValue : value.toString();
     }
 

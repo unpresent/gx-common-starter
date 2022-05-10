@@ -1,10 +1,24 @@
 package ru.gx.core.utils;
 
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
+@UtilityClass
 public class IntegerUtils {
+
+    /**
+     *
+     * @param value значение, проверяемое на null.
+     * @param defaultValue значение, которое будет возращено, если value == null.
+     * @return value, если value не null. Иначе defaultValue.
+     */
+    @Nullable
+    public static Integer isNull(@Nullable final Integer value, @Nullable final Integer defaultValue) {
+        return value == null ? defaultValue : value;
+    }
+
     /**
      *
      * @param value значение, проверяемое на null.
@@ -12,7 +26,7 @@ public class IntegerUtils {
      * @return value, если value не null. Иначе defaultValue.
      */
     @NotNull
-    public static Integer isNull(@Nullable final Integer value, @NotNull final Integer defaultValue) {
+    public static Integer isNullStrong(@Nullable final Integer value, @NotNull final Integer defaultValue) {
         return value == null ? defaultValue : value;
     }
 

@@ -1,5 +1,6 @@
 package ru.gx.core.utils;
 
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.periodic.PeriodicData;
@@ -8,9 +9,13 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @SuppressWarnings("unused")
+@UtilityClass
 public class PeriodicDataUtils {
     @Nullable
-    public static Object getPrevObject(@Nullable final PeriodicData<?> data, @NotNull final LocalDate date) {
+    public static Object getPrevObject(
+            @Nullable final PeriodicData<?> data,
+            @NotNull final LocalDate date
+    ) {
         if (data == null) {
             return null;
         }
@@ -35,7 +40,10 @@ public class PeriodicDataUtils {
     }
 
     @Nullable
-    public static Object getNextObject(@Nullable final PeriodicData<?> data, @NotNull final LocalDate date) {
+    public static Object getNextObject(
+            @Nullable final PeriodicData<?> data,
+            @NotNull final LocalDate date
+    ) {
         if (data == null) {
             return null;
         }

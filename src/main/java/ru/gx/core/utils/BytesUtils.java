@@ -1,8 +1,11 @@
 package ru.gx.core.utils;
 
+import lombok.experimental.UtilityClass;
+
 import java.nio.ByteBuffer;
 
 @SuppressWarnings("unused")
+@UtilityClass
 public class BytesUtils {
     public static byte[] longToBytes(long x) {
         return ByteBuffer

@@ -1,5 +1,6 @@
 package ru.gx.core.utils;
 
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,7 +10,20 @@ import java.math.BigDecimal;
  * Вспомогательные утилиты для работы с BigDecimal.
  */
 @SuppressWarnings("unused")
-public abstract class BigDecimalUtils {
+@UtilityClass
+public class BigDecimalUtils {
+
+    /**
+     *
+     * @param value значение, проверяемое на null.
+     * @param defaultValue значение, которое будет возращено, если value == null.
+     * @return value, если value не null. Иначе defaultValue.
+     */
+    @Nullable
+    public static BigDecimal isNull(@Nullable final BigDecimal value, @Nullable final BigDecimal defaultValue) {
+        return value == null ? defaultValue : value;
+    }
+
     /**
      *
      * @param value значение, проверяемое на null.
@@ -17,7 +31,7 @@ public abstract class BigDecimalUtils {
      * @return value, если value не null. Иначе defaultValue.
      */
     @NotNull
-    public static BigDecimal isNull(@Nullable final BigDecimal value, @NotNull final BigDecimal defaultValue) {
+    public static BigDecimal isNullStrong(@Nullable final BigDecimal value, @NotNull final BigDecimal defaultValue) {
         return value == null ? defaultValue : value;
     }
 
