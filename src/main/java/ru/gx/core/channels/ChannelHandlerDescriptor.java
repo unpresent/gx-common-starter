@@ -14,6 +14,12 @@ import java.security.InvalidParameterException;
 public interface ChannelHandlerDescriptor<M extends Message<? extends MessageBody>> {
 
     /**
+     * @return Конфигурация-владелец данного описателя
+     */
+    @NotNull
+    ChannelsConfiguration getOwner();
+
+    /**
      * @return Описатель API-канала передачи данных.
      */
     @NotNull

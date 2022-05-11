@@ -25,7 +25,7 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
     /**
      * Конфигурация, которой принадлежит описатель.
      */
-    @Getter(PROTECTED)
+    @Getter
     @NotNull
     private final ChannelsConfiguration owner;
 
