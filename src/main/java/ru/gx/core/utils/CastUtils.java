@@ -130,6 +130,9 @@ public class CastUtils {
         if (value == null) {
             return null;
         }
+        if (resultTye.isAssignableFrom(value.getClass())) {
+            return (T)value;
+        }
         final var func = (Function<Object, T>)getCastFunction(value.getClass(), resultTye);
         return func.apply(value);
     }
