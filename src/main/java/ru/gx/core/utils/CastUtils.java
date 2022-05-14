@@ -121,19 +121,26 @@ public class CastUtils {
         throw new UnsupportedDataTypeException("Unsupported result type " + valueType.getName() + " for cast");
     }
 
+    /**
+     * Приведение входящего значения к требуемому типу данных
+     * @param value входящее значение
+     * @param resultType класс типа результата
+     * @param <T> тип результата
+     * @return результат
+     */
     @SuppressWarnings("unchecked")
     @Nullable
     public static <T> T cast(
             @Nullable final Object value,
-            @NotNull final Class<T> resultTye
+            @NotNull final Class<T> resultType
     ) throws UnsupportedDataTypeException {
         if (value == null) {
             return null;
         }
-        if (resultTye.isAssignableFrom(value.getClass())) {
+        if (resultType.isAssignableFrom(value.getClass())) {
             return (T)value;
         }
-        final var func = (Function<Object, T>)getCastFunction(value.getClass(), resultTye);
+        final var func = (Function<Object, T>)getCastFunction(value.getClass(), resultType);
         return func.apply(value);
     }
 }
