@@ -43,4 +43,9 @@ public interface Message<B extends MessageBody> extends MetadataGetter, Metadata
     @JsonIgnore
     @NotNull
     Message<B> setChannelDescriptor(@NotNull final ChannelHandlerDescriptor<? extends Message<B>> channelDescriptor);
+
+    /**
+     * @return Подготовлено ли для обработки
+     */
+    boolean handleReady();
 }

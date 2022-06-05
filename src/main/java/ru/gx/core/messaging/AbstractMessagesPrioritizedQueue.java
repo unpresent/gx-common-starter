@@ -2,6 +2,7 @@ package ru.gx.core.messaging;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.InvalidParameterException;
@@ -12,7 +13,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Контейнер приоритезированных очередей.
  */
 @Accessors(chain = true)
+@Slf4j
 public abstract class AbstractMessagesPrioritizedQueue implements MessagesPrioritizedQueue {
+
+    private final static int MAX_SLEEP_MS = 64;
 
     /**
      * Объект синхронизации.
@@ -92,10 +96,9 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      *
      * @param priority Приоритет события.
      * @param message  Событие.
-     * @return this.
      */
     @Override
-    public AbstractMessagesPrioritizedQueue pushMessage(final int priority, @NotNull Message<? extends MessageBody> message) {
+    public void pushMessage(final int priority, @NotNull Message<? extends MessageBody> message) {
         if (priority < 0) {
             throw new InvalidParameterException("Priority can't be less 0!");
         }
@@ -107,7 +110,55 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
             queue.offer(message);
             this.size.incrementAndGet();
         }
-        return this;
+    }
+
+    /**
+     * Отправка события в контейнер очередей с предварительным ожиданием (если необходимо) доступности очереди.
+     *
+     * @param priority  Приоритет события.
+     * @param message   Событие.
+     * @param maxWaitMs Максимальное количество миллисекунд на ожидание. Если < 0, то допускается бесконечное ожидание.
+     * @return this.
+     */
+    @Override
+    public boolean pushMessageWithWaits(
+            int priority,
+            @NotNull Message<? extends MessageBody> message,
+            final long maxWaitMs
+    ) throws InterruptedException {
+        final var startWaiting = System.currentTimeMillis();
+        var sleepMs = (long)1;
+        log.info("Wait until queue allow pushing message");
+        while (maxWaitMs < 0 || System.currentTimeMillis() - startWaiting <= maxWaitMs) {
+            if (allowPush()) {
+                // Собственно только теперь бросаем событие в очередь
+                log.info("Pushing message to queue");
+                pushMessage(0, message);
+                return true;
+            }
+
+            if (maxWaitMs > 0) {
+                final var restAllowWait = (startWaiting + maxWaitMs) - System.currentTimeMillis();
+                if (sleepMs > restAllowWait) {
+                    sleepMs = restAllowWait;
+                }
+                if (sleepMs < 0){
+                    sleepMs = 0;
+                }
+            }
+            if (sleepMs > MAX_SLEEP_MS) {
+                sleepMs = MAX_SLEEP_MS;
+            }
+            log.debug("Wait for {} ms", sleepMs);
+            if (sleepMs > 0) {
+                //noinspection BusyWait
+                Thread.sleep(sleepMs);
+            }
+            if (sleepMs < MAX_SLEEP_MS) {
+                sleepMs *= 2;
+            }
+        }
+        return false;
     }
 
     /**

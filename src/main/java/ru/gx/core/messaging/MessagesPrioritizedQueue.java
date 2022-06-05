@@ -13,20 +13,36 @@ public interface MessagesPrioritizedQueue {
 
     /**
      * Проверка на возможность бросить событие в очередь.
+     *
      * @return true - контейнер очередей готов принять событие.
      */
     boolean allowPush();
 
     /**
      * Отправка события в контейнер очередей.
+     *
      * @param priority Приоритет события.
-     * @param message Событие.
-     * @return this.
+     * @param message  Событие.
      */
-    MessagesPrioritizedQueue pushMessage(final int priority, @NotNull final Message<? extends MessageBody> message);
+    void pushMessage(final int priority, @NotNull final Message<? extends MessageBody> message);
+
+    /**
+     * Отправка события в контейнер очередей с предварительным ожиданием (если необходимо) доступности очереди.
+     *
+     * @param priority  Приоритет события.
+     * @param message   Событие.
+     * @param maxWaitMs Максимальное количество миллисекунд на ожидание. Если < 0, то допускается бесконечное ожидание.
+     * @return Удалось ли принять сообщение в очередь.
+     */
+    boolean pushMessageWithWaits(
+            final int priority,
+            @NotNull final Message<? extends MessageBody> message,
+            final long maxWaitMs
+    ) throws InterruptedException;
 
     /**
      * Извлечение события из контейнера очередей. Будет предоставлено наиболее старое событие из очереди с наименьшим приоритетом.
+     *
      * @return Событие, которое надо обработать.
      */
     @Nullable
@@ -36,6 +52,7 @@ public interface MessagesPrioritizedQueue {
      * Извлечение списка событий из контейнера очередей. Будут предоставлены наиболее старые события из очереди с наименьшим приоритетом.
      * Далее в результирующую коллекцию будут добавляться события из очереди со следующим приоритетом.
      * И так до тех пор, пока в результирующей коллекции не наберется заданное количество событий на обработку или пока не закончатся события в очередях.
+     *
      * @param maxCount Сколько извлечь событий. Может быть предоставлено меньше событий (если они закончились в очереди).
      * @return Коллекция событий, которые надо обработать.
      */
@@ -55,6 +72,7 @@ public interface MessagesPrioritizedQueue {
     /**
      * Настройка. Ограничение на количество событий в контейнере. При достижении данного ограничения новые сообщения
      * не будут приниматься контейнером, пока не будет освобожденно место путем извлечения событий.
+     *
      * @return Допустимое количество событий в очереди.
      */
     int getQueueSizeLimit();

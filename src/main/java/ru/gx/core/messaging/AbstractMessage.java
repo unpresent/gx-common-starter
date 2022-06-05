@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.channels.ChannelHandlerDescriptor;
 
+import java.util.Objects;
+
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false, of = "header")
 @ToString
@@ -42,8 +44,6 @@ public abstract class AbstractMessage<B extends MessageBody>
      * При обработке сообщения можно понять, какой канал его отправил на обработку.
      */
     @JsonIgnore
-    @Getter
-    @Setter
     @Nullable
     private ChannelHandlerDescriptor<? extends Message<B>> channelDescriptor;
 
@@ -79,6 +79,28 @@ public abstract class AbstractMessage<B extends MessageBody>
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Implements MetadataGetter, MetadataSetter">
+
+    @JsonIgnore
+    @Override
+    @NotNull
+    public ChannelHandlerDescriptor<? extends Message<B>> getChannelDescriptor() {
+        return Objects.requireNonNull(this.channelDescriptor);
+    }
+
+    @JsonIgnore
+    @Override
+    @NotNull
+    public AbstractMessage<B> setChannelDescriptor(
+            @NotNull final ChannelHandlerDescriptor<? extends Message<B>> channelDescriptor
+    ) {
+        this.channelDescriptor = channelDescriptor;
+        return this;
+    }
+
+    @Override
+    public boolean handleReady() {
+        return this.channelDescriptor != null;
+    }
 
     /**
      * @return Количество значений (записей) в метаданных.
