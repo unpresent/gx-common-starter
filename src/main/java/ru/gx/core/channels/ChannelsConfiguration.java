@@ -49,7 +49,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
     D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException;
 
     @NotNull
-    <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
+    <D extends ChannelHandlerDescriptor>
     D newDescriptor(@NotNull final String channelName, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException;
 
     /**

@@ -155,7 +155,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @SneakyThrows({InstantiationException.class, IllegalAccessException.class, InvocationTargetException.class})
     @Override
     @NotNull
-    public <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
+    public <D extends ChannelHandlerDescriptor>
     D newDescriptor(@NotNull final String channelName, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
         if (contains(channelName)) {
             throw new ChannelConfigurationException("Topic '" + channelName + "' already registered!");
