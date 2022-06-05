@@ -34,7 +34,7 @@ public interface Message<B extends MessageBody> extends MetadataGetter, Metadata
      */
     @JsonIgnore
     @NotNull
-    ChannelHandlerDescriptor<? extends Message<B>> getChannelDescriptor();
+    ChannelHandlerDescriptor getChannelDescriptor();
 
     /**
      * Установка описателя канала
@@ -42,7 +42,7 @@ public interface Message<B extends MessageBody> extends MetadataGetter, Metadata
      */
     @JsonIgnore
     @NotNull
-    Message<B> setChannelDescriptor(@NotNull final ChannelHandlerDescriptor<? extends Message<B>> channelDescriptor);
+    Message<B> setChannelDescriptor(@NotNull final ChannelHandlerDescriptor channelDescriptor);
 
     /**
      * @return Подготовлено ли для обработки

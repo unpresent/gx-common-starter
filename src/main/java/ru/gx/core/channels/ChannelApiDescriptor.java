@@ -3,7 +3,6 @@ package ru.gx.core.channels;
 import org.jetbrains.annotations.NotNull;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
-import ru.gx.core.messaging.MessageHeader;
 import ru.gx.core.messaging.MessageKind;
 
 /**

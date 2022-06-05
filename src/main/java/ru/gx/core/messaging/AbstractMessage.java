@@ -45,7 +45,7 @@ public abstract class AbstractMessage<B extends MessageBody>
      */
     @JsonIgnore
     @Nullable
-    private ChannelHandlerDescriptor<? extends Message<B>> channelDescriptor;
+    private ChannelHandlerDescriptor channelDescriptor;
 
     @NotNull
     private final SimpleMetadataContainer metadataContainer = new SimpleMetadataContainer();
@@ -83,7 +83,7 @@ public abstract class AbstractMessage<B extends MessageBody>
     @JsonIgnore
     @Override
     @NotNull
-    public ChannelHandlerDescriptor<? extends Message<B>> getChannelDescriptor() {
+    public ChannelHandlerDescriptor getChannelDescriptor() {
         return Objects.requireNonNull(this.channelDescriptor);
     }
 
@@ -91,7 +91,7 @@ public abstract class AbstractMessage<B extends MessageBody>
     @Override
     @NotNull
     public AbstractMessage<B> setChannelDescriptor(
-            @NotNull final ChannelHandlerDescriptor<? extends Message<B>> channelDescriptor
+            @NotNull final ChannelHandlerDescriptor channelDescriptor
     ) {
         this.channelDescriptor = channelDescriptor;
         return this;

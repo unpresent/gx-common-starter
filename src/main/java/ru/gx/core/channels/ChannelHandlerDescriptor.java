@@ -1,9 +1,9 @@
 package ru.gx.core.channels;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
-import ru.gx.core.messaging.MessageHeader;
 
 import java.security.InvalidParameterException;
 
@@ -11,7 +11,7 @@ import java.security.InvalidParameterException;
  * Интерфейс обработчика канала передачи данных.
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface ChannelHandlerDescriptor<M extends Message<? extends MessageBody>> {
+public interface ChannelHandlerDescriptor {
 
     /**
      * @return Конфигурация-владелец данного описателя
@@ -20,10 +20,16 @@ public interface ChannelHandlerDescriptor<M extends Message<? extends MessageBod
     ChannelsConfiguration getOwner();
 
     /**
-     * @return Описатель API-канала передачи данных.
+     * @return Имя канала. Если указан api, то берется из него.
      */
     @NotNull
-    ChannelApiDescriptor<M> getApi();
+    String getChannelName();
+
+    /**
+     * @return Описатель API-канала передачи данных.
+     */
+    @Nullable
+    ChannelApiDescriptor<? extends Message<? extends MessageBody>> getApi();
 
     /**
      * @return Направление передачи данных.
@@ -44,7 +50,7 @@ public interface ChannelHandlerDescriptor<M extends Message<? extends MessageBod
      * @return this.
      */
     @NotNull
-    ChannelHandlerDescriptor<M> setPriority(int priority);
+    ChannelHandlerDescriptor setPriority(int priority);
 
     /**
      * @return Включен ли данный канал.
@@ -57,7 +63,7 @@ public interface ChannelHandlerDescriptor<M extends Message<? extends MessageBod
      * @return this.
      */
     @NotNull
-    ChannelHandlerDescriptor<M> setEnabled(final boolean enabled);
+    ChannelHandlerDescriptor setEnabled(final boolean enabled);
 
     /**
      * Признак того, что описатель инициализирован.
@@ -70,11 +76,11 @@ public interface ChannelHandlerDescriptor<M extends Message<? extends MessageBod
      * @return this.
      */
     @NotNull
-    ChannelHandlerDescriptor<M> init() throws InvalidParameterException;
+    ChannelHandlerDescriptor init() throws InvalidParameterException;
 
     /**
      * Деинициализация - перевод в режим редактирования описателя. Правка заканчивается вызовом init().
      * @return this.
      */
-    ChannelHandlerDescriptor<M> unInit();
+    ChannelHandlerDescriptor unInit();
 }

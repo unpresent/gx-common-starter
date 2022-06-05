@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
-import ru.gx.core.messaging.MessageHeader;
 
 @SuppressWarnings("unused")
 public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
@@ -27,8 +26,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @throws ChannelConfigurationException В случае отсутствия описателя канала с заданным именем бросается ошибка.
      */
     @NotNull
-    <M extends Message<? extends MessageBody>>
-    ChannelHandlerDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException;
+    ChannelHandlerDescriptor get(@NotNull final String channelName) throws ChannelConfigurationException;
 
     /**
      * Получение описателя канала по имени.
@@ -37,8 +35,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @return Описатель канала. Если не найден, то возвращается null.
      */
     @Nullable
-    <M extends Message<? extends MessageBody>>
-    ChannelHandlerDescriptor<M> tryGet(@NotNull final String channelName);
+    ChannelHandlerDescriptor tryGet(@NotNull final String channelName);
 
     /**
      * Регистрация описателя обработчика канала.
@@ -48,8 +45,12 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @return this.
      */
     @NotNull
-    <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
+    <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
     D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException;
+
+    @NotNull
+    <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
+    D newDescriptor(@NotNull final String channelName, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException;
 
     /**
      * @return Настройки по умолчанию для новых описателей загрузки из топиков.
@@ -69,11 +70,11 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      * @return Список описателей обработчиков.
      */
     @Nullable
-    Iterable<ChannelHandlerDescriptor<?>> getByPriority(int priority);
+    Iterable<ChannelHandlerDescriptor> getByPriority(int priority);
 
     /**
      * @return Список всех описателей обработчиков очередей.
      */
     @NotNull
-    Iterable<ChannelHandlerDescriptor<?>> getAll();
+    Iterable<ChannelHandlerDescriptor> getAll();
 }

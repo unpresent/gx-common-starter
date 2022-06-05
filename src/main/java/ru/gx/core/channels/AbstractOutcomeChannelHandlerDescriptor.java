@@ -3,16 +3,19 @@ package ru.gx.core.channels;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.core.messaging.*;
+import ru.gx.core.messaging.Message;
+import ru.gx.core.messaging.MessageBody;
+import ru.gx.core.messaging.Metadata;
+import ru.gx.core.messaging.SimpleMetadataContainer;
 
 /**
  * Интерфейс описателя канала получения и обработки входящих данных.
  */
 @Accessors(chain = true)
 @SuppressWarnings("unused")
-public abstract class AbstractOutcomeChannelHandlerDescriptor<M extends Message<? extends MessageBody>>
-        extends AbstractChannelHandlerDescriptor<M>
-        implements OutcomeChannelHandlerDescriptor<M> {
+public abstract class AbstractOutcomeChannelHandlerDescriptor
+        extends AbstractChannelHandlerDescriptor
+        implements OutcomeChannelHandlerDescriptor {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
     private final SimpleMetadataContainer metadataContainer;
@@ -22,10 +25,19 @@ public abstract class AbstractOutcomeChannelHandlerDescriptor<M extends Message<
     // <editor-fold desc="Initialize">
     protected AbstractOutcomeChannelHandlerDescriptor(
             @NotNull final ChannelsConfiguration owner,
-            @NotNull ChannelApiDescriptor<M> api,
+            @NotNull final ChannelApiDescriptor<? extends Message<? extends MessageBody>> api,
             @Nullable final OutcomeChannelDescriptorsDefaults defaults
     ) {
-        super(owner, api, ChannelDirection.In, defaults);
+        super(owner, api, ChannelDirection.Out, defaults);
+        this.metadataContainer = new SimpleMetadataContainer();
+    }
+
+    protected AbstractOutcomeChannelHandlerDescriptor(
+            @NotNull ChannelsConfiguration owner,
+            @NotNull String channelName,
+            @Nullable OutcomeChannelDescriptorsDefaults defaults
+    ) {
+        super(owner, channelName, ChannelDirection.Out, defaults);
         this.metadataContainer = new SimpleMetadataContainer();
     }
     // </editor-fold>
@@ -52,13 +64,13 @@ public abstract class AbstractOutcomeChannelHandlerDescriptor<M extends Message<
     }
 
     @Override
-    public AbstractOutcomeChannelHandlerDescriptor<M> putMetadata(@NotNull final Object key, @Nullable final Object value) {
+    public AbstractOutcomeChannelHandlerDescriptor putMetadata(@NotNull final Object key, @Nullable final Object value) {
         this.metadataContainer.putMetadata(key, value);
         return this;
     }
 
     @Override
-    public AbstractOutcomeChannelHandlerDescriptor<M> setMetadata(@Nullable Iterable<Metadata> source) {
+    public AbstractOutcomeChannelHandlerDescriptor setMetadata(@Nullable Iterable<Metadata> source) {
         this.metadataContainer.setMetadata(source);
         return this;
     }

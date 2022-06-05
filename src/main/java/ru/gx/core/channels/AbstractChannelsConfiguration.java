@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
-import ru.gx.core.messaging.MessageHeader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidParameterException;
@@ -19,13 +18,13 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * Список описателей сгруппированные по приоритетам.
      */
     @NotNull
-    private final List<List<ChannelHandlerDescriptor<?>>> priorities = new ArrayList<>();
+    private final List<List<ChannelHandlerDescriptor>> priorities = new ArrayList<>();
 
     /**
      * Список описателей с группировкой по топикам.
      */
     @NotNull
-    private final Map<String, ChannelHandlerDescriptor<?>> channels = new HashMap<>();
+    private final Map<String, ChannelHandlerDescriptor> channels = new HashMap<>();
 
     @Getter
     @NotNull
@@ -71,12 +70,10 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @return Описатель канала.
      * @throws ChannelConfigurationException В случае отсутствия описателя канала с заданным именем бросается ошибка.
      */
-    @SuppressWarnings("unchecked")
     @Override
     @NotNull
-    public <M extends Message<? extends MessageBody>>
-    ChannelHandlerDescriptor<M> get(@NotNull final String channelName) throws ChannelConfigurationException {
-        final var result = (ChannelHandlerDescriptor<M>) this.channels.get(channelName);
+    public ChannelHandlerDescriptor get(@NotNull final String channelName) throws ChannelConfigurationException {
+        final var result = this.channels.get(channelName);
         if (result == null) {
             throw new ChannelConfigurationException("Can't find description for channel " + channelName);
         }
@@ -89,12 +86,10 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param channelName Имя канала, для которого требуется получить описатель.
      * @return Описатель канала. Если не найден, то возвращается null.
      */
-    @SuppressWarnings("unchecked")
     @Override
     @Nullable
-    public <M extends Message<? extends MessageBody>>
-    ChannelHandlerDescriptor<M> tryGet(@NotNull final String channelName) {
-        return (ChannelHandlerDescriptor<M>) this.channels.get(channelName);
+    public ChannelHandlerDescriptor tryGet(@NotNull final String channelName) {
+        return this.channels.get(channelName);
     }
 
     /**
@@ -108,7 +103,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @SneakyThrows({InstantiationException.class, IllegalAccessException.class, InvocationTargetException.class})
     @Override
     @NotNull
-    public <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
+    public <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
     D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
         if (contains(channelApi.getName())) {
             throw new ChannelConfigurationException("Topic '" + channelApi.getName() + "' already registered!");
@@ -150,12 +145,64 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     }
 
     /**
+     * Создание описателя обработчика канала.
+     *
+     * @param channelName     Имя канала.
+     * @param descriptorClass Класс описателя.
+     * @return this.
+     */
+    @SuppressWarnings("unchecked")
+    @SneakyThrows({InstantiationException.class, IllegalAccessException.class, InvocationTargetException.class})
+    @Override
+    @NotNull
+    public <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
+    D newDescriptor(@NotNull final String channelName, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
+        if (contains(channelName)) {
+            throw new ChannelConfigurationException("Topic '" + channelName + "' already registered!");
+        }
+        D result = null;
+        if (allowCreateDescriptor(descriptorClass)) {
+
+            final var constructor3 = Arrays.stream(descriptorClass.getConstructors())
+                    .filter(c -> {
+                        final var paramsTypes = c.getParameterTypes();
+                        return paramsTypes.length == 3
+                                && ChannelsConfiguration.class.isAssignableFrom(paramsTypes[0])
+                                && String.class.isAssignableFrom(paramsTypes[1])
+                                && AbstractChannelDescriptorsDefaults.class.isAssignableFrom(paramsTypes[2]);
+                    })
+                    .findFirst();
+            if (constructor3.isPresent()) {
+                result = (D) constructor3.get().newInstance(this, channelName, this.getDescriptorsDefaults());
+            } else {
+                final var constructor4 = Arrays.stream(descriptorClass.getConstructors())
+                        .filter(c -> {
+                            final var paramsTypes = c.getParameterTypes();
+                            return paramsTypes.length == 4
+                                    && ChannelsConfiguration.class.isAssignableFrom(paramsTypes[0])
+                                    && String.class.isAssignableFrom(paramsTypes[1])
+                                    && ChannelDirection.class.isAssignableFrom(paramsTypes[2])
+                                    && AbstractChannelDescriptorsDefaults.class.isAssignableFrom(paramsTypes[3]);
+                        })
+                        .findFirst();
+                if (constructor4.isPresent()) {
+                    result = (D) constructor4.get().newInstance(this, channelName, this.getDirection(), this.getDescriptorsDefaults());
+                }
+            }
+        }
+        if (result == null) {
+            throw new InvalidParameterException("Can't create instance of " + descriptorClass.getName());
+        }
+        return result;
+    }
+
+    /**
      * Проверка на допустимость создания экземпляра описателя канала указанного класса.
      *
      * @param descriptorClass Класс создаваемого описателя.
      * @return True - создание описателя допустимо.
      */
-    abstract protected <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor<M>>
+    abstract protected <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
     boolean allowCreateDescriptor(
             @NotNull final Class<D> descriptorClass
     );
@@ -166,12 +213,13 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptor Описатель топика, который надо зарегистрировать в списках описателей.
      */
     @Override
-    public void internalRegisterDescriptor(@NotNull final ChannelHandlerDescriptor<?> descriptor) {
-        if (contains(descriptor.getApi().getName())) {
-            throw new ChannelConfigurationException("Channel '" + descriptor.getApi().getName() + "' already registered!");
+    public void internalRegisterDescriptor(@NotNull final ChannelHandlerDescriptor descriptor) {
+        final var channelName = descriptor.getChannelName();
+        if (contains(channelName)) {
+            throw new ChannelConfigurationException("Channel '" + channelName + "' already registered!");
         }
         if (!descriptor.isInitialized()) {
-            throw new ChannelConfigurationException("Descriptor of channel '" + descriptor.getApi().getName() + "' doesn't initialized!");
+            throw new ChannelConfigurationException("Descriptor of channel '" + channelName + "' doesn't initialized!");
         }
 
         final var priority = descriptor.getPriority();
@@ -181,7 +229,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
         final var itemsList = priorities.get(priority);
         itemsList.add(descriptor);
 
-        channels.put(descriptor.getApi().getName(), descriptor);
+        channels.put(channelName, descriptor);
     }
 
     /**
@@ -190,8 +238,8 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptor Описатель топика очереди.
      */
     @Override
-    public void internalUnregisterDescriptor(@NotNull final ChannelHandlerDescriptor<?> descriptor) {
-        final var channelName = descriptor.getApi().getName();
+    public void internalUnregisterDescriptor(@NotNull final ChannelHandlerDescriptor descriptor) {
+        final var channelName = descriptor.getChannelName();
         if (!this.channels.containsValue(descriptor) || !this.channels.containsKey(channelName)) {
             throw new ChannelConfigurationException("Channel " + channelName + " not registered!");
         }
@@ -199,7 +247,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
             throw new ChannelConfigurationException("Descriptor by name " + channelName + " not equal descriptor by parameter!");
         }
 
-        this.channels.remove(descriptor.getApi().getName());
+        this.channels.remove(channelName);
         for (var pList : this.priorities) {
             if (pList.remove(descriptor)) {
                 descriptor.unInit();
@@ -224,7 +272,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      */
     @Override
     @Nullable
-    public Iterable<ChannelHandlerDescriptor<?>> getByPriority(int priority) {
+    public Iterable<ChannelHandlerDescriptor> getByPriority(int priority) {
         return this.priorities.get(priority);
     }
 
@@ -233,7 +281,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      */
     @Override
     @NotNull
-    public Iterable<ChannelHandlerDescriptor<?>> getAll() {
+    public Iterable<ChannelHandlerDescriptor> getAll() {
         return this.channels.values();
     }
     // </editor-fold>

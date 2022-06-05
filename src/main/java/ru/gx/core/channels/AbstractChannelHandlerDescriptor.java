@@ -6,19 +6,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
-import ru.gx.core.messaging.MessageHeader;
 
 import java.security.InvalidParameterException;
-
-import static lombok.AccessLevel.PROTECTED;
 
 /**
  * Интерфейс описателя канала получения и обработки входящих данных.
  */
 @Accessors(chain = true)
 @SuppressWarnings("unused")
-public abstract class AbstractChannelHandlerDescriptor<M extends Message<? extends MessageBody>>
-        implements ChannelHandlerDescriptor<M> {
+public abstract class AbstractChannelHandlerDescriptor
+        implements ChannelHandlerDescriptor {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
 
@@ -29,9 +26,12 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
     @NotNull
     private final ChannelsConfiguration owner;
 
+    @Nullable
+    private final String channelName;
+
     @Getter
-    @NotNull
-    private final ChannelApiDescriptor<M> api;
+    @Nullable
+    private final ChannelApiDescriptor<? extends Message<? extends MessageBody>> api;
 
     @Getter
     @NotNull
@@ -57,12 +57,25 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
     // <editor-fold desc="Initialize">
     protected AbstractChannelHandlerDescriptor(
             @NotNull final ChannelsConfiguration owner,
-            @NotNull final ChannelApiDescriptor<M> api,
+            @NotNull final ChannelApiDescriptor<? extends Message<? extends MessageBody>> api,
             @NotNull final ChannelDirection direction,
             @Nullable final AbstractChannelDescriptorsDefaults defaults
     ) {
         this.owner = owner;
         this.api = api;
+        this.channelName = null;
+        this.direction = direction;
+    }
+
+    protected AbstractChannelHandlerDescriptor(
+            @NotNull final ChannelsConfiguration owner,
+            @NotNull final String channelName,
+            @NotNull final ChannelDirection direction,
+            @Nullable final AbstractChannelDescriptorsDefaults defaults
+    ) {
+        this.owner = owner;
+        this.api = null;
+        this.channelName = channelName;
         this.direction = direction;
     }
 
@@ -73,7 +86,7 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
      */
     @Override
     @NotNull
-    public AbstractChannelHandlerDescriptor<M> init() throws InvalidParameterException {
+    public AbstractChannelHandlerDescriptor init() throws InvalidParameterException {
         this.initialized = true;
         this.owner.internalRegisterDescriptor(this);
         return this;
@@ -81,7 +94,7 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
 
     @Override
     @NotNull
-    public AbstractChannelHandlerDescriptor<M> unInit() {
+    public AbstractChannelHandlerDescriptor unInit() {
         this.initialized = false;
         this.owner.internalUnregisterDescriptor(this);
         return this;
@@ -90,9 +103,25 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Additional getters & setters">
+
+    /**
+     * @return Имя канала. Если указан api, то берется из него.
+     */
+    @NotNull
+    @Override
+    public String getChannelName() {
+        if (getApi() != null) {
+            return getApi().getName();
+        } else if (this.channelName == null) {
+            throw new NullPointerException("Channel name is null");
+        } else {
+            return this.channelName;
+        }
+    }
+
     protected void checkMutable(@NotNull final String propertyName) {
         if (isInitialized()) {
-            throw new ChannelConfigurationException("Descriptor of channel " + this.getApi().getName() + " can't change property " + propertyName + " after initialization!");
+            throw new ChannelConfigurationException("Descriptor of channel " + getChannelName() + " can't change property " + propertyName + " after initialization!");
         }
     }
 
@@ -104,7 +133,7 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
      */
     @Override
     @NotNull
-    public AbstractChannelHandlerDescriptor<M> setPriority(final int priority) {
+    public AbstractChannelHandlerDescriptor setPriority(final int priority) {
         checkMutable("priority");
         this.priority = priority;
         return this;
@@ -116,7 +145,7 @@ public abstract class AbstractChannelHandlerDescriptor<M extends Message<? exten
      */
     @Override
     @NotNull
-    public AbstractChannelHandlerDescriptor<M> setEnabled(final boolean enabled) {
+    public AbstractChannelHandlerDescriptor setEnabled(final boolean enabled) {
         checkMutable("enabled");
         this.enabled = enabled;
         return this;

@@ -6,6 +6,6 @@ import ru.gx.core.messaging.*;
  * Интерфейс описателя канала отправления исходящих данных.
  */
 @SuppressWarnings("unused")
-public interface OutcomeChannelHandlerDescriptor<M extends Message<? extends MessageBody>>
-        extends ChannelHandlerDescriptor<M>, MetadataGetter, MetadataSetter {
+public interface OutcomeChannelHandlerDescriptor
+        extends ChannelHandlerDescriptor, MetadataGetter, MetadataSetter {
 }

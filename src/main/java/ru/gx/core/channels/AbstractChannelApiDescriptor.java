@@ -5,7 +5,10 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
-import ru.gx.core.messaging.*;
+import ru.gx.core.messaging.Message;
+import ru.gx.core.messaging.MessageBody;
+import ru.gx.core.messaging.MessageKind;
+import ru.gx.core.messaging.MessageTypesRegistrator;
 
 /**
  * Описатель API канала передачи данных.
