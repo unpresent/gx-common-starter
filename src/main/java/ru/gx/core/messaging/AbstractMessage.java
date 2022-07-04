@@ -1,17 +1,20 @@
 package ru.gx.core.messaging;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.channels.ChannelHandlerDescriptor;
+import ru.gx.core.utils.StringUtils;
 
 import java.util.Objects;
 
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false, of = "header")
-@ToString
 public abstract class AbstractMessage<B extends MessageBody>
         implements Message<B> {
     // -----------------------------------------------------------------------------------------------------------------
@@ -165,6 +168,15 @@ public abstract class AbstractMessage<B extends MessageBody>
     public AbstractMessage<B> setMetadata(@Nullable final Iterable<Metadata> source) {
         this.metadataContainer.setMetadata(source);
         return this;
+    }
+
+    public String toString() {
+        return "AbstractMessage(header=" + StringUtils.isNullObject(this.header, "null")
+                + ", body=" + StringUtils.isNullObject(this.body, "null")
+                + ", correlation=" + StringUtils.isNullObject(this.correlation, "null")
+                + ", channelDescriptor=" + StringUtils.isNullObject(this.channelDescriptor, "null")
+                + ", metadataContainer=" + StringUtils.isNullObject(this.metadataContainer, "null")
+                + ")";
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------

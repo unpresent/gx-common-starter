@@ -202,7 +202,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
      * @param descriptorClass Класс создаваемого описателя.
      * @return True - создание описателя допустимо.
      */
-    abstract protected <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
+    abstract protected <D extends ChannelHandlerDescriptor>
     boolean allowCreateDescriptor(
             @NotNull final Class<D> descriptorClass
     );

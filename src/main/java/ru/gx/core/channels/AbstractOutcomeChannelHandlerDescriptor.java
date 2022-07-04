@@ -30,6 +30,7 @@ public abstract class AbstractOutcomeChannelHandlerDescriptor
     ) {
         super(owner, api, ChannelDirection.Out, defaults);
         this.metadataContainer = new SimpleMetadataContainer();
+        internalInitDefaults(defaults);
     }
 
     protected AbstractOutcomeChannelHandlerDescriptor(
@@ -39,6 +40,10 @@ public abstract class AbstractOutcomeChannelHandlerDescriptor
     ) {
         super(owner, channelName, ChannelDirection.Out, defaults);
         this.metadataContainer = new SimpleMetadataContainer();
+        internalInitDefaults(defaults);
+    }
+
+    protected void internalInitDefaults(@Nullable final OutcomeChannelDescriptorsDefaults defaults) {
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
