@@ -52,7 +52,7 @@ public abstract class AbstractIncomeChannelHandlerDescriptor
         internalInitDefaults(defaults);
     }
 
-    protected void internalInitDefaults(@Nullable final IncomeChannelDescriptorsDefaults defaults) {
+    private void internalInitDefaults(@Nullable final IncomeChannelDescriptorsDefaults defaults) {
         if (defaults != null) {
             this
                     .setProcessType(defaults.getProcessType())
