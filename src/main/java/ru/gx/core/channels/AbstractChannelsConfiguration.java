@@ -158,7 +158,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     public <D extends ChannelHandlerDescriptor>
     D newDescriptor(@NotNull final String channelName, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
         if (contains(channelName)) {
-            throw new ChannelConfigurationException("Topic '" + channelName + "' already registered!");
+            throw new ChannelConfigurationException("Channel '" + channelName + "' already registered!");
         }
         D result = null;
         if (allowCreateDescriptor(descriptorClass)) {
