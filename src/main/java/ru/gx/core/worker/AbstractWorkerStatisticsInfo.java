@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -28,6 +27,11 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
      * Показатель. Процент полезной работы.
      */
     public static final String METRIC_EXECUTIONS_BUSY_PERCENTS = "execs.busy-percents";
+
+    /**
+     * Через данную метрику будет передано имя Worker-а
+     */
+    public static final String METRIC_WORKER_NAME = "worker-name";
 
     /**
      * Ярлык worker
@@ -99,6 +103,7 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
 
     @Getter(PROTECTED)
     private AtomicInteger internalResetLocksCount;
+
     // </editor-fold">
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
@@ -115,6 +120,9 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
                 .register(this.meterRegistry);
         this.metricExecutionsTime = Timer.builder(METRIC_EXECUTIONS_TIME)
                 .tags(this.metricsTags)
+                .register(this.meterRegistry);
+        final var m = Gauge.builder(METRIC_WORKER_NAME, () -> 0)
+                .tags(List.of(Tag.of(METRIC_TAG_WORKER_NAME, this.owner.getWorkerName())))
                 .register(this.meterRegistry);
         this.privateReset();
     }
