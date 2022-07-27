@@ -55,11 +55,11 @@ public class ConfigurationPropertiesService {
     @Setter
     public static class StandardExecutor {
         public static final String NAME_DEFAULT = "messages-executor";
-        public static final int WAIT_ON_STOP_MS_DEFAULT = 3000;
+        public static final int WAIT_ON_STOP_MS_DEFAULT = 5000;
         public static final int WAIT_ON_RESTART_MS_DEFAULT = 30000;
         public static final int MIN_TIME_PER_ITERATION_MS_DEFAULT = 1000;
         public static final int TIMEOUT_RUNNER_LIFE_MS_DEFAULT = 20000;
-        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 1000;
+        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 5000;
 
         private boolean enabled = false;
         private String name = NAME_DEFAULT;
@@ -74,8 +74,8 @@ public class ConfigurationPropertiesService {
     @Setter
     public static class StandardQueue {
         public static final String NAME_DEFAULT = "messages-queue";
-        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 1000;
-        public static final int MAX_QUEUE_SIZE_DEFAULT = 10000;
+        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 5000;
+        public static final int MAX_QUEUE_SIZE_DEFAULT = 5000;
         public static final int PRIORITIES_COUNT_DEFAULT = 8;
 
         private boolean enabled = true;
