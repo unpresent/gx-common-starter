@@ -87,10 +87,22 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
     private long executionMaxTimePerIterationMs;
 
     /**
+     * Общее время затраченное на sleep с момента последнего сброса.
+     */
+    @Getter(PROTECTED)
+    private long executionsTotalSleepTimeMs;
+
+    /**
      * Момент начала работы последней итерации.
      */
     @Getter(PROTECTED)
     private long lastIterationStartedMs;
+
+    /**
+     * Момент начала последнего Sleep-а.
+     */
+    @Getter(PROTECTED)
+    private long lastSleepStartedMs;
 
     /**
      * Признак того, что с момента последнего сброса не было зафиксировано ни одной обработки события.
@@ -146,6 +158,8 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
                 this.owner.getWorkerName() +
                 " is: count = " +
                 this.executionsCount +
+                ", SLEEPms = " +
+                this.executionsTotalSleepTimeMs +
                 ", totalMs = " +
                 this.executionsTotalTimeMs +
                 ", maxTime = " +
@@ -178,8 +192,10 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
     private void privateReset() {
         this.isEmpty = true;
         this.executionsCount = 0;
+        this.executionsTotalSleepTimeMs = 0;
         this.executionsTotalTimeMs = 0;
         this.executionMaxTimePerIterationMs = 0;
+        this.lastSleepStartedMs = 0;
         this.lastIterationStartedMs = 0;
         this.lastResetMs = System.currentTimeMillis();
     }
@@ -212,6 +228,14 @@ public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
         this.isEmpty = false;
         this.getMetricExecutionsTime().record(Duration.ofMillis(curTimeMsPerIteration));
         this.getMetricExecutionsCount().increment();
+    }
+
+    public void sleepStarted() {
+        this.lastSleepStartedMs = System.currentTimeMillis();
+    }
+
+    public void sleepFinished() {
+        this.executionsTotalSleepTimeMs += System.currentTimeMillis() - getLastSleepStartedMs();
     }
     // </editor-fold">
     // -----------------------------------------------------------------------------------------------------------------

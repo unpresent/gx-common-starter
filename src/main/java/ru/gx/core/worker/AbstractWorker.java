@@ -475,7 +475,12 @@ public abstract class AbstractWorker implements Worker {
                 try {
                     runnerIsLifeSet();
                     log.debug("doIdleIfNeed(): sleep(" + sleepTime + ")!");
-                    Thread.sleep(sleepTime);
+                    getStatisticsInfo().sleepStarted();
+                    try {
+                        Thread.sleep(sleepTime);
+                    } finally {
+                        getStatisticsInfo().sleepFinished();
+                    }
                 } catch (InterruptedException e) {
                     log.error("", e);
                 }
