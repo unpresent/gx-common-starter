@@ -202,13 +202,11 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
         if (this.size.get() <= 0) {
             return null;
         }
-        synchronized (monitor) {
-            final List<Object> messages = pollMessages(1);
-            if (messages.size() > 1) {
-                throw new IndexOutOfBoundsException("Unsupported processing more than 1 message!");
-            } else if (messages.size() > 0) {
-                return messages.get(0);
-            }
+        final List<Object> messages = pollMessages(1);
+        if (messages.size() > 1) {
+            throw new IndexOutOfBoundsException("Unsupported processing more than 1 message!");
+        } else if (messages.size() > 0) {
+            return messages.get(0);
         }
         return null;
     }
@@ -259,25 +257,27 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
             var pIndex = 0;
             while (result.size() <= maxCount && pIndex < this.priorities.size()) {
                 final var message = this.priorities.get(pIndex).poll();
-                if (message instanceof final Message<?> typedMessage) {
-                    if (typedMessage.getChannelDescriptor().isBlockedByError()) {
-                        // Если сообщение для заблокированного ошибкой канала,
-                        // то перекладываем в очередь errorChannelsMessages без обработки
-                        final var descriptor = typedMessage.getChannelDescriptor();
-                        var queue = this.errorChannelsMessages.get(descriptor);
-                        if (queue == null) {
-                            queue = new ArrayDeque<>();
-                            this.errorChannelsMessages.put(descriptor, queue);
-                        }
-                        queue.offer(typedMessage);
-                        continue;
-                    }
-                }
                 if (message != null) {
+                    if (message instanceof final Message<?> typedMessage) {
+                        if (typedMessage.getChannelDescriptor().isBlockedByError()) {
+                            // Если сообщение для заблокированного ошибкой канала,
+                            // то перекладываем в очередь errorChannelsMessages без обработки
+                            final var descriptor = typedMessage.getChannelDescriptor();
+                            var queue = this.errorChannelsMessages.get(descriptor);
+                            if (queue == null) {
+                                queue = new ArrayDeque<>();
+                                this.errorChannelsMessages.put(descriptor, queue);
+                            }
+                            queue.offer(typedMessage);
+                            continue;
+                        }
+                    }
                     result.add(message);
                     if (result.size() >= maxCount) {
                         break;
                     }
+                } else {
+                    pIndex++;
                 }
             }
             this.size.addAndGet(-result.size());

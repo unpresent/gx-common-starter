@@ -42,7 +42,7 @@ public abstract class AbstractChannelHandlerDescriptor
 
     @Getter
     @NotNull
-    private OnErrorBehavior onErrorBehavior;
+    private OnErrorBehavior onErrorBehavior = OnErrorBehavior.StopProcessOnError;
 
     /**
      * Признак того, что данный канал включен.
@@ -55,7 +55,7 @@ public abstract class AbstractChannelHandlerDescriptor
      */
     @Getter
     @Nullable
-    private Exception blockingError = null;
+    private volatile Exception blockingError = null;
 
     /**
      * Признак того, что описатель инициализирован.
