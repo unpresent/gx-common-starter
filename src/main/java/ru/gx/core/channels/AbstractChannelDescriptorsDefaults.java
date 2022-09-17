@@ -10,4 +10,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ToString
 public abstract class AbstractChannelDescriptorsDefaults {
+    @Getter
+    @Setter
+    private OnErrorBehavior onErrorBehavior;
 }

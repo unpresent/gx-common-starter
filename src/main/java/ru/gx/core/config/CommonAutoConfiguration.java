@@ -143,16 +143,15 @@ public class CommonAutoConfiguration {
             @NotNull final StandardMessagesExecutorSettingsContainer settingsContainer,
             @NotNull final ApplicationEventPublisher eventPublisher,
             @NotNull final MeterRegistry meterRegistry,
-            @NotNull final MessagesPrioritizedQueue messagesQueue,
-            @NotNull final ApplicationEventPublisher applicationEventPublisher
+            @NotNull final MessagesPrioritizedQueue messagesQueue
     ) {
         return new StandardMessagesExecutor(
                 name,
                 settingsContainer,
                 eventPublisher,
                 meterRegistry,
-                messagesQueue,
-                applicationEventPublisher);
+                messagesQueue
+        );
     }
 
     @Bean

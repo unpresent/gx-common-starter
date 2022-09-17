@@ -46,11 +46,33 @@ public interface ChannelHandlerDescriptor {
 
     /**
      * Установка приоритета у данного канала.
+     *
      * @param priority приоритет.
      * @return this.
      */
     @NotNull
     ChannelHandlerDescriptor setPriority(int priority);
+
+    /**
+     * @return Способ реагирования на ошибку при обработке сообщений в данном канале
+     */
+    @NotNull
+    OnErrorBehavior getOnErrorBehavior();
+
+    /**
+     * Установка способа реагирования на ошибку при обработке сообщений в данном канале
+     *
+     * @param onErrorBehavior способа реагирования.
+     * @return this.
+     */
+    @NotNull
+    ChannelHandlerDescriptor setOnErrorBehavior(@NotNull final OnErrorBehavior onErrorBehavior);
+
+    /**
+     * @return Сводное состояние канала с учётом флага enabled и наличия блокирующего error.
+     */
+    @NotNull
+    ChannelState getState();
 
     /**
      * @return Включен ли данный канал.
@@ -59,11 +81,40 @@ public interface ChannelHandlerDescriptor {
 
     /**
      * Включение/отключение данного канала.
+     *
      * @param enabled true - включить канал, false - выключить канал.
      * @return this.
      */
     @NotNull
     ChannelHandlerDescriptor setEnabled(final boolean enabled);
+
+    /**
+     * @return Заблокирован ли данный канал ошибкой
+     */
+    boolean isBlockedByError();
+
+    /**
+     * @return Ошибка, которая блокирует работу канала
+     */
+    @Nullable
+    Exception getBlockingError();
+
+    /**
+     * Установка блокирующей ошибки в канале.
+     *
+     * @param error    Сообщение об ошибке
+     * @return this.
+     */
+    @NotNull
+    ChannelHandlerDescriptor setBlockingError(@NotNull final Exception error);
+
+    /**
+     * Сброс состояния-ошибки в канале (ошибка ушла).
+     *
+     * @return this.
+     */
+    @NotNull
+    ChannelHandlerDescriptor clearBlockingError();
 
     /**
      * Признак того, что описатель инициализирован.
@@ -80,6 +131,7 @@ public interface ChannelHandlerDescriptor {
 
     /**
      * Деинициализация - перевод в режим редактирования описателя. Правка заканчивается вызовом init().
+     *
      * @return this.
      */
     ChannelHandlerDescriptor unInit();

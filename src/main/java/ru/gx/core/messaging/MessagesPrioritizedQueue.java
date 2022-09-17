@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Интерфейс контейнера приоритезированных очередей.
@@ -24,7 +25,7 @@ public interface MessagesPrioritizedQueue {
      * @param priority Приоритет события.
      * @param message  Событие.
      */
-    void pushMessage(final int priority, @NotNull final Message<? extends MessageBody> message);
+    void pushMessage(final int priority, @NotNull final Object message);
 
     /**
      * Отправка события в контейнер очередей с предварительным ожиданием (если необходимо) доступности очереди.
@@ -36,7 +37,7 @@ public interface MessagesPrioritizedQueue {
      */
     boolean pushMessageWithWaits(
             final int priority,
-            @NotNull final Message<? extends MessageBody> message,
+            @NotNull final Object message,
             final long maxWaitMs
     ) throws InterruptedException;
 
@@ -46,7 +47,7 @@ public interface MessagesPrioritizedQueue {
      * @return Событие, которое надо обработать.
      */
     @Nullable
-    Message<? extends MessageBody> pollMessage();
+    Object pollMessage();
 
     /**
      * Извлечение списка событий из контейнера очередей. Будут предоставлены наиболее старые события из очереди с наименьшим приоритетом.
@@ -57,7 +58,11 @@ public interface MessagesPrioritizedQueue {
      * @return Коллекция событий, которые надо обработать.
      */
     @NotNull
-    Collection<Message<?>> pollMessages(int maxCount);
+    List<Object> pollMessages(int maxCount);
+
+//    void returnErrorMessages(@NotNull final Iterable<Message<?>> messages) {
+//
+//    }
 
     /**
      * @return Количество событий в контейнере очередей.

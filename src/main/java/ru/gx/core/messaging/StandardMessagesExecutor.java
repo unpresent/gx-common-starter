@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
+import ru.gx.core.channels.OnErrorBehavior;
 import ru.gx.core.worker.AbstractWorker;
 import ru.gx.core.worker.AbstractWorkerStatisticsInfo;
 import ru.gx.core.worker.AbstractOnIterationExecuteEvent;
@@ -48,10 +49,9 @@ public class StandardMessagesExecutor extends AbstractWorker{
             @NotNull final StandardMessagesExecutorSettingsContainer settingsContainer,
             @NotNull final ApplicationEventPublisher eventPublisher,
             @NotNull final MeterRegistry meterRegistry,
-            @NotNull MessagesPrioritizedQueue messagesQueue,
-            @NotNull ApplicationEventPublisher applicationEventPublisher
+            @NotNull MessagesPrioritizedQueue messagesQueue
     ) {
-        super(name, settingsContainer, meterRegistry, applicationEventPublisher);
+        super(name, settingsContainer, meterRegistry, eventPublisher);
         this.messagesQueue = messagesQueue;
         this.iterationExecuteEvent = new OnIterationExecuteEventInternal(this);
         this.startingExecuteEvent = new StandardMessagesExecutorOnStartingExecuteEvent(this);
@@ -116,7 +116,9 @@ public class StandardMessagesExecutor extends AbstractWorker{
      * @param queue Контейнер очередей.
      * @return True - событие было извлечено и обработано. False - нет событий в очереди.
      */
-    protected Message<? extends MessageBody> internalPollMessage(@NotNull MessagesPrioritizedQueue queue) {
+    protected Object internalPollMessage(
+            @NotNull final MessagesPrioritizedQueue queue
+    ) {
         final var event = queue.pollMessage();
         if (event == null) {
             log.debug("No messages in queue {}", queue.getName());
@@ -130,11 +132,23 @@ public class StandardMessagesExecutor extends AbstractWorker{
      * Обработка одного сообщения.
      * @param message Сообщение, которое бросаем на обработку через this.eventPublisher.
      */
-    protected void internalProcessMessage(@NotNull Message<? extends MessageBody> message) {
+    protected void internalProcessMessage(@NotNull Object message) {
         try {
-            this.getApplicationEventPublisher().publishEvent(message);
+            try {
+                this.getApplicationEventPublisher().publishEvent(message);
+            } catch (Exception e) {
+                if (message instanceof final Message<?> typedMessage) {
+                    final var channel = typedMessage.getChannelDescriptor();
+                    if (channel.getOnErrorBehavior() == OnErrorBehavior.StopProcessOnError) {
+                        channel.setBlockingError(e);
+                    }
+                    // TODO: returnMessage!
+                }
+            }
         } finally {
-            this.getStatisticsInfo().messagesExecuteFinished(message);
+            if (message instanceof final Message<?> typedMessage) {
+                this.getStatisticsInfo().messagesExecuteFinished(typedMessage);
+            }
         }
     }
     // </editor-fold>

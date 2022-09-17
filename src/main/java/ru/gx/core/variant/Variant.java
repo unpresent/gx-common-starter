@@ -34,6 +34,7 @@ public class Variant implements Serializable {
 
     @SuppressWarnings("unused")
     @JsonProperty("value")
+    @Nullable
     private String serializeValue() {
         if (value == null)
             return null;
@@ -52,6 +53,7 @@ public class Variant implements Serializable {
     }
 
     @SuppressWarnings("UnnecessaryDefault")
+    @NotNull
     private Object deserializeValue(@NotNull final String stringValue) {
         return switch (type) {
             case STRING -> stringValue;
@@ -62,6 +64,7 @@ public class Variant implements Serializable {
             case SHORT -> Short.parseShort(stringValue);
             case LONG -> Long.parseLong(stringValue);
             case BIGDECIMAL -> new BigDecimal(stringValue);
+            case BOOLEAN -> Boolean.parseBoolean(stringValue);
             default -> throw new RuntimeException(String.format("Unknown data type [%s]", type));
         };
     }

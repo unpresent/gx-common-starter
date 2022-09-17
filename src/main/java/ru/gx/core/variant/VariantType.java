@@ -8,5 +8,6 @@ public enum VariantType {
     INTEGER,
     SHORT,
     LONG,
-    BIGDECIMAL
+    BIGDECIMAL,
+    BOOLEAN
 }

@@ -40,11 +40,22 @@ public abstract class AbstractChannelHandlerDescriptor
     @Getter
     private int priority;
 
+    @Getter
+    @NotNull
+    private OnErrorBehavior onErrorBehavior;
+
     /**
      * Признак того, что данный канал включен.
      */
     @Getter
     private boolean enabled = true;
+
+    /**
+     * Блокирующая работу канала ошибка
+     */
+    @Getter
+    @Nullable
+    private Exception blockingError = null;
 
     /**
      * Признак того, что описатель инициализирован.
@@ -65,6 +76,9 @@ public abstract class AbstractChannelHandlerDescriptor
         this.api = api;
         this.channelName = null;
         this.direction = direction;
+        if (defaults != null) {
+            this.onErrorBehavior = defaults.getOnErrorBehavior();
+        }
     }
 
     protected AbstractChannelHandlerDescriptor(
@@ -77,6 +91,9 @@ public abstract class AbstractChannelHandlerDescriptor
         this.api = null;
         this.channelName = channelName;
         this.direction = direction;
+        if (defaults != null) {
+            this.onErrorBehavior = defaults.getOnErrorBehavior();
+        }
     }
 
     /**
@@ -119,6 +136,19 @@ public abstract class AbstractChannelHandlerDescriptor
         }
     }
 
+    @Override
+    @NotNull
+    public ChannelState getState() {
+        return this.blockingError != null ?
+                ChannelState.BlockedByError :
+                (this.enabled ? ChannelState.Enabled : ChannelState.Disabled);
+    }
+
+    @Override
+    public boolean isBlockedByError() {
+        return this.blockingError != null;
+    }
+
     protected void checkMutable(@NotNull final String propertyName) {
         if (isInitialized()) {
             throw new ChannelConfigurationException("Descriptor of channel " + getChannelName() + " can't change property " + propertyName + " after initialization!");
@@ -139,6 +169,21 @@ public abstract class AbstractChannelHandlerDescriptor
         return this;
     }
 
+
+    /**
+     * Установка способа реагирования на ошибку при обработке сообщений в данном канале
+     *
+     * @param onErrorBehavior способа реагирования.
+     * @return this.
+     */
+    @Override
+    @NotNull
+    public AbstractChannelHandlerDescriptor setOnErrorBehavior(@NotNull final OnErrorBehavior onErrorBehavior) {
+        checkMutable("onErrorBehavior");
+        this.onErrorBehavior = onErrorBehavior;
+        return this;
+    }
+
     /**
      * @param enabled режим включения/выключения канала.
      * @return this.
@@ -150,7 +195,28 @@ public abstract class AbstractChannelHandlerDescriptor
         this.enabled = enabled;
         return this;
     }
+
+    /**
+     * Установка блокирующей ошибки в канале.
+     *
+     * @param error    Сообщение об ошибке
+     * @return this.
+     */
+    @Override
+    @NotNull
+    public AbstractChannelHandlerDescriptor setBlockingError(
+            @NotNull final Exception error
+    ) {
+        this.blockingError = error;
+        return this;
+    }
+
+    @Override
+    @NotNull
+    public ChannelHandlerDescriptor clearBlockingError() {
+        this.blockingError = null;
+        return this;
+    }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
-
 }
