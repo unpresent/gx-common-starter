@@ -12,5 +12,5 @@ import lombok.experimental.Accessors;
 public abstract class AbstractChannelDescriptorsDefaults {
     @Getter
     @Setter
-    private OnErrorBehavior onErrorBehavior;
+    private OnErrorBehavior onErrorBehavior = OnErrorBehavior.StopProcessOnError;
 }
