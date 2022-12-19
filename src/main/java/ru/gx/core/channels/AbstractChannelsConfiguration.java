@@ -1,5 +1,6 @@
 package ru.gx.core.channels;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
@@ -38,12 +39,21 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @NotNull
     private final String configurationName;
 
+    @Getter
+    @NotNull
+    private final MeterRegistry meterRegistry;
+
     // </editor-fold>
     // -------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
-    protected AbstractChannelsConfiguration(@NotNull ChannelDirection direction, @NotNull final String configurationName) {
+    protected AbstractChannelsConfiguration(
+            @NotNull final ChannelDirection direction,
+            @NotNull final String configurationName,
+            @NotNull final MeterRegistry meterRegistry
+    ) {
         this.direction = direction;
         this.configurationName = configurationName;
+        this.meterRegistry = meterRegistry;
         this.descriptorsDefaults = createChannelDescriptorsDefaults();
     }
 
@@ -104,7 +114,10 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @Override
     @NotNull
     public <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
-    D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
+    D newDescriptor(
+            @NotNull final ChannelApiDescriptor<M> channelApi,
+            @NotNull final Class<D> descriptorClass
+    ) throws ChannelConfigurationException {
         if (contains(channelApi.getName())) {
             throw new ChannelConfigurationException("Topic '" + channelApi.getName() + "' already registered!");
         }
@@ -128,7 +141,7 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
                             final var paramsTypes = c.getParameterTypes();
                             return paramsTypes.length == 4
                                     && ChannelsConfiguration.class.isAssignableFrom(paramsTypes[0])
-                                    && ChannelApiDescriptor.class.isAssignableFrom(paramsTypes[1])
+                                    && ru.gx.core.channels.ChannelApiDescriptor.class.isAssignableFrom(paramsTypes[1])
                                     && ChannelDirection.class.isAssignableFrom(paramsTypes[2])
                                     && AbstractChannelDescriptorsDefaults.class.isAssignableFrom(paramsTypes[3]);
                         })
@@ -156,9 +169,12 @@ public abstract class AbstractChannelsConfiguration implements ChannelsConfigura
     @Override
     @NotNull
     public <D extends ChannelHandlerDescriptor>
-    D newDescriptor(@NotNull final String channelName, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException {
+    D newDescriptor(
+            @NotNull final String channelName,
+            @NotNull final Class<D> descriptorClass
+    ) throws ChannelConfigurationException {
         if (contains(channelName)) {
-            throw new ChannelConfigurationException("Channel '" + channelName + "' already registered!");
+            throw new ChannelConfigurationException("Topic '" + channelName + "' already registered!");
         }
         D result = null;
         if (allowCreateDescriptor(descriptorClass)) {

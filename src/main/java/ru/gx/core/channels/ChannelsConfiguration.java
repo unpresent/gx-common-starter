@@ -1,5 +1,6 @@
 package ru.gx.core.channels;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.messaging.Message;
@@ -46,11 +47,17 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      */
     @NotNull
     <M extends Message<? extends MessageBody>, D extends ChannelHandlerDescriptor>
-    D newDescriptor(@NotNull final ChannelApiDescriptor<M> channelApi, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException;
+    D newDescriptor(
+            @NotNull final ChannelApiDescriptor<M> channelApi,
+            @NotNull final Class<D> descriptorClass
+    ) throws ChannelConfigurationException;
 
     @NotNull
     <D extends ChannelHandlerDescriptor>
-    D newDescriptor(@NotNull final String channelName, @NotNull final Class<D> descriptorClass) throws ChannelConfigurationException;
+    D newDescriptor(
+            @NotNull final String channelName,
+            @NotNull final Class<D> descriptorClass
+    ) throws ChannelConfigurationException;
 
     /**
      * @return Настройки по умолчанию для новых описателей загрузки из топиков.
@@ -77,4 +84,7 @@ public interface ChannelsConfiguration extends InternalDescriptorsRegistrator {
      */
     @NotNull
     Iterable<ChannelHandlerDescriptor> getAll();
+
+    @NotNull
+    MeterRegistry getMeterRegistry();
 }

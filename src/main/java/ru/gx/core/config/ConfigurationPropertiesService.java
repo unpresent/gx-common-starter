@@ -21,6 +21,9 @@ public class ConfigurationPropertiesService {
     @NestedConfigurationProperty
     private Messages messages = new Messages();
 
+    @NestedConfigurationProperty
+    private ChannelsStatistics channelsStatistics = new ChannelsStatistics();
+
     @Getter
     @Setter
     public static class StandardSettingsController {
@@ -83,5 +86,14 @@ public class ConfigurationPropertiesService {
         private int printStatisticsEveryMs = PRINT_STATISTICS_EVERY_MS_DEFAULT;
         private int maxQueueSize = MAX_QUEUE_SIZE_DEFAULT;
         private int prioritiesCount = PRIORITIES_COUNT_DEFAULT;
+    }
+
+    @Getter
+    @Setter
+    public static class ChannelsStatistics {
+        public static final int PRINT_STATISTICS_EVERY_MS_DEFAULT = 5000;
+
+        private boolean enabled = true;
+        private int printStatisticsEveryMs = PRINT_STATISTICS_EVERY_MS_DEFAULT;
     }
 }

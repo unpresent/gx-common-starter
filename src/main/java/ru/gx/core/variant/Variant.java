@@ -34,7 +34,6 @@ public class Variant implements Serializable {
 
     @SuppressWarnings("unused")
     @JsonProperty("value")
-    @Nullable
     private String serializeValue() {
         if (value == null)
             return null;
@@ -53,7 +52,6 @@ public class Variant implements Serializable {
     }
 
     @SuppressWarnings("UnnecessaryDefault")
-    @NotNull
     private Object deserializeValue(@NotNull final String stringValue) {
         return switch (type) {
             case STRING -> stringValue;

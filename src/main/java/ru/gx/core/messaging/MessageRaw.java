@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.security.InvalidParameterException;
 
 @Accessors(chain = true)
 public class MessageRaw extends AbstractMessage<MessageRaw.Body> {

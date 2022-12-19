@@ -6,6 +6,7 @@ import ru.gx.core.messaging.Message;
 import ru.gx.core.messaging.MessageBody;
 
 import java.security.InvalidParameterException;
+import java.util.Collection;
 
 /**
  * Интерфейс обработчика канала передачи данных.
@@ -115,6 +116,27 @@ public interface ChannelHandlerDescriptor {
      */
     @NotNull
     ChannelHandlerDescriptor clearBlockingError();
+
+    /**
+     * @return Статистика обработки сообщений.
+     */
+    @NotNull
+    ChannelExecuteStatistics getExecuteStatistics();
+
+    /**
+     * Фиксируется факт обработки сообщения
+     *
+     * @param timeMs Время, затраченное на обработку сообщения.
+     */
+    void recordMessageExecuted(@NotNull final String workerName, final long timeMs);
+
+    /**
+     * Фиксируется факт обработки сообщений
+     *
+     * @param timeMs Время, затраченное на обработку пачки сообщений.
+     * @param count Количество обработанных сообщений.
+     */
+    void recordMessagesExecuted(@NotNull final String workerName, final long timeMs, final int count);
 
     /**
      * Признак того, что описатель инициализирован.

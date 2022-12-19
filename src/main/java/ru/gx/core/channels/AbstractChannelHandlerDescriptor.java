@@ -26,17 +26,29 @@ public abstract class AbstractChannelHandlerDescriptor
     @NotNull
     private final ChannelsConfiguration owner;
 
+    /**
+     * Имя канала.
+     */
     @Nullable
     private final String channelName;
 
+    /**
+     * Описатель API канала.
+     */
     @Getter
     @Nullable
     private final ChannelApiDescriptor<? extends Message<? extends MessageBody>> api;
 
+    /**
+     * Направление канала.
+     */
     @Getter
     @NotNull
     private final ChannelDirection direction;
 
+    /**
+     * Приоритет.
+     */
     @Getter
     private int priority;
 
@@ -57,6 +69,10 @@ public abstract class AbstractChannelHandlerDescriptor
     @Nullable
     private volatile Exception blockingError = null;
 
+    @Getter
+    @NotNull
+    private final ChannelExecuteStatistics executeStatistics;
+
     /**
      * Признак того, что описатель инициализирован.
      */
@@ -76,6 +92,7 @@ public abstract class AbstractChannelHandlerDescriptor
         this.api = api;
         this.channelName = null;
         this.direction = direction;
+        this.executeStatistics = new ChannelExecuteStatistics(this, this.owner.getMeterRegistry());
         if (defaults != null) {
             this.onErrorBehavior = defaults.getOnErrorBehavior();
         }
@@ -91,6 +108,7 @@ public abstract class AbstractChannelHandlerDescriptor
         this.api = null;
         this.channelName = channelName;
         this.direction = direction;
+        this.executeStatistics = new ChannelExecuteStatistics(this, this.owner.getMeterRegistry());
         if (defaults != null) {
             this.onErrorBehavior = defaults.getOnErrorBehavior();
         }
@@ -144,6 +162,9 @@ public abstract class AbstractChannelHandlerDescriptor
                 (this.enabled ? ChannelState.Enabled : ChannelState.Disabled);
     }
 
+    /**
+     * @return Заблокирован ли данный канал ошибкой
+     */
     @Override
     public boolean isBlockedByError() {
         return this.blockingError != null;
@@ -168,7 +189,6 @@ public abstract class AbstractChannelHandlerDescriptor
         this.priority = priority;
         return this;
     }
-
 
     /**
      * Установка способа реагирования на ошибку при обработке сообщений в данном канале
@@ -199,7 +219,7 @@ public abstract class AbstractChannelHandlerDescriptor
     /**
      * Установка блокирующей ошибки в канале.
      *
-     * @param error    Сообщение об ошибке
+     * @param error Сообщение об ошибке
      * @return this.
      */
     @Override
@@ -211,11 +231,36 @@ public abstract class AbstractChannelHandlerDescriptor
         return this;
     }
 
+    /**
+     * Сброс состояния-ошибки в канале (ошибка ушла).
+     *
+     * @return this.
+     */
     @Override
     @NotNull
     public ChannelHandlerDescriptor clearBlockingError() {
         this.blockingError = null;
         return this;
+    }
+
+    /**
+     * Фиксируется факт обработки сообщения.
+     *
+     * @param timeMs Время, затраченное на обработку сообщения.
+     */
+    @Override
+    public void recordMessageExecuted(@NotNull String workerName, long timeMs) {
+        getExecuteStatistics().recordMessageExecuted(workerName, timeMs);
+    }
+
+    /**
+     * Фиксируется факт обработки сообщения.
+     *
+     * @param timeMs Время, затраченное на обработку сообщения.
+     */
+    @Override
+    public void recordMessagesExecuted(@NotNull String workerName, final long timeMs, final int count) {
+        getExecuteStatistics().recordMessagesExecuted(workerName, timeMs, count);
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------

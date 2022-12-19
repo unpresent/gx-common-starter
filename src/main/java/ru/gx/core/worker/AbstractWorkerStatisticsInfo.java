@@ -11,32 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static lombok.AccessLevel.PROTECTED;
 
 public abstract class AbstractWorkerStatisticsInfo implements StatisticsInfo {
-    // -----------------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="Constants">
-    /**
-     * Общее количество исполнения итераций. Растёт постоянно.
-     */
-    public static final String METRIC_EXECUTIONS_COUNT = "execs.count";
-
-    /**
-     * Суммарное время полезной работы.
-     */
-    public static final String METRIC_EXECUTIONS_TIME = "execs.time";
-
-    /**
-     * Показатель. Процент полезной работы.
-     */
-    public static final String METRIC_EXECUTIONS_BUSY_PERCENTS = "execs.busy-percents";
-
-    /**
-     * Через данную метрику будет передано имя Worker-а
-     */
-    public static final String METRIC_WORKER_NAME = "worker-name";
-
-    /**
-     * Ярлык worker
-     */
-    public static final String METRIC_TAG_WORKER_NAME = "worker";
     // </editor-fold">
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">

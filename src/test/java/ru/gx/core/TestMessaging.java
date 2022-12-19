@@ -40,30 +40,8 @@ public class TestMessaging {
                         "k2": "v2"
                     }
                 }
-                """;
-    public static final String D2 = """
-                {"code": "Code1", "name": "Name1", "price": 42.0, "number": 11}
-                """;
+            """;
 
-    public static final String M2 = """
-                {
-                    "header": {
-                        "id": "0efa3fe6-1651-4d79-b554-4dd22308e9f7",
-                        "kind": "Request",
-                        "type": "TEST:TEST",
-                        "sourceSystem": "TEST-SOURCE-SYSTEM",
-                        "createdDateTime": "2021-12-19T09:36:49.456+0300",
-                        "version": 1
-                    },
-                    "body": {
-                        "data": {"code": "Code1", "name": "Name1", "price": 42.0, "number": 11}
-                    },
-                    "correlation": {
-                        "k1": "v1",
-                        "k2": "v2"
-                    }
-                }
-                """;
 
     public static ObjectMapper newObjectMapper() {
         final var objectMapper = new ObjectMapper();
@@ -89,7 +67,7 @@ public class TestMessaging {
 
         final var m1 = new TestRequest1(
                 new MessageHeader(UUID.randomUUID().toString(), null, MessageKind.Request, TestRequest1.MESSAGE_TYPE, TestRequest1.VERSION,"TEST-SOURCE-SYSTEM", OffsetDateTime.now()),
-                new TestRequest1.Body(d1),
+                new TestRequest1.TestRequest1Body(d1),
                 correlation
         );
 
@@ -98,19 +76,7 @@ public class TestMessaging {
 
         final var m3 = objectMapper.readValue(M1, TestRequest1.class);
         System.out.println("m3:");
-        System.out.println(m3.toString());
+        System.out.println(m3);
 
-        final var m2 = new MessageRaw(
-                new MessageHeader(UUID.randomUUID().toString(), null, MessageKind.Request, "TEST:TEST2", 1,"TEST-SOURCE-SYSTEM", OffsetDateTime.now()),
-                new MessageRaw.Body(D2),
-                correlation
-        );
-
-        final var s2 = objectMapper.writeValueAsString(m2);
-        System.out.println(s2);
-
-        final var m4 = objectMapper.readValue(s2, MessageRaw.class);
-        System.out.println("m4:");
-        System.out.println(m4.toString());
     }
 }

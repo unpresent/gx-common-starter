@@ -58,8 +58,9 @@ public abstract class AbstractMessage<B extends MessageBody>
 
     /**
      * Конструктор сообщения.
-     * @param header Заголовок сообщения.
-     * @param body Тело сообщения.
+     *
+     * @param header      Заголовок сообщения.
+     * @param body        Тело сообщения.
      * @param correlation Необрабатываемые данные.
      */
     protected AbstractMessage(
@@ -126,6 +127,7 @@ public abstract class AbstractMessage<B extends MessageBody>
 
     /**
      * Получение значения из метаданных по ключу.
+     *
      * @param metadataKey Ключ записи метаданных.
      * @return Значение записи метаданных для заданного ключа.
      */
@@ -137,6 +139,7 @@ public abstract class AbstractMessage<B extends MessageBody>
 
     /**
      * Получение списка всех записей метаданных (пары Ключ+Значение)
+     *
      * @return Список всех записей метаданных (пары Ключ+Значение)
      */
     @JsonIgnore
@@ -147,7 +150,8 @@ public abstract class AbstractMessage<B extends MessageBody>
 
     /**
      * Записать в событие запись метаданных.
-     * @param key Ключ записи метаданных.
+     *
+     * @param key   Ключ записи метаданных.
      * @param value Значение записи метаданных.
      * @return this.
      */
@@ -160,6 +164,7 @@ public abstract class AbstractMessage<B extends MessageBody>
 
     /**
      * Перезаписать все метаданные.
+     *
      * @param source Новый список всех метаданных.
      * @return this.
      */

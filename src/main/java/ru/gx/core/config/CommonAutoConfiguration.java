@@ -12,8 +12,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import ru.gx.core.channels.ChannelExecuteStatisticsManager;
+import ru.gx.core.channels.ChannelsConfiguration;
 import ru.gx.core.messaging.*;
 import ru.gx.core.metrics.MetricsInitializer;
 import ru.gx.core.settings.StandardSettingsController;
@@ -23,16 +26,18 @@ import ru.gx.core.utils.OffsetDateTimeDeserializer;
 import ru.gx.core.utils.OffsetDateTimeSerializer;
 
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.TimeZone;
 
 import static lombok.AccessLevel.PROTECTED;
 
 @Configuration
 @EnableConfigurationProperties(ConfigurationPropertiesService.class)
+@ComponentScan("ru.gx.core.longtime")
 public class CommonAutoConfiguration {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Constants">
+    public static final String CHANNELS_STATISTICS_MANAGER = "service.channels-statistics";
     private final static String DOT_ENABLED = ".enabled";
     private final static String DOT_NAME = ".name";
     private final static String SERVICE_NAME = "service.name";
@@ -60,6 +65,7 @@ public class CommonAutoConfiguration {
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
+
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Standard Settings Controller">
@@ -148,8 +154,8 @@ public class CommonAutoConfiguration {
         return new StandardMessagesExecutor(
                 name,
                 settingsContainer,
-                eventPublisher,
                 meterRegistry,
+                eventPublisher,
                 messagesQueue
         );
     }
@@ -195,7 +201,22 @@ public class CommonAutoConfiguration {
     public MetricsInitializer metricsInitializer(
             @Value("${" + SERVICE_NAME + "}") final String serviceName,
             @NotNull final MeterRegistry meterRegistry
-    ){
+    ) {
         return new MetricsInitializer(serviceName, meterRegistry);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(
+            value = CHANNELS_STATISTICS_MANAGER + DOT_ENABLED,
+            havingValue = "true"
+    )
+    @Autowired
+    public ChannelExecuteStatisticsManager channelExecuteStatisticsManager(
+            @NotNull final List<ChannelsConfiguration> configurations,
+            @Value("${" + CHANNELS_STATISTICS_MANAGER + ".print-statistics-every-ms}") final int printStatisticsEveryMs,
+            @NotNull final MeterRegistry meterRegistry
+    ) {
+        return new ChannelExecuteStatisticsManager(configurations, printStatisticsEveryMs);
     }
 }

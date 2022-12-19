@@ -3,7 +3,6 @@ package ru.gx.core.messaging;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -18,6 +17,13 @@ public interface MessagesPrioritizedQueue {
      * @return true - контейнер очередей готов принять событие.
      */
     boolean allowPush();
+
+    /**
+     * Отправка системного (в очередь с приоритетом "0") события в контейнер очередей.
+     *
+     * @param message  Событие.
+     */
+    void pushSystemMessage(@NotNull final Object message);
 
     /**
      * Отправка события в контейнер очередей.
@@ -60,9 +66,12 @@ public interface MessagesPrioritizedQueue {
     @NotNull
     List<Object> pollMessages(int maxCount);
 
-//    void returnErrorMessages(@NotNull final Iterable<Message<?>> messages) {
-//
-//    }
+    /**
+     * Возврат сообщения в очередь, если при его обработке были ошибки, чтобы его можно было обработать повторно
+     * @param priority Приоритет сообщения
+     * @param message Сообщение
+     */
+    void returnErrorMessage(final int priority, @NotNull final Object message);
 
     /**
      * @return Количество событий в контейнере очередей.

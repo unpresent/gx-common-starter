@@ -42,7 +42,7 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      * Очереди для каждого из приоритетов.
      */
     @NotNull
-    private final List<Queue<Object>> priorities = new ArrayList<>();
+    private final List<Deque<Object>> priorityQueues = new ArrayList<>();
 
     /**
      * Очередь для сообщений каналов с ошибками
@@ -74,13 +74,16 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      * @return this.
      */
     public AbstractMessagesPrioritizedQueue init(final int maxQueueSize, final int prioritiesCount) {
+        if (prioritiesCount < 2) {
+            throw new InvalidParameterException("PrioritiesCount can't be less 2!");
+        }
         synchronized (this.monitor) {
-            while (this.priorities.size() < prioritiesCount) {
-                this.priorities.add(new ArrayDeque<>());
+            while (this.priorityQueues.size() < prioritiesCount) {
+                this.priorityQueues.add(new ArrayDeque<>());
             }
-            for (var i = this.priorities.size() - 1; i >= prioritiesCount; i--) {
-                if (this.priorities.get(i).size() == 0) {
-                    this.priorities.remove(i);
+            for (var i = this.priorityQueues.size() - 1; i >= prioritiesCount; i--) {
+                if (this.priorityQueues.get(i).size() == 0) {
+                    this.priorityQueues.remove(i);
                 }
             }
             this.queueSizeLimit = maxQueueSize;
@@ -100,6 +103,16 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
     }
 
     /**
+     * Отправка системного (в очередь с приоритетом "0") события в контейнер очередей.
+     *
+     * @param message Событие.
+     */
+    @Override
+    public void pushSystemMessage(@NotNull final Object message) {
+        internalPushMessage(0, message);
+    }
+
+    /**
      * Отправка события в контейнер очередей.
      *
      * @param priority Приоритет события.
@@ -110,10 +123,16 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
             final int priority,
             @NotNull Object message
     ) {
-        if (priority < 0) {
-            throw new InvalidParameterException("Priority can't be less 0!");
+        if (priority < 1) {
+            throw new InvalidParameterException("Priority can't be less 1!");
         }
+        internalPushMessage(priority, message);
+    }
 
+    protected void internalPushMessage(
+            final int priority,
+            @NotNull Object message
+    ) {
         if (message instanceof final Message<?> typedMessage) {
             final var descriptor = typedMessage.getChannelDescriptor();
             if (descriptor.isBlockedByError()) {
@@ -125,10 +144,10 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
             }
         }
         synchronized (this.monitor) {
-            if (priority > priorities.size()) {
+            if (priority > priorityQueues.size()) {
                 throw new InvalidParameterException("Priority can't be more count of priorities!");
             }
-            final var queue = priorities.get(priority);
+            final var queue = priorityQueues.get(priority);
             queue.offer(message);
             this.size.incrementAndGet();
         }
@@ -163,7 +182,7 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
             if (allowPush()) {
                 // Собственно только теперь бросаем событие в очередь
                 log.debug("Pushing message to queue");
-                pushMessage(0, message);
+                pushMessage(priority, message);
                 return true;
             }
 
@@ -189,6 +208,27 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
             }
         }
         return false;
+    }
+
+    /**
+     * Возврат сообщения в очередь, если при его обработке были ошибки, чтобы его можно было обработать повторно
+     *
+     * @param priority Приоритет сообщения
+     * @param message  Сообщение
+     */
+    @Override
+    public void returnErrorMessage(int priority, @NotNull Object message) {
+        if (priority < 0) {
+            throw new InvalidParameterException("Priority can't be less 0!");
+        }
+        synchronized (this.monitor) {
+            if (priority > priorityQueues.size()) {
+                throw new InvalidParameterException("Priority can't be more count of priorities!");
+            }
+            final var queue = priorityQueues.get(priority);
+            queue.addFirst(message);
+            this.size.incrementAndGet();
+        }
     }
 
     /**
@@ -255,8 +295,8 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
             // И только если не насобирали достаточно сообщений из очереди заблокированных ошибками каналов,
             // то набираем сообщений из очередей по приоритетам
             var pIndex = 0;
-            while (result.size() <= maxCount && pIndex < this.priorities.size()) {
-                final var message = this.priorities.get(pIndex).poll();
+            while (result.size() <= maxCount && pIndex < this.priorityQueues.size()) {
+                final var message = this.priorityQueues.get(pIndex).poll();
                 if (message != null) {
                     if (message instanceof final Message<?> typedMessage) {
                         if (typedMessage.getChannelDescriptor().isBlockedByError()) {
@@ -297,6 +337,6 @@ public abstract class AbstractMessagesPrioritizedQueue implements MessagesPriori
      * @return Количество приоритетов - по сути, количество очередей.
      */
     public int priorityCount() {
-        return this.priorities.size();
+        return this.priorityQueues.size();
     }
 }

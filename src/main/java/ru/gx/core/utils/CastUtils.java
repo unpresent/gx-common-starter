@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -43,21 +44,21 @@ public class CastUtils {
         registerCastFunction(Long.class, BigDecimal.class, BigDecimal::new);
 
         registerCastFunction(Integer.class, String.class, (Object::toString));
-        registerCastFunction(Integer.class, Long.class, aInteger -> (long)aInteger);
+        registerCastFunction(Integer.class, Long.class, aInteger -> (long) aInteger);
         registerCastFunction(Integer.class, Short.class, (Integer::shortValue));
         registerCastFunction(Integer.class, Byte.class, (Integer::byteValue));
         registerCastFunction(Integer.class, BigDecimal.class, BigDecimal::new);
 
         registerCastFunction(Short.class, String.class, (Object::toString));
-        registerCastFunction(Short.class, Long.class, aShort -> (long)aShort);
-        registerCastFunction(Short.class, Integer.class, aShort -> (int)aShort);
+        registerCastFunction(Short.class, Long.class, aShort -> (long) aShort);
+        registerCastFunction(Short.class, Integer.class, aShort -> (int) aShort);
         registerCastFunction(Short.class, Byte.class, (Short::byteValue));
         registerCastFunction(Short.class, BigDecimal.class, BigDecimal::new);
 
         registerCastFunction(Byte.class, String.class, (Object::toString));
-        registerCastFunction(Byte.class, Long.class, aByte -> (long)aByte);
-        registerCastFunction(Byte.class, Integer.class, aByte -> (int)aByte);
-        registerCastFunction(Byte.class, Short.class, aByte -> (short)aByte);
+        registerCastFunction(Byte.class, Long.class, aByte -> (long) aByte);
+        registerCastFunction(Byte.class, Integer.class, aByte -> (int) aByte);
+        registerCastFunction(Byte.class, Short.class, aByte -> (short) aByte);
         registerCastFunction(Byte.class, BigDecimal.class, BigDecimal::new);
 
         registerCastFunction(BigDecimal.class, String.class, (Object::toString));
@@ -123,9 +124,10 @@ public class CastUtils {
 
     /**
      * Приведение входящего значения к требуемому типу данных
-     * @param value входящее значение
+     *
+     * @param value      входящее значение
      * @param resultType класс типа результата
-     * @param <T> тип результата
+     * @param <T>        тип результата
      * @return результат
      */
     @SuppressWarnings("unchecked")
@@ -138,9 +140,17 @@ public class CastUtils {
             return null;
         }
         if (resultType.isAssignableFrom(value.getClass())) {
-            return (T)value;
+            return (T) value;
         }
-        final var func = (Function<Object, T>)getCastFunction(value.getClass(), resultType);
+        if (resultType.isEnum()) {
+            return Arrays.stream(resultType.getEnumConstants())
+                    .filter(e -> ((Enum<?>) e).name().equals(value))
+                    .findFirst()
+                    .orElseThrow(() -> {
+                        throw new RuntimeException("Cannot convert " + value + " to " + resultType.getName());
+                    });
+        }
+        final var func = (Function<Object, T>) getCastFunction(value.getClass(), resultType);
         return func.apply(value);
     }
 }
