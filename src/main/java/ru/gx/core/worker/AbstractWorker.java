@@ -80,7 +80,7 @@ public abstract class AbstractWorker implements Worker {
     @Setter(PROTECTED)
     private volatile boolean autoRestart;
 
-    private final ExecutorService executorService;
+    private final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
 
     /**
      * Внутренний исполнитель - работает в отдельном потоке. Содержит в себе цикл до сигнала выхода.
@@ -159,7 +159,6 @@ public abstract class AbstractWorker implements Worker {
         this.meterRegistry = meterRegistry;
         this.applicationEventPublisher = applicationEventPublisher;
         this.statisticsInfo = createStatisticsInfo();
-        this.executorService = Executors.newSingleThreadExecutor();
     }
 
     @PostConstruct
@@ -214,12 +213,12 @@ public abstract class AbstractWorker implements Worker {
      */
     @Override
     public void start() {
-        log.info("Starting start()");
+        log.info("START start()");
         try {
             this.autoRestart = true;
-            internalStart();
+            doStart();
         } finally {
-            log.info("Finished start()");
+            log.info("FINISH start()");
         }
     }
 
@@ -228,12 +227,12 @@ public abstract class AbstractWorker implements Worker {
      */
     @Override
     public void stop() {
-        log.info("Starting stop()");
+        log.info("START stop()");
         try {
             this.autoRestart = false;
-            internalStop();
+            doStop();
         } finally {
-            log.info("Finished stop()");
+            log.info("FINISH stop()");
         }
     }
 
@@ -255,33 +254,60 @@ public abstract class AbstractWorker implements Worker {
         return this.runner.get();
     }
 
-    protected boolean setRunner(@NotNull final Runner runner) {
+    protected ExecutorService getExecutorService() {
+        return this.executorService.get();
+    }
+
+    private boolean setRunner(@NotNull final Runner runner) {
         return this.runner.compareAndSet(null, runner);
     }
 
-    protected void clearRunner() {
+    private boolean setExecutorService(@NotNull final ExecutorService executorService) {
+        return this.executorService.compareAndSet(null, executorService);
+    }
+
+    protected void internalClearExecutorAndRunner() {
+        log.info("START internalClearExecutorAndRunner()");
         final var runner = getRunner();
         if (runner != null) {
             runner.currentThread = null;
         }
         this.runner.set(null);
+
+        final var executorService = getExecutorService();
+        if (executorService != null) {
+            if (!executorService.isShutdown()) {
+                executorService.shutdownNow();
+            }
+            this.executorService.set(null);
+        }
+        log.info("FINISH internalClearExecutorAndRunner()");
     }
 
-    protected void internalStart() {
+    protected void doStart() {
+        final var debugStarted = System.currentTimeMillis();
+        log.info("START internalStart(); worker {}", getWorkerName());
+
         if (isRunning()) {
-            log.info("Runner {} of worker " + getWorkerName() + " already is running!", getRunner());
+            log.info(String.format(
+                    "FINISH internalStart() in %d ms; Runner %s of worker %s already is running!",
+                    System.currentTimeMillis() - debugStarted,
+                    getRunner(),
+                    getWorkerName()
+            ));
             return;
         }
 
+        log.info("STEP internalStart(): Before synchronized (this.restartingMonitor)");
         synchronized (this.restartingMonitor) {
-            log.info("Starting Runner of worker " + getWorkerName());
+            log.info("STEP internalStart(): After synchronized (this.restartingMonitor)");
             if (getRunner() == null) {
                 final var startingEvent = getStartingExecuteEvent();
                 if (startingEvent != null) {
                     getApplicationEventPublisher().publishEvent(startingEvent);
                 }
-                createAndStartRunner();
-                startRunnerTimerTaskController();
+                internalCreateAndStartExecutorAndRunner();
+                internalStartRunnerTimerTaskController();
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -289,25 +315,44 @@ public abstract class AbstractWorker implements Worker {
                 }
                 if (isRunning()) {
                     this.stoppingExecuteEventCalled = false;
-                    log.info("Runner {} of worker " + getWorkerName() + " started success!", getRunner());
+                    log.info(String.format(
+                            "FINISH internalStart() in %d ms; Runner %s of worker %s started success!",
+                            System.currentTimeMillis() - debugStarted,
+                            getRunner(),
+                            getWorkerName()
+                    ));
                     return;
                 }
             }
         }
-        log.error("Runner " + getWorkerName() + " not started!");
+        log.error(String.format(
+                "ERROR internalStart() in %d ms; Runner of worker not started!",
+                System.currentTimeMillis() - debugStarted
+        ));
     }
 
-    protected void internalStop() {
+    protected void doStop() {
+        final var debugStarted = System.currentTimeMillis();
         log.info("START internalStop(); currentExecutionInfo: {}", getCurrentExecutionInfo());
         if (!isRunning()) {
-            log.info("Runner " + getWorkerName() + " already is stopped!");
+            log.info(String.format(
+                    "FINISH internalStop() in %d ms; Runner %s already is stopped!",
+                    System.currentTimeMillis() - debugStarted,
+                    getWorkerName()
+            ));
             return;
         }
 
+        log.info("STEP internalStop(): Before synchronized (this.restartingMonitor)");
         synchronized (this.restartingMonitor) {
+            log.info("STEP internalStop(): After synchronized (this.restartingMonitor)");
             internalWaitStop(this.settingsContainer.getWaitOnStopMs());
         }
-        log.info("FINISH internalStop(); currentExecutionInfo: {}", getCurrentExecutionInfo());
+        log.info(String.format(
+                "FINISH internalStop() in %d ms; currentExecutionInfo: %s",
+                System.currentTimeMillis() - debugStarted,
+                getCurrentExecutionInfo()
+        ));
     }
 
     /**
@@ -316,28 +361,36 @@ public abstract class AbstractWorker implements Worker {
      * @param timeoutMs время в течение которого надо подождать штатного завершения исполнителя.
      */
     private void internalWaitStop(int timeoutMs) {
-        var runner = getRunner();
-        if (runner == null) {
-            return;
-        }
-        runner.isStopping.set(true);
+        final var debugStarted = System.currentTimeMillis();
+        log.info("START internalWaitStop(); currentExecutionInfo: {}", getCurrentExecutionInfo());
+
+        final var runner = getRunner();
+        final var executorService = getExecutorService();
         try {
-            if (!this.executorService.awaitTermination(timeoutMs, TimeUnit.MILLISECONDS)) {
-                // Прерываем
-                this.executorService.shutdownNow();
+            if (runner != null) {
+                runner.isStopping.set(true);
+            }
+            if (executorService != null && !executorService.isShutdown()) {
+                if (!executorService.awaitTermination(timeoutMs, TimeUnit.MILLISECONDS)) {
+                    // Прерываем
+                    executorService.shutdownNow();
+                }
             }
         } catch (InterruptedException e) {
             log.error("", e);
         } finally {
-            clearRunner();
+            internalClearExecutorAndRunner();
             internalStopTimer();
-            log.info("Runner " + getWorkerName() + " is stopped!");
+            log.info("Runner " + getWorkerName() + " is stopped; executorService terminated!");
             final var stoppingEvent = getStoppingExecuteEvent();
             if (stoppingEvent != null) {
                 this.stoppingExecuteEventCalled = true;
-                getApplicationEventPublisher()
-                        .publishEvent(stoppingEvent);
+                getApplicationEventPublisher().publishEvent(stoppingEvent);
             }
+            log.info(String.format(
+                    "FINISH internalWaitStop() in %d ms",
+                    System.currentTimeMillis() - debugStarted
+            ));
         }
     }
 
@@ -360,47 +413,60 @@ public abstract class AbstractWorker implements Worker {
     }
 
     /**
-     * Запуск исполнителя
+     * Запуск исполнителя. Внутри блокировки Монитора запуска
      */
-    protected void createAndStartRunner() {
-        log.info("START createAndStartRunner()");
-        final var event = this.getIterationExecuteEvent();
-        event.setImmediateRunNextIteration(false);
-        event.setNeedRestart(false);
-        event.setStopExecution(false);
+    protected void internalCreateAndStartExecutorAndRunner() {
+        log.info("START internalCreateAndStartExecutorAndRunner()");
+        this.getIterationExecuteEvent()
+                .setImmediateRunNextIteration(false)
+                .setNeedRestart(false)
+                .setStopExecution(false);
         runnerIsLifeSet();
         final var runner = new Runner();
         if (!setRunner(runner)) {
             throw new RuntimeException(String.format("Can't set new runner %s because current value is not null", runner));
         }
-        // new Thread(getRunner(), this.workerName).start();
-        this.executorService.execute(runner);
-        log.info("FINISH createAndStartRunner(); runner = {}", runner);
+        final var executorService = Executors.newSingleThreadExecutor();
+        if (!setExecutorService(executorService)) {
+            throw new RuntimeException(String.format("Can't set new executorService %s because current value is not null", executorService));
+        }
+        executorService.execute(runner);
+        log.info("FINISH internalCreateAndStartExecutorAndRunner(); runner = {}; executorService = {}", runner, executorService);
     }
 
     /**
      * Запуск потока перезапуска.
      */
     protected void startRestartingController() {
+        log.info("START startRestartingController()");
         if (getRestartingController() != null) {
             return;
         }
+        log.info("STEP startRestartingController(): Before synchronized (this.restartingMonitor)");
         synchronized (this.restartingMonitor) {
+            log.info("STEP startRestartingController(): After synchronized (this.restartingMonitor)");
             if (getRestartingController() != null) {
                 return;
             }
-            new Thread((this.restartingController = new RestartingController()), this.workerName + "-Restart").start();
+            final var threadName = this.workerName + "-Restart";
+            log.info("STEP startRestartingController(): Creating thread {}", threadName);
+            new Thread((this.restartingController = new RestartingController()), threadName).start();
         }
+        log.info("FINISH startRestartingController()");
     }
 
     /**
      * Запуск контроллера за зависаниями исполнителя
      */
-    protected void startRunnerTimerTaskController() {
+    protected void internalStartRunnerTimerTaskController() {
+        log.info("START internalStartRunnerTimerTaskController()");
+
         final var timeout = this.settingsContainer.getTimeoutRunnerLifeMs();
         this.runnerTimerTaskController = new RunnerTimerTaskController();
         this.timer = new Timer(getWorkerName() + "-Timer", true);
         this.timer.scheduleAtFixedRate(this.runnerTimerTaskController, timeout, timeout / 10);
+
+        log.info("FINISH internalStartRunnerTimerTaskController()");
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
@@ -458,14 +524,14 @@ public abstract class AbstractWorker implements Worker {
             } finally {
                 log.info("FINISH run(); runner = {}", this);
                 this.currentThread = null;
-                clearRunner();
+                internalClearExecutorAndRunner();
 
                 if (event.isStopExecution()) {
                     log.info("FINISH run(): setAutoRestart(false); runner = {}", this);
                     setAutoRestart(false);
                 }
                 if (event.isNeedRestart()) {
-                    log.info("AFTER FINISH run(): startRestartingController(); runner = {}", this);
+                    log.info("FINISH run(): startRestartingController(); runner = {}", this);
                     startRestartingController();
                 }
             }
@@ -574,7 +640,7 @@ public abstract class AbstractWorker implements Worker {
                             + "; iterationExecuteEvent.isStopExecution() == " + event.isStopExecution()
                             + "; currentExecutionInfo:= " + AbstractWorker.this.getCurrentExecutionInfo()
                     );
-                    internalStop();
+                    doStop();
                 }
                 if (isAutoRestart() && !event.isStopExecution()) {
                     startRestartingController();
@@ -589,9 +655,9 @@ public abstract class AbstractWorker implements Worker {
      */
     protected class RestartingController implements Runnable {
         @SuppressWarnings("BusyWait")
-        @SneakyThrows
         @Override
         public void run() {
+            log.info("START RestartingController.run()");
             final var wait = AbstractWorker.this.settingsContainer.getWaitOnRestartMs();
             final var event = AbstractWorker.this.getIterationExecuteEvent();
             log.info("Restarting... Wait: {} ms", wait);
@@ -601,23 +667,33 @@ public abstract class AbstractWorker implements Worker {
                     .setNeedRestart(false)
                     .setStopExecution(false);
 
+            log.info("STEP RestartingController.run(): call internalStopTimer()");
             internalStopTimer();
             if (isRunning()) {
-                internalStop();
+                log.info("STEP RestartingController.run(): call doStop()");
+                doStop();
             }
             final var waitTo = System.currentTimeMillis() + AbstractWorker.this.settingsContainer.getWaitOnRestartMs();
+            log.info("STEP RestartingController.run(): Before synchronized (AbstractWorker.this.restartingMonitor)");
             synchronized (AbstractWorker.this.restartingMonitor) {
+                log.info("STEP RestartingController.run(): After synchronized (AbstractWorker.this.restartingMonitor)");
                 while (System.currentTimeMillis() < waitTo) {
                     log.debug("Restarting... waitLeft: {}", waitTo - System.currentTimeMillis());
                     runnerIsLifeSet();
-                    Thread.sleep(AbstractWorker.this.settingsContainer.getTimeoutRunnerLifeMs() / 10);
+                    try {
+                        Thread.sleep(AbstractWorker.this.settingsContainer.getTimeoutRunnerLifeMs() / 10);
+                    } catch (InterruptedException e) {
+                        log.error("", e);
+                    }
                 }
             }
+
             if (!isRunning()) {
-                internalStart();
+                log.info("STEP RestartingController.run(): call doStart()");
+                doStart();
             }
-            restartingController = null;
-            log.info("Restarting finished!");
+            AbstractWorker.this.restartingController = null;
+            log.info("FINISH RestartingController.run()!");
         }
     }
 }
